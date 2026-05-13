@@ -1,15 +1,37 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from database import get_db
 from titanic.app.james_controller import JamesController
 from doro.app.doro_director import DoroDirector
 
 app = FastAPI(title="WooJeongAlex Main Page")
 
+
+class DatabaseHealthAdapter:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def check_connection(self) -> dict:
+        try:
+            result = await self.session.execute(text("SELECT NOW();"))
+            now = result.scalar()
+            return {"status": "success", "neon_time": now}
+        except Exception as exc:
+            return {"status": "error", "message": str(exc)}
+
 @app.get("/")
 def read_root():
     return {"message": "FAST API 메인 페이지", "docs": "/docs"}
+
+
+@app.get("/db-check")
+async def check_db(db: AsyncSession = Depends(get_db)):
+    adapter = DatabaseHealthAdapter(db)
+    return await adapter.check_connection()
 
 
 @app.get("/titanic/data")
