@@ -2,3 +2,6 @@ fastapi
 uvicorn
 pandas
 scikit-learn
+sqlalchemy[asyncio]
+psycopg[binary]
+python-dotenv
