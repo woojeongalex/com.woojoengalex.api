@@ -46,3 +46,14 @@ async def get_db():
             yield session
     except Exception as exc:
         raise RuntimeError(f"Database session error: {exc}") from exc
+
+
+async def dispose_engine() -> None:
+    """앱 종료 시 엔진 연결을 정리합니다."""
+    global engine, AsyncSessionLocal
+
+    local_engine = engine
+    engine = None
+    AsyncSessionLocal = None
+    if local_engine is not None:
+        await local_engine.dispose()
