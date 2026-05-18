@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
 import requests
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from adapters.db_health_adapter import DbHealthAdapter
@@ -82,6 +83,10 @@ class AllForecastsResponse(BaseModel):
     cities: list[CityForecastBundle]
 
 
+class UsernameCheckResponse(BaseModel):
+    available: bool
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -104,6 +109,53 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "FAST API 메인 페이지 ", "docs": "/docs"}
+
+
+@app.get("/api/auth/check-id", response_model=UsernameCheckResponse)
+async def check_username(
+    username: str = Query(..., min_length=1),
+    db: AsyncSession = Depends(get_db),
+) -> UsernameCheckResponse:
+    """회원 아이디 중복 여부를 확인합니다."""
+    normalized = username.strip()
+    if not normalized:
+        raise HTTPException(status_code=422, detail="아이디를 입력하세요.")
+
+    column_result = await db.execute(
+        text(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'users'
+              AND column_name IN ('username', 'user_id', 'login_id', 'account_id')
+            ORDER BY CASE column_name
+              WHEN 'username' THEN 1
+              WHEN 'user_id' THEN 2
+              WHEN 'login_id' THEN 3
+              WHEN 'account_id' THEN 4
+              ELSE 5
+            END
+            LIMIT 1
+            """
+        )
+    )
+    username_column = column_result.scalar_one_or_none()
+    if username_column is None:
+        return UsernameCheckResponse(available=True)
+
+    duplicate_result = await db.execute(
+        text(
+            f"""
+            SELECT 1
+            FROM users
+            WHERE lower("{username_column}") = lower(:username)
+            LIMIT 1
+            """
+        ),
+        {"username": normalized},
+    )
+    return UsernameCheckResponse(available=duplicate_result.scalar_one_or_none() is None)
 
 
 def _require_openweather_key() -> str:
