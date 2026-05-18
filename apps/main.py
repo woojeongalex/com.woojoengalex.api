@@ -14,7 +14,13 @@ from adapters.openweather_adapter import CITY_ORDER, WEATHER_CITIES, OpenWeather
 from database import dispose_engine, get_db
 from doro.app.doro_director import DoroDirector
 from matrix.app.keymaker import get_keymaker
+from secom.app.controllers.user_controller import UserController
+from secom.app.repositories.user_repository import UserRepository
+from secom.app.schemas.user_schema import SignupRequest, SignupResponse, UserSchema
 from titanic.app.james_controller import JamesController
+
+
+
 
 keymaker = get_keymaker()
 
@@ -111,6 +117,27 @@ def read_root():
     return {"message": "FAST API 메인 페이지 ", "docs": "/docs"}
 
 
+@app.post("/api/auth/signup", response_model=SignupResponse)
+async def signup(
+    request: SignupRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SignupResponse:
+    """회원가입 요청을 저장하고 서버 로그에 입력값을 남깁니다."""
+    #프론트엔드에서 가져온 데이터를 스키마에 담아서 DB로 보내는 코드
+    user_schema = UserSchema(
+        username=request.username,
+        nickname=request.nickname,
+        password=request.password,
+        email=request.email,
+        role=request.role or "user",
+    )
+
+    user_controller = UserController()
+    user_controller.save_user(user_schema)
+
+    return SignupResponse(ok=True, message="회원가입 요청을 수신했습니다.")
+
+
 @app.get("/api/auth/check-id", response_model=UsernameCheckResponse)
 async def check_username(
     username: str = Query(..., min_length=1),
@@ -120,6 +147,11 @@ async def check_username(
     normalized = username.strip()
     if not normalized:
         raise HTTPException(status_code=422, detail="아이디를 입력하세요.")
+
+    repository = UserRepository(db)
+    await repository.ensure_tables()
+    if await repository.exists_by_username(normalized):
+        return UsernameCheckResponse(available=False)
 
     column_result = await db.execute(
         text(
@@ -154,6 +186,57 @@ async def check_username(
             """
         ),
         {"username": normalized},
+    )
+    return UsernameCheckResponse(available=duplicate_result.scalar_one_or_none() is None)
+
+
+@app.get("/api/auth/check-nickname", response_model=UsernameCheckResponse)
+async def check_nickname(
+    nickname: str = Query(..., min_length=1),
+    db: AsyncSession = Depends(get_db),
+) -> UsernameCheckResponse:
+    """회원 닉네임 중복 여부를 확인합니다."""
+    normalized = nickname.strip()
+    if not normalized:
+        raise HTTPException(status_code=422, detail="닉네임을 입력하세요.")
+
+    repository = UserRepository(db)
+    await repository.ensure_tables()
+    if await repository.exists_by_nickname(normalized):
+        return UsernameCheckResponse(available=False)
+
+    column_result = await db.execute(
+        text(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'users'
+              AND column_name IN ('nickname', 'display_name', 'name')
+            ORDER BY CASE column_name
+              WHEN 'nickname' THEN 1
+              WHEN 'display_name' THEN 2
+              WHEN 'name' THEN 3
+              ELSE 4
+            END
+            LIMIT 1
+            """
+        )
+    )
+    nickname_column = column_result.scalar_one_or_none()
+    if nickname_column is None:
+        return UsernameCheckResponse(available=True)
+
+    duplicate_result = await db.execute(
+        text(
+            f"""
+            SELECT 1
+            FROM users
+            WHERE lower("{nickname_column}") = lower(:nickname)
+            LIMIT 1
+            """
+        ),
+        {"nickname": normalized},
     )
     return UsernameCheckResponse(available=duplicate_result.scalar_one_or_none() is None)
 
@@ -478,8 +561,12 @@ def read_doro_data():
 
     return df.to_dict(orient="records")
 
+#회원가입
+
 
 if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
+
