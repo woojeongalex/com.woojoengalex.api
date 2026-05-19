@@ -1,22 +1,17 @@
-from secom.app.schemas.user_schema import UserSchema
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from secom.app.repositories.user_repository import UserRepository
+from secom.app.schemas.user_schema import LoginResponse, UserSchema
 
 
 class UserService:
-    def __init__(self):
-        pass
+    """컨트롤러 ↔ 레포지터리 연결만 담당."""
 
-    def save_user(self, user_schema: UserSchema):
-        print(
-            "[SECOM][Service] save_user layer:",
-            {
-                "username": user_schema.username,
-                "nickname": user_schema.nickname,
-                "email": user_schema.email,
-                "role": user_schema.role,
-                "password_length": len(user_schema.password),
-            },
-            flush=True,
-        )
-        user_repository = UserRepository()
-        return user_repository.save_user(user_schema)
+    def __init__(self, db: AsyncSession | None = None) -> None:
+        self._repository = UserRepository(db)
+
+    async def save_user(self, user_schema: UserSchema) -> None:
+        await self._repository.save_user(user_schema)
+
+    async def login(self, username: str, password: str) -> LoginResponse:
+        return await self._repository.login(username, password)

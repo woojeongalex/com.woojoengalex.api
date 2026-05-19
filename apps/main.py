@@ -1,6 +1,17 @@
+import asyncio
+import logging
+import sys
 from contextlib import asynccontextmanager
 
 import requests
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+from logging_setup import configure_logging
+
+configure_logging()
+
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,19 +19,25 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from adapters.db_health_adapter import DbHealthAdapter
 from adapters.openweather_adapter import CITY_ORDER, WEATHER_CITIES, OpenWeatherAdapter
-from database import dispose_engine, get_db
+from database import dispose_engine, get_db, init_db
+import secom.app.entities.user_entity  # noqa: F401
 from doro.app.doro_director import DoroDirector
 from matrix.app.keymaker import get_keymaker
-from secom.app.controllers.user_controller import UserController
-from secom.app.repositories.user_repository import UserRepository
-from secom.app.schemas.user_schema import SignupRequest, SignupResponse, UserSchema
+from secom.app import auth_routes
+from secom.app.schemas.user_schema import (
+    LoginRequest,
+    LoginResponse,
+    SignupRequest,
+    SignupResponse,
+    UsernameCheckResponse,
+)
 from titanic.app.james_controller import JamesController
 
 
 
+logger = logging.getLogger(__name__)
 
 keymaker = get_keymaker()
 
@@ -89,12 +106,14 @@ class AllForecastsResponse(BaseModel):
     cities: list[CityForecastBundle]
 
 
-class UsernameCheckResponse(BaseModel):
-    available: bool
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
+    try:
+        await init_db()
+        logger.info("Neon DB 테이블 초기화 완료")
+    except Exception as exc:
+        logger.exception("Neon DB init_db 실패 — auth API가 동작하지 않을 수 있습니다: %s", exc)
     try:
         yield
     finally:
@@ -122,20 +141,7 @@ async def signup(
     request: SignupRequest,
     db: AsyncSession = Depends(get_db),
 ) -> SignupResponse:
-    """회원가입 요청을 저장하고 서버 로그에 입력값을 남깁니다."""
-    #프론트엔드에서 가져온 데이터를 스키마에 담아서 DB로 보내는 코드
-    user_schema = UserSchema(
-        username=request.username,
-        nickname=request.nickname,
-        password=request.password,
-        email=request.email,
-        role=request.role or "user",
-    )
-
-    user_controller = UserController()
-    user_controller.save_user(user_schema)
-
-    return SignupResponse(ok=True, message="회원가입 요청을 수신했습니다.")
+    return await auth_routes.signup_user(db, request)
 
 
 @app.get("/api/auth/check-id", response_model=UsernameCheckResponse)
@@ -143,51 +149,7 @@ async def check_username(
     username: str = Query(..., min_length=1),
     db: AsyncSession = Depends(get_db),
 ) -> UsernameCheckResponse:
-    """회원 아이디 중복 여부를 확인합니다."""
-    normalized = username.strip()
-    if not normalized:
-        raise HTTPException(status_code=422, detail="아이디를 입력하세요.")
-
-    repository = UserRepository(db)
-    await repository.ensure_tables()
-    if await repository.exists_by_username(normalized):
-        return UsernameCheckResponse(available=False)
-
-    column_result = await db.execute(
-        text(
-            """
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'users'
-              AND column_name IN ('username', 'user_id', 'login_id', 'account_id')
-            ORDER BY CASE column_name
-              WHEN 'username' THEN 1
-              WHEN 'user_id' THEN 2
-              WHEN 'login_id' THEN 3
-              WHEN 'account_id' THEN 4
-              ELSE 5
-            END
-            LIMIT 1
-            """
-        )
-    )
-    username_column = column_result.scalar_one_or_none()
-    if username_column is None:
-        return UsernameCheckResponse(available=True)
-
-    duplicate_result = await db.execute(
-        text(
-            f"""
-            SELECT 1
-            FROM users
-            WHERE lower("{username_column}") = lower(:username)
-            LIMIT 1
-            """
-        ),
-        {"username": normalized},
-    )
-    return UsernameCheckResponse(available=duplicate_result.scalar_one_or_none() is None)
+    return await auth_routes.check_username_available(db, username)
 
 
 @app.get("/api/auth/check-nickname", response_model=UsernameCheckResponse)
@@ -195,50 +157,15 @@ async def check_nickname(
     nickname: str = Query(..., min_length=1),
     db: AsyncSession = Depends(get_db),
 ) -> UsernameCheckResponse:
-    """회원 닉네임 중복 여부를 확인합니다."""
-    normalized = nickname.strip()
-    if not normalized:
-        raise HTTPException(status_code=422, detail="닉네임을 입력하세요.")
+    return await auth_routes.check_nickname_available(db, nickname)
 
-    repository = UserRepository(db)
-    await repository.ensure_tables()
-    if await repository.exists_by_nickname(normalized):
-        return UsernameCheckResponse(available=False)
 
-    column_result = await db.execute(
-        text(
-            """
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_schema = 'public'
-              AND table_name = 'users'
-              AND column_name IN ('nickname', 'display_name', 'name')
-            ORDER BY CASE column_name
-              WHEN 'nickname' THEN 1
-              WHEN 'display_name' THEN 2
-              WHEN 'name' THEN 3
-              ELSE 4
-            END
-            LIMIT 1
-            """
-        )
-    )
-    nickname_column = column_result.scalar_one_or_none()
-    if nickname_column is None:
-        return UsernameCheckResponse(available=True)
-
-    duplicate_result = await db.execute(
-        text(
-            f"""
-            SELECT 1
-            FROM users
-            WHERE lower("{nickname_column}") = lower(:nickname)
-            LIMIT 1
-            """
-        ),
-        {"nickname": normalized},
-    )
-    return UsernameCheckResponse(available=duplicate_result.scalar_one_or_none() is None)
+@app.post("/api/auth/login", response_model=LoginResponse)
+async def login(
+    request: LoginRequest,
+    db: AsyncSession = Depends(get_db),
+) -> LoginResponse:
+    return await auth_routes.login_user(db, request)
 
 
 def _require_openweather_key() -> str:
