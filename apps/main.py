@@ -17,7 +17,6 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from adapters.db_health_adapter import DbHealthAdapter
 from adapters.openweather_adapter import CITY_ORDER, WEATHER_CITIES, OpenWeatherAdapter
@@ -108,7 +107,6 @@ class AllForecastsResponse(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    configure_logging()
     try:
         await init_db()
         logger.info("Neon DB 테이블 초기화 완료")
@@ -141,6 +139,10 @@ async def signup(
     request: SignupRequest,
     db: AsyncSession = Depends(get_db),
 ) -> SignupResponse:
+    logger.info(
+        "[AUTH-FLOW][signup][1/main] POST /api/auth/signup username=%s",
+        request.username.strip(),
+    )
     return await auth_routes.signup_user(db, request)
 
 
@@ -165,6 +167,10 @@ async def login(
     request: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ) -> LoginResponse:
+    logger.info(
+        "[AUTH-FLOW][login][1/main] POST /api/auth/login username=%s",
+        request.username.strip(),
+    )
     return await auth_routes.login_user(db, request)
 
 

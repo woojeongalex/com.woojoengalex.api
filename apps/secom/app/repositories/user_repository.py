@@ -1,14 +1,11 @@
-import logging
-
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from secom.app.auth_flow_log import auth_log
 from secom.app.entities.user_entity import UserEntity
 from secom.app.exceptions import AuthError
 from secom.app.models.user_model import hash_password, verify_password
 from secom.app.schemas.user_schema import LoginResponse, UserSchema
-
-logger = logging.getLogger(__name__)
 
 
 class UserRepository:
@@ -29,9 +26,13 @@ class UserRepository:
     async def save_user(self, user_schema: UserSchema) -> None:
         db = self._require_db()
         username = user_schema.username.strip()
-        if await self.exists_by_username(username):
-            raise AuthError("이미 사용 중인 아이디입니다.")
 
+        if await self._exists(UserEntity.username, username):
+            raise AuthError("이미 사용 중인 아이디입니다.")
+        if await self._exists(UserEntity.nickname, user_schema.nickname):
+            raise AuthError("이미 사용 중인 닉네임입니다.")
+
+        auth_log("signup", "5/repository", "Neon INSERT users username=%s", username)
         db.add(
             UserEntity(
                 username=username,
@@ -42,30 +43,27 @@ class UserRepository:
             )
         )
         await db.commit()
-        logger.info("[UserRepository] save_user — username=%s", username)
+        auth_log("signup", "5/repository", "Neon commit 완료 username=%s", username)
 
     async def exists_by_username(self, username: str) -> bool:
-        found = await self._exists(UserEntity.username, username)
-        logger.info("[UserRepository] exists_by_username — %s exists=%s", username.strip(), found)
-        return found
+        return await self._exists(UserEntity.username, username)
 
     async def exists_by_nickname(self, nickname: str) -> bool:
-        found = await self._exists(UserEntity.nickname, nickname)
-        logger.info("[UserRepository] exists_by_nickname — %s exists=%s", nickname.strip(), found)
-        return found
+        return await self._exists(UserEntity.nickname, nickname)
 
     async def login(self, username: str, password: str) -> LoginResponse:
         normalized = username.strip()
+        auth_log("login", "5/repository", "Neon SELECT users username=%s", normalized)
+
         stmt = select(UserEntity).where(
             func.lower(UserEntity.username) == normalized.lower()
         )
         row = (await self._require_db().execute(stmt)).scalar_one_or_none()
 
         if row is None or not verify_password(password, row.password_hash):
-            logger.info("[UserRepository] login 실패 — username=%s", normalized)
             raise AuthError("아이디 또는 비밀번호가 올바르지 않습니다.")
 
-        logger.info("[UserRepository] login 성공 — username=%s", row.username)
+        auth_log("login", "5/repository", "검증 성공 username=%s", row.username)
         return LoginResponse(
             ok=True,
             message="로그인되었습니다.",

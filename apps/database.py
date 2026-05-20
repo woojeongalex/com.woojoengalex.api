@@ -84,7 +84,6 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
 async def init_db() -> None:
     """등록된 ORM 모델 기준으로 테이블을 생성합니다 (개발·초기 설정용)."""
     logger.info("[database] init_db 시작")
-    session_factory = get_session_factory()
     assert engine is not None
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -13,7 +13,17 @@ def configure_logging() -> None:
     if not any(isinstance(h, logging.StreamHandler) for h in root.handlers):
         root.addHandler(handler)
 
-    for name in ("main", "database", "secom"):
+    for name in (
+        "main",
+        "database",
+        "secom",
+        "secom.app.auth_routes",
+        "secom.app.controllers.user_controller",
+        "secom.app.services.user_service",
+        "secom.app.repositories.user_repository",
+        "secom.app.models.user_model",
+        "secom.app.auth_flow_log",
+    ):
         pkg_logger = logging.getLogger(name)
         pkg_logger.setLevel(logging.INFO)
         pkg_logger.propagate = True
