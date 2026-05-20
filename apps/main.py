@@ -12,18 +12,34 @@ from logging_setup import configure_logging
 
 configure_logging()
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from adapters.db_health_adapter import DbHealthAdapter
 from adapters.openweather_adapter import CITY_ORDER, WEATHER_CITIES, OpenWeatherAdapter
 from database import dispose_engine, get_db, init_db
+import music.app.models.list_model  # noqa: F401
+import music.app.models.result_models  # noqa: F401
+import music.app.models.sing_model  # noqa: F401
+import music.app.models.suggest_model  # noqa: F401
 import secom.app.entities.user_entity  # noqa: F401
 from doro.app.doro_director import DoroDirector
 from matrix.app.keymaker import get_keymaker
+from music.app.controllers.list_controller import ListController
+from music.app.controllers.result_controller import ResultController
+from music.app.controllers.suggest_controller import SuggestController
+from music.app.controllers.video_analysis_controller import VideoAnalysisController
+from music.app.schemas.video_analysis_schema import VideoVocalAnalysisResponse
+from music.app.schemas.list_schema import SongMrSearchResponse
+from music.app.schemas.sing_schema import SingResultCreateRequest, SingResultResponse
+from music.app.schemas.suggest_schema import (
+    VocalRecommendationCreateRequest,
+    VocalRecommendationResponse,
+)
 from secom.app import auth_routes
 from secom.app.schemas.user_schema import (
     LoginRequest,
@@ -172,6 +188,132 @@ async def login(
         request.username.strip(),
     )
     return await auth_routes.login_user(db, request)
+
+
+@app.get("/api/songs/search", response_model=SongMrSearchResponse)
+async def songs_search(
+    q: str = Query(..., min_length=1, description="노래 제목·MR·아티스트 검색어"),
+    db: AsyncSession = Depends(get_db),
+) -> SongMrSearchResponse:
+    logger.info("[MUSIC][search][1/main] GET /api/songs/search q=%s", q.strip())
+    try:
+        result = await ListController(db).search_mr(q)
+        logger.info(
+            "[MUSIC][search][1/main] 완료 q=%s count=%s titles=%s",
+            result.query,
+            result.count,
+            [h.title for h in result.hits],
+        )
+        return result
+    except SQLAlchemyError as exc:
+        logger.exception("[music] GET /api/songs/search DB 오류: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
+        ) from exc
+
+
+@app.post("/api/music/sing-result", response_model=SingResultResponse)
+async def post_sing_result(
+    body: SingResultCreateRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SingResultResponse:
+    logger.info(
+        "[MUSIC][sing][1/main] POST /api/music/sing-result input=%s",
+        body.input_source,
+    )
+    try:
+        return await ResultController(db).save_ai_analysis_result(body)
+    except SQLAlchemyError as exc:
+        logger.exception("[MUSIC][sing][1/main] DB 오류: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
+        ) from exc
+
+
+@app.post("/api/music/vocal-recommendations", response_model=VocalRecommendationResponse)
+async def post_vocal_recommendations(
+    body: VocalRecommendationCreateRequest,
+    db: AsyncSession = Depends(get_db),
+) -> VocalRecommendationResponse:
+    """저장된 보컬 분석(`vocal_sing_results.id`)을 기준으로 추천 장르·곡을 계산해 Neon에 저장."""
+    logger.info(
+        "[MUSIC][suggest][1/main] POST /api/music/vocal-recommendations "
+        "vocalSingResultId=%s",
+        body.vocal_sing_result_id,
+    )
+    try:
+        return await SuggestController(db).create_recommendation(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except SQLAlchemyError as exc:
+        logger.exception("[MUSIC][suggest][1/main] DB 오류: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
+        ) from exc
+
+
+@app.get("/api/music/vocal-recommendations", response_model=VocalRecommendationResponse)
+async def get_vocal_recommendations(
+    vocalSingResultId: int = Query(
+        ...,
+        ge=1,
+        alias="vocalSingResultId",
+        description="vocal_sing_results.id",
+    ),
+    db: AsyncSession = Depends(get_db),
+) -> VocalRecommendationResponse:
+    """해당 분석에 대해 가장 최근에 저장된 추천 배너 데이터 조회."""
+    logger.info(
+        "[MUSIC][suggest][1/main] GET /api/music/vocal-recommendations "
+        "vocalSingResultId=%s",
+        vocalSingResultId,
+    )
+    try:
+        out = await SuggestController(db).get_latest(vocalSingResultId)
+    except SQLAlchemyError as exc:
+        logger.exception("[MUSIC][suggest][1/main] DB 오류: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
+        ) from exc
+    if out is None:
+        raise HTTPException(
+            status_code=404,
+            detail="해당 분석에 대한 추천이 없습니다. 먼저 POST로 생성하세요.",
+        )
+    return out
+
+
+@app.post("/api/music/analyze-video", response_model=VideoVocalAnalysisResponse)
+async def analyze_video_upload(
+    file: UploadFile = File(..., description="노래 부르는 영상 (mp4, mov 등)"),
+) -> VideoVocalAnalysisResponse:
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="파일이 비어 있습니다.")
+    filename = file.filename or "upload.mp4"
+    logger.info(
+        "[MUSIC][video_analysis][1/main] POST /api/music/analyze-video file=%s bytes=%s",
+        filename,
+        len(data),
+    )
+    try:
+        return await asyncio.to_thread(
+            VideoAnalysisController().analyze_video_upload,
+            data,
+            filename,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("[MUSIC][video_analysis][1/main] 분석 실패: %s", exc)
+        raise HTTPException(
+            status_code=502,
+            detail="비디오 분석에 실패했습니다. ffmpeg 설치·파일 형식을 확인하거나 로그를 확인하세요.",
+        ) from exc
 
 
 def _require_openweather_key() -> str:

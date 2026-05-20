@@ -23,6 +23,18 @@ def configure_logging() -> None:
         "secom.app.repositories.user_repository",
         "secom.app.models.user_model",
         "secom.app.auth_flow_log",
+        "music",
+        "music.app.controllers.list_controller",
+        "music.app.services.list_service",
+        "music.app.repositories.list_repository",
+        "music.app.services.video_audio_preprocess",
+        "music.app.services.librosa_vocal_analysis",
+        "music.app.services.emotion_analysis",
+        "music.app.services.video_analysis_service",
+        "music.app.controllers.video_analysis_controller",
+        "music.app.controllers.sing_controller",
+        "music.app.services.sing_service",
+        "music.app.repositories.sing_repository",
     ):
         pkg_logger = logging.getLogger(name)
         pkg_logger.setLevel(logging.INFO)

@@ -33,16 +33,16 @@ class UserRepository:
             raise AuthError("이미 사용 중인 닉네임입니다.")
 
         auth_log("signup", "5/repository", "Neon INSERT users username=%s", username)
-        db.add(
-            UserEntity(
-                username=username,
-                nickname=user_schema.nickname.strip(),
-                email=user_schema.email.strip(),
-                password_hash=hash_password(user_schema.password),
-                role=user_schema.role or "user",
-            )
+        entity = UserEntity(
+            username=username,
+            nickname=user_schema.nickname.strip(),
+            email=user_schema.email.strip(),
+            password_hash=hash_password(user_schema.password),
+            role="user",
         )
+        db.add(entity)
         await db.commit()
+        await db.refresh(entity)
         auth_log("signup", "5/repository", "Neon commit 완료 username=%s", username)
 
     async def exists_by_username(self, username: str) -> bool:

@@ -11,3 +11,8 @@ python-dotenv==1.2.2
 bcrypt==4.2.1
 google-generativeai==0.8.6
 requests==2.32.5
+python-multipart==0.0.29
+numpy==2.4.6
+soundfile==0.13.1
+librosa==0.11.0
+moviepy==2.2.1

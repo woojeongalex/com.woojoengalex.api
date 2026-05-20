@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
+from sqlmodel import SQLModel
 
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(_BACKEND_DIR / ".env")
@@ -82,11 +83,21 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
 
 
 async def init_db() -> None:
-    """등록된 ORM 모델 기준으로 테이블을 생성합니다 (개발·초기 설정용)."""
+    """등록된 ORM 모델 기준으로 테이블을 생성합니다 (개발·초기 설정용).
+
+    lifespan에서 최초로 호출될 때는 아직 HTTP 요청이 없어 `get_db`가 돌지 않았을 수 있어,
+    여기서 `get_session_factory()`로 엔진을 먼저 만든 뒤 `create_all`을 수행한다.
+    """
     logger.info("[database] init_db 시작")
+    get_session_factory()
     assert engine is not None
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        # SQLModel 테이블은 `SQLModel.metadata`에 등록됨 (Declarative `Base`와 별도).
+        def create_all(sync_conn):
+            Base.metadata.create_all(sync_conn)
+            SQLModel.metadata.create_all(sync_conn)
+
+        await conn.run_sync(create_all)
     logger.info("[database] init_db 완료")
 
 
