@@ -6,10 +6,10 @@ from sqlalchemy import Column, DateTime, Integer, String, func
 from sqlmodel import Field, SQLModel
 
 
-class VocalSingResultEntity(SQLModel, table=True):
-    """2단계 마이크·영상 분석 결과 1건 (프론트 스키마 → Neon INSERT)."""
+class SingEvaluationEntity(SQLModel, table=True):
+    """2단계 마이크·영상 보컬 평가 1건 (프론트 스키마 → Neon INSERT)."""
 
-    __tablename__ = "vocal_sing_results"
+    __tablename__ = "sing_evaluations"
 
     model_config = ConfigDict(populate_by_name=True)
 

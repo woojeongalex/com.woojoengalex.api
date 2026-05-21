@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.catalog import VOCAL_CATALOG
-from music.app.models.sing_model import VocalSingResultEntity
+from music.app.models.sing_model import SingEvaluationEntity
 from music.app.models.suggest_model import VocalRecommendationEntity
 from music.app.repositories.suggest_repository import SuggestRepository
 from music.app.schemas.suggest_schema import (
@@ -15,14 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 def _compose_recommendation(
-    result: VocalSingResultEntity,
+    evaluation: SingEvaluationEntity,
 ) -> tuple[list[str], list[str], str]:
     """음정·박자·요약을 바탕으로 장르·곡·발성 설명 생성 (데모 규칙, 이후 ML·LLM으로 교체 가능)."""
-    pitch = result.pitch_score
-    rhythm = result.rhythm_score
-    summary_lower = (result.summary or "").lower()
+    pitch = evaluation.pitch_score
+    rhythm = evaluation.rhythm_score
+    summary_lower = (evaluation.summary or "").lower()
 
-    # 카탈로그에서 제목 2곡 선택 (고정 데모 콘셉과 이미지 예시 정렬)
     titles = [i.title for i in VOCAL_CATALOG]
     night_letter = next((t for t in titles if "밤편지" in t or t == "밤편지"), titles[1])
     defying = next(
@@ -64,16 +63,16 @@ class SuggestService:
     def __init__(self, db: AsyncSession | None = None) -> None:
         self._repository = SuggestRepository(db)
 
-    async def create_from_saved_result(
+    async def create_from_saved_evaluation(
         self, body: VocalRecommendationCreateRequest
     ) -> VocalRecommendationResponse:
-        row = await self._repository.get_sing_result_by_id(body.vocal_sing_result_id)
+        row = await self._repository.get_sing_evaluation_by_id(body.sing_evaluation_id)
         if row is None:
-            raise ValueError("해당 보컬 분석 결과가 없습니다.")
+            raise ValueError("해당 보컬 평가가 없습니다.")
 
         genres, songs, pattern = _compose_recommendation(row)
         entity = VocalRecommendationEntity(
-            vocal_sing_result_id=row.id,
+            sing_evaluation_id=row.id,
             pitch_score_snapshot=row.pitch_score,
             rhythm_score_snapshot=row.rhythm_score,
             vocal_grade_snapshot=row.vocal_grade,
@@ -83,15 +82,15 @@ class SuggestService:
         )
         saved = await self._repository.save_recommendation(entity)
         logger.info(
-            "[MUSIC][suggest][4/service] 추천 저장 id=%s result_id=%s genres=%s",
+            "[MUSIC][suggest][4/service] 추천 저장 id=%s evaluation_id=%s genres=%s",
             saved.id,
-            saved.vocal_sing_result_id,
+            saved.sing_evaluation_id,
             genres,
         )
         return _entity_to_response(saved)
 
-    async def get_latest(self, vocal_sing_result_id: int) -> VocalRecommendationResponse | None:
-        entity = await self._repository.get_latest_by_result_id(vocal_sing_result_id)
+    async def get_latest(self, sing_evaluation_id: int) -> VocalRecommendationResponse | None:
+        entity = await self._repository.get_latest_by_evaluation_id(sing_evaluation_id)
         if entity is None:
             return None
         return _entity_to_response(entity)
@@ -104,7 +103,7 @@ def _entity_to_response(
     songs = [str(x) for x in (e.recommended_songs or [])]
     return VocalRecommendationResponse(
         id=e.id,
-        vocal_sing_result_id=e.vocal_sing_result_id,
+        sing_evaluation_id=e.sing_evaluation_id,
         pitch_score_snapshot=e.pitch_score_snapshot,
         rhythm_score_snapshot=e.rhythm_score_snapshot,
         vocal_grade_snapshot=e.vocal_grade_snapshot,

@@ -2,13 +2,13 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from music.app.models.result_models import AiVocalAnalysisResultEntity
+from music.app.models.evaluation_models import AiVocalAnalysisEvaluationEntity
 
 logger = logging.getLogger(__name__)
 
 
-class ResultRepository:
-    """AI 분석 결과 → Neon `vocal_sing_results` INSERT."""
+class EvaluationRepository:
+    """보컬 평가 → Neon `sing_evaluations` INSERT."""
 
     def __init__(self, db: AsyncSession | None = None) -> None:
         self.db = db
@@ -18,15 +18,15 @@ class ResultRepository:
             raise RuntimeError("DB session is not available.")
         return self.db
 
-    async def save_ai_analysis_result(
-        self, row: AiVocalAnalysisResultEntity
-    ) -> AiVocalAnalysisResultEntity:
+    async def save_evaluation(
+        self, row: AiVocalAnalysisEvaluationEntity
+    ) -> AiVocalAnalysisEvaluationEntity:
         db = self._require_db()
         db.add(row)
         await db.commit()
         await db.refresh(row)
         logger.info(
-            "[MUSIC][result][5/repository] Neon INSERT vocal_sing_results id=%s input=%s",
+            "[MUSIC][evaluation][5/repository] Neon INSERT sing_evaluations id=%s input=%s",
             row.id,
             row.input_source,
         )

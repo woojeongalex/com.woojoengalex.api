@@ -23,19 +23,19 @@ from adapters.db_health_adapter import DbHealthAdapter
 from adapters.openweather_adapter import CITY_ORDER, WEATHER_CITIES, OpenWeatherAdapter
 from database import dispose_engine, get_db, init_db
 import music.app.models.list_model  # noqa: F401
-import music.app.models.result_models  # noqa: F401
+import music.app.models.evaluation_models  # noqa: F401
 import music.app.models.sing_model  # noqa: F401
 import music.app.models.suggest_model  # noqa: F401
 import secom.app.entities.user_entity  # noqa: F401
 from doro.app.doro_director import DoroDirector
 from matrix.app.keymaker import get_keymaker
 from music.app.controllers.list_controller import ListController
-from music.app.controllers.result_controller import ResultController
+from music.app.controllers.evaluation_controller import EvaluationController
 from music.app.controllers.suggest_controller import SuggestController
 from music.app.controllers.video_analysis_controller import VideoAnalysisController
 from music.app.schemas.video_analysis_schema import VideoVocalAnalysisResponse
 from music.app.schemas.list_schema import SongMrSearchResponse
-from music.app.schemas.sing_schema import SingResultCreateRequest, SingResultResponse
+from music.app.schemas.sing_schema import SingEvaluationCreateRequest, SingEvaluationResponse
 from music.app.schemas.suggest_schema import (
     VocalRecommendationCreateRequest,
     VocalRecommendationResponse,
@@ -48,7 +48,8 @@ from secom.app.schemas.user_schema import (
     SignupResponse,
     UsernameCheckResponse,
 )
-from titanic.app.james_controller import JamesController
+from titanic.app.controllers.james_controller import JamesController
+from titanic.app.schemas.titanic_schema import TitanicDatasetSchemaResponse
 
 
 
@@ -213,17 +214,17 @@ async def songs_search(
         ) from exc
 
 
-@app.post("/api/music/sing-result", response_model=SingResultResponse)
-async def post_sing_result(
-    body: SingResultCreateRequest,
+@app.post("/api/music/sing-evaluation", response_model=SingEvaluationResponse)
+async def post_sing_evaluation(
+    body: SingEvaluationCreateRequest,
     db: AsyncSession = Depends(get_db),
-) -> SingResultResponse:
+) -> SingEvaluationResponse:
     logger.info(
-        "[MUSIC][sing][1/main] POST /api/music/sing-result input=%s",
+        "[MUSIC][sing][1/main] POST /api/music/sing-evaluation input=%s",
         body.input_source,
     )
     try:
-        return await ResultController(db).save_ai_analysis_result(body)
+        return await EvaluationController(db).save_evaluation(body)
     except SQLAlchemyError as exc:
         logger.exception("[MUSIC][sing][1/main] DB 오류: %s", exc)
         raise HTTPException(
@@ -237,11 +238,11 @@ async def post_vocal_recommendations(
     body: VocalRecommendationCreateRequest,
     db: AsyncSession = Depends(get_db),
 ) -> VocalRecommendationResponse:
-    """저장된 보컬 분석(`vocal_sing_results.id`)을 기준으로 추천 장르·곡을 계산해 Neon에 저장."""
+    """저장된 보컬 평가(`sing_evaluations.id`)을 기준으로 추천 장르·곡을 계산해 Neon에 저장."""
     logger.info(
         "[MUSIC][suggest][1/main] POST /api/music/vocal-recommendations "
-        "vocalSingResultId=%s",
-        body.vocal_sing_result_id,
+        "singEvaluationId=%s",
+        body.sing_evaluation_id,
     )
     try:
         return await SuggestController(db).create_recommendation(body)
@@ -257,22 +258,22 @@ async def post_vocal_recommendations(
 
 @app.get("/api/music/vocal-recommendations", response_model=VocalRecommendationResponse)
 async def get_vocal_recommendations(
-    vocalSingResultId: int = Query(
+    singEvaluationId: int = Query(
         ...,
         ge=1,
-        alias="vocalSingResultId",
-        description="vocal_sing_results.id",
+        alias="singEvaluationId",
+        description="sing_evaluations.id",
     ),
     db: AsyncSession = Depends(get_db),
 ) -> VocalRecommendationResponse:
-    """해당 분석에 대해 가장 최근에 저장된 추천 배너 데이터 조회."""
+    """해당 평가에 대해 가장 최근에 저장된 추천 배너 데이터 조회."""
     logger.info(
         "[MUSIC][suggest][1/main] GET /api/music/vocal-recommendations "
-        "vocalSingResultId=%s",
-        vocalSingResultId,
+        "singEvaluationId=%s",
+        singEvaluationId,
     )
     try:
-        out = await SuggestController(db).get_latest(vocalSingResultId)
+        out = await SuggestController(db).get_latest(singEvaluationId)
     except SQLAlchemyError as exc:
         logger.exception("[MUSIC][suggest][1/main] DB 오류: %s", exc)
         raise HTTPException(
@@ -622,11 +623,16 @@ def read_titanic_tree():
     return {"tree": tree}
 
 
+@app.get("/titanic/schema", response_model=TitanicDatasetSchemaResponse)
+def read_titanic_schema() -> TitanicDatasetSchemaResponse:
+    """데이터셋 컬럼 설명·ML 피처 목록."""
+    return JamesController().get_dataset_schema()
+
+
 @app.get("/titanic/model")
 def read_titanic_model():
-    controller = JamesController()
-    model_name = controller.get_model_name_and_accuracy()
-    return JSONResponse(content=jsonable_encoder(model_name))
+    metrics = JamesController().get_model_name_and_accuracy()
+    return JSONResponse(content=jsonable_encoder(metrics.model_dump()))
 
 
 @app.get("/doro/data")

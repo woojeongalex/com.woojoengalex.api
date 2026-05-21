@@ -19,12 +19,12 @@ class SuggestController:
         self, body: VocalRecommendationCreateRequest
     ) -> VocalRecommendationResponse:
         logger.info(
-            "[MUSIC][suggest][2/controller] → service vocalSingResultId=%s",
-            body.vocal_sing_result_id,
+            "[MUSIC][suggest][2/controller] → service singEvaluationId=%s",
+            body.sing_evaluation_id,
         )
-        return await self._service.create_from_saved_result(body)
+        return await self._service.create_from_saved_evaluation(body)
 
     async def get_latest(
-        self, vocal_sing_result_id: int
+        self, sing_evaluation_id: int
     ) -> VocalRecommendationResponse | None:
-        return await self._service.get_latest(vocal_sing_result_id)
+        return await self._service.get_latest(sing_evaluation_id)

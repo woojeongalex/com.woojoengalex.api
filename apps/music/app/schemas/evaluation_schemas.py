@@ -13,7 +13,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class AiVocalAnalysisResultCreateRequest(BaseModel):
+class VocalEvaluationCreateRequest(BaseModel):
     """클라이언트 → 서버 (camelCase 허용). 필드 선언 순서는 화면 카드 순서와 동일."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -57,7 +57,7 @@ class AiVocalAnalysisResultCreateRequest(BaseModel):
     duration_sec: int = Field(default=0, ge=0, alias="durationSec")
 
 
-class AiVocalAnalysisResultResponse(BaseModel):
-    id: int = Field(description="vocal_sing_results.id")
+class VocalEvaluationResponse(BaseModel):
+    id: int = Field(description="sing_evaluations.id")
     ok: bool = True
     message: str = "저장되었습니다."

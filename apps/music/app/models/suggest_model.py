@@ -1,4 +1,4 @@
-"""분석 결과 기반 장르·곡 추천 (`vocal_recommendations`)."""
+"""보컬 평가 기반 장르·곡 추천 (`vocal_recommendations`)."""
 
 from datetime import datetime
 from typing import Any, Optional
@@ -9,7 +9,7 @@ from sqlmodel import Field, SQLModel
 
 
 class VocalRecommendationEntity(SQLModel, table=True):
-    """보컬 분석 1건(`vocal_sing_results`)에 대한 추천 장르·곡 스냅샷."""
+    """보컬 평가 1건(`sing_evaluations`)에 대한 추천 장르·곡 스냅샷."""
 
     __tablename__ = "vocal_recommendations"
 
@@ -17,14 +17,14 @@ class VocalRecommendationEntity(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    vocal_sing_result_id: int = Field(
+    sing_evaluation_id: int = Field(
         sa_column=Column(
             Integer,
-            ForeignKey("vocal_sing_results.id", ondelete="CASCADE"),
+            ForeignKey("sing_evaluations.id", ondelete="CASCADE"),
             nullable=False,
             index=True,
         ),
-        description="FK → vocal_sing_results.id",
+        description="FK → sing_evaluations.id",
     )
 
     pitch_score_snapshot: int = Field(description="분석 당시 음정 점수(스냅샷)")
