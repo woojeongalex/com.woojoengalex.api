@@ -5,7 +5,7 @@
 2) 박자 정확도 (rhythm_score)
 3) AI 피드백 등급 (vocal_grade)
 4) 요약 텍스트 (summary)
-5) MR 연결·입력 메타 (catalog_song_id, mr_search_list_id, input_source, file_name, duration_sec)
+5) MR·곡 맥락 + 입력 메타 (catalog_song_id, mr_search_list_id → USER_VOCAL_RECORDING, input_source, file_name, duration_sec)
 """
 
 from typing import Literal
@@ -41,13 +41,13 @@ class VocalEvaluationCreateRequest(BaseModel):
         default=None,
         max_length=64,
         alias="catalogSongId",
-        description="선택 곡 catalog_song_id (MR 미선택 시 null)",
+        description="녹음·분석 시 선택 곡. mrSearchListId 있으면 MR 행 catalog로 정합 → user_vocal_recordings·sing_evaluations",
     )
     mr_search_list_id: int | None = Field(
         default=None,
         ge=1,
         alias="mrSearchListId",
-        description="song_mr_search_lists.id",
+        description="녹음에 사용한 song_mr_search_lists.id (uses_mr 정본)",
     )
     input_source: Literal["mic", "video"] = Field(
         alias="inputSource",

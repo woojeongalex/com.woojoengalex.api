@@ -1,5 +1,6 @@
 import logging
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.models.list_model import SongMrSearchListEntity
@@ -14,6 +15,11 @@ class ListRepository:
         if self.db is None:
             raise RuntimeError("DB session is not available.")
         return self.db
+
+    async def get_by_id(self, mr_id: int) -> SongMrSearchListEntity | None:
+        db = self._require_db()
+        stmt = select(SongMrSearchListEntity).where(SongMrSearchListEntity.id == mr_id)
+        return (await db.execute(stmt)).scalar_one_or_none()
 
     async def save_search_results(
         self, rows: list[SongMrSearchListEntity]

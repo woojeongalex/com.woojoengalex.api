@@ -23,6 +23,8 @@ from adapters.db_health_adapter import DbHealthAdapter
 from adapters.openweather_adapter import CITY_ORDER, WEATHER_CITIES, OpenWeatherAdapter
 from database import dispose_engine, get_db, init_db
 import music.app.models.list_model  # noqa: F401
+import music.app.models.ai_vocal_analysis_model  # noqa: F401
+import music.app.models.user_vocal_recording_model  # noqa: F401
 import music.app.models.evaluation_models  # noqa: F401
 import music.app.models.sing_model  # noqa: F401
 import music.app.models.suggest_model  # noqa: F401
@@ -225,6 +227,8 @@ async def post_sing_evaluation(
     )
     try:
         return await EvaluationController(db).save_evaluation(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except SQLAlchemyError as exc:
         logger.exception("[MUSIC][sing][1/main] DB 오류: %s", exc)
         raise HTTPException(
