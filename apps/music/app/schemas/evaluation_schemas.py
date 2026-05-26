@@ -1,11 +1,9 @@
 """
-분석 화면 3단계(음정·박자·AI 피드백) ↔ API ↔ DB 필드 순서.
+분석 화면 3단계 ↔ API 요청 순서.
 
-1) 음정 정확도 (pitch_score)
-2) 박자 정확도 (rhythm_score)
-3) AI 피드백 등급 (vocal_grade)
-4) 요약 텍스트 (summary)
-5) MR·곡 맥락 + 입력 메타 (catalog_song_id, mr_search_list_id → USER_VOCAL_RECORDING, input_source, file_name, duration_sec)
+1) 음정·박자·등급·요약 → `ai_vocal_analyses` 에만 저장
+2) 입력 메타 · MR·카탈로그 맥락 → `user_vocal_recordings`
+3) 세션 허브 → `sing_evaluations` (user_id 시각 등만; 점수·곡 중복 없음)
 """
 
 from typing import Literal
@@ -41,7 +39,7 @@ class VocalEvaluationCreateRequest(BaseModel):
         default=None,
         max_length=64,
         alias="catalogSongId",
-        description="녹음·분석 시 선택 곡. mrSearchListId 있으면 MR 행 catalog로 정합 → user_vocal_recordings·sing_evaluations",
+        description="선택 곡. mrSearchListId 있으면 MR 행 catalog로 정합 → user_vocal_recordings",
     )
     mr_search_list_id: int | None = Field(
         default=None,

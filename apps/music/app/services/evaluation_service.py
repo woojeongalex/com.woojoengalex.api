@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class EvaluationService:
-    """3단계 AI 평가 스키마 순서대로 엔티티에 매핑 후 저장."""
+    """평가 요청을 세션(허브) → 녹음 → AI 분석으로 분리 저장 (3NF)."""
 
     def __init__(self, db: AsyncSession | None = None) -> None:
         self._repository = EvaluationRepository(db)
@@ -58,21 +58,9 @@ class EvaluationService:
         engine = "librosa" if body.input_source == "video" else "mic_demo"
 
         file_name = body.file_name or ""
-        # 로그인 연동 후 API에서 user_id 전달 시 세션·녹음 행에 동일 값 설정
         user_id: int | None = None
 
-        evaluation = SingEvaluationEntity(
-            user_id=user_id,
-            catalog_song_id=catalog_song_id,
-            mr_search_list_id=mr_search_list_id,
-            input_source=body.input_source,
-            pitch_score=body.pitch_score,
-            rhythm_score=body.rhythm_score,
-            vocal_grade=body.vocal_grade,
-            summary=body.summary,
-            file_name=file_name,
-            duration_sec=body.duration_sec,
-        )
+        evaluation = SingEvaluationEntity(user_id=user_id)
         vocal_recording = UserVocalRecordingEntity(
             sing_evaluation_id=0,
             user_id=user_id,

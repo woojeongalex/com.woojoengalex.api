@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class SingRepository:
-    """보컬 평가 → Neon `sing_evaluations` INSERT."""
+    """레거시: 단건 sesssion INSERT. 현재 플로우는 EvaluationRepository 번들."""
 
     def __init__(self, db: AsyncSession | None = None) -> None:
         self.db = db
@@ -26,8 +26,7 @@ class SingRepository:
         await db.commit()
         await db.refresh(row)
         logger.info(
-            "[MUSIC][sing][5/repository] Neon INSERT sing_evaluations id=%s input=%s",
+            "[MUSIC][sing][5/repository] Neon INSERT sing_evaluations id=%s",
             row.id,
-            row.input_source,
         )
         return row

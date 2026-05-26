@@ -1,15 +1,15 @@
-"""보컬 평가 기반 장르·곡 추천 (`vocal_recommendations`)."""
+"""보컬 평가 기반 장르·곡 추천 (`vocal_recommendations`). 점수 스냅샷 컬럼 제거 → AI 행 FK (3NF)."""
 
 from datetime import datetime
 from typing import Any, Optional
 
 from pydantic import ConfigDict
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, func
 from sqlmodel import Field, SQLModel
 
 
 class VocalRecommendationEntity(SQLModel, table=True):
-    """보컬 평가 1건(`sing_evaluations`)에 대한 추천 장르·곡 스냅샷."""
+    """평가 세션 1건에 대한 추천. 표시용 점수는 `ai_vocal_analyses`에서 조인."""
 
     __tablename__ = "vocal_recommendations"
 
@@ -26,10 +26,16 @@ class VocalRecommendationEntity(SQLModel, table=True):
         ),
         description="FK → sing_evaluations.id",
     )
+    ai_vocal_analysis_id: int = Field(
+        sa_column=Column(
+            Integer,
+            ForeignKey("ai_vocal_analyses.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+        description="FK → 분석 결과 (추천 생성 시점의 정본 참조)",
+    )
 
-    pitch_score_snapshot: int = Field(description="분석 당시 음정 점수(스냅샷)")
-    rhythm_score_snapshot: int = Field(description="분석 당시 박자 점수(스냅샷)")
-    vocal_grade_snapshot: str = Field(max_length=32, description="등급 스냅샷")
     vocalization_pattern: str = Field(
         max_length=1024,
         description="음정·박자·발성 기준 요약(배너 설명문)",

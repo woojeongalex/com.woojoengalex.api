@@ -16,9 +16,18 @@ class VocalRecommendationResponse(BaseModel):
 
     id: int = Field(description="vocal_recommendations.id")
     sing_evaluation_id: int = Field(alias="singEvaluationId")
-    pitch_score_snapshot: int = Field(alias="pitchScoreSnapshot")
-    rhythm_score_snapshot: int = Field(alias="rhythmScoreSnapshot")
-    vocal_grade_snapshot: str = Field(alias="vocalGradeSnapshot")
+    pitch_score_snapshot: int = Field(
+        alias="pitchScoreSnapshot",
+        description="DB 비저장 · ai_vocal_analyses 조인값",
+    )
+    rhythm_score_snapshot: int = Field(
+        alias="rhythmScoreSnapshot",
+        description="DB 비저장 · ai_vocal_analyses 조인값",
+    )
+    vocal_grade_snapshot: str = Field(
+        alias="vocalGradeSnapshot",
+        description="DB 비저장 · ai_vocal_analyses 조인값",
+    )
     vocalization_pattern: str = Field(alias="vocalizationPattern")
     recommended_genres: list[str] = Field(alias="recommendedGenres")
     recommended_songs: list[str] = Field(alias="recommendedSongs")

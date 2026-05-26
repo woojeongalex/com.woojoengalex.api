@@ -1,3 +1,5 @@
+"""악기 튜닝 평가 세션 허브 — `instrument_evaluations`."""
+
 from datetime import datetime
 from typing import Optional
 
@@ -6,10 +8,8 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
 from sqlmodel import Field, SQLModel
 
 
-class SingEvaluationEntity(SQLModel, table=True):
-    """보컬 평가 세션(허브) 1건. 녹음·MR·카탈로그·점수 정본은 child 테이블에만 둠 (3NF)."""
-
-    __tablename__ = "sing_evaluations"
+class InstrumentEvaluationEntity(SQLModel, table=True):
+    __tablename__ = "instrument_evaluations"
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -22,7 +22,6 @@ class SingEvaluationEntity(SQLModel, table=True):
             nullable=True,
             index=True,
         ),
-        description="세션 소유자 (평가 대상 아님)",
     )
     created_at: Optional[datetime] = Field(
         default=None,

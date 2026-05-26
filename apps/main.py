@@ -28,6 +28,12 @@ import music.app.models.user_vocal_recording_model  # noqa: F401
 import music.app.models.evaluation_models  # noqa: F401
 import music.app.models.sing_model  # noqa: F401
 import music.app.models.suggest_model  # noqa: F401
+import music.app.models.instrument_evaluation_model  # noqa: F401
+import music.app.models.instrument_recording_model  # noqa: F401
+import music.app.models.instrument_tuning_analysis_model  # noqa: F401
+import music.app.models.speech_evaluation_model  # noqa: F401
+import music.app.models.speech_recording_model  # noqa: F401
+import music.app.models.speech_feedback_analysis_model  # noqa: F401
 import secom.app.entities.user_entity  # noqa: F401
 from doro.app.doro_director import DoroDirector
 from matrix.app.keymaker import get_keymaker
@@ -35,12 +41,24 @@ from music.app.controllers.list_controller import ListController
 from music.app.controllers.evaluation_controller import EvaluationController
 from music.app.controllers.suggest_controller import SuggestController
 from music.app.controllers.video_analysis_controller import VideoAnalysisController
+from music.app.services.instrument_service import InstrumentService
+from music.app.services.speech_service import SpeechService
 from music.app.schemas.video_analysis_schema import VideoVocalAnalysisResponse
 from music.app.schemas.list_schema import SongMrSearchResponse
 from music.app.schemas.sing_schema import SingEvaluationCreateRequest, SingEvaluationResponse
 from music.app.schemas.suggest_schema import (
     VocalRecommendationCreateRequest,
     VocalRecommendationResponse,
+)
+from music.app.schemas.instrument_schemas import (
+    InstrumentCatalogResponse,
+    InstrumentEvaluationCreateRequest,
+    InstrumentEvaluationResponse,
+)
+from music.app.schemas.speech_schemas import (
+    SpeechEvaluationCreateRequest,
+    SpeechEvaluationResponse,
+    SpeechTopicsResponse,
 )
 from secom.app import auth_routes
 from secom.app.schemas.user_schema import (
@@ -210,6 +228,55 @@ async def songs_search(
         return result
     except SQLAlchemyError as exc:
         logger.exception("[music] GET /api/songs/search DB 오류: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
+        ) from exc
+
+
+@app.get("/api/music/instrument-catalog", response_model=InstrumentCatalogResponse)
+async def get_instrument_catalog(
+    q: str = Query("", description="악기 검색어"),
+) -> InstrumentCatalogResponse:
+    return InstrumentService(None).list_catalog(q)
+
+
+@app.post(
+    "/api/music/instrument-evaluation",
+    response_model=InstrumentEvaluationResponse,
+)
+async def post_instrument_evaluation(
+    body: InstrumentEvaluationCreateRequest,
+    db: AsyncSession = Depends(get_db),
+) -> InstrumentEvaluationResponse:
+    try:
+        return await InstrumentService(db).save_evaluation(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except SQLAlchemyError as exc:
+        logger.exception("[MUSIC][instrument] DB 오류: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
+        ) from exc
+
+
+@app.get("/api/music/speech-topics", response_model=SpeechTopicsResponse)
+async def get_speech_topics() -> SpeechTopicsResponse:
+    return SpeechService(None).list_topics()
+
+
+@app.post("/api/music/speech-evaluation", response_model=SpeechEvaluationResponse)
+async def post_speech_evaluation(
+    body: SpeechEvaluationCreateRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SpeechEvaluationResponse:
+    try:
+        return await SpeechService(db).save_evaluation(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except SQLAlchemyError as exc:
+        logger.exception("[MUSIC][speech] DB 오류: %s", exc)
         raise HTTPException(
             status_code=503,
             detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",

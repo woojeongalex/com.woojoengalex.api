@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.catalog import VOCAL_CATALOG
-from music.app.models.sing_model import SingEvaluationEntity
+from music.app.models.ai_vocal_analysis_model import AiVocalAnalysisEntity
 from music.app.models.suggest_model import VocalRecommendationEntity
 from music.app.repositories.suggest_repository import SuggestRepository
 from music.app.schemas.suggest_schema import (
@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 def _compose_recommendation(
-    evaluation: SingEvaluationEntity,
+    ai: AiVocalAnalysisEntity,
 ) -> tuple[list[str], list[str], str]:
-    """음정·박자·요약을 바탕으로 장르·곡·발성 설명 생성 (데모 규칙, 이후 ML·LLM으로 교체 가능)."""
-    pitch = evaluation.pitch_score
-    rhythm = evaluation.rhythm_score
-    summary_lower = (evaluation.summary or "").lower()
+    """음정·박자·요약을 바탕으로 장르·곡·발성 설명 생성 (데모 규칙)."""
+    pitch = ai.pitch_score
+    rhythm = ai.rhythm_score
+    summary_lower = (ai.summary or "").lower()
 
     titles = [i.title for i in VOCAL_CATALOG]
     night_letter = next((t for t in titles if "밤편지" in t or t == "밤편지"), titles[1])
@@ -70,12 +70,16 @@ class SuggestService:
         if row is None:
             raise ValueError("해당 보컬 평가가 없습니다.")
 
-        genres, songs, pattern = _compose_recommendation(row)
+        ai = await self._repository.get_ai_analysis_for_sing_evaluation(row.id)
+        if ai is None:
+            raise ValueError("해당 평가에 대한 AI 분석 결과가 없습니다.")
+
+        genres, songs, pattern = _compose_recommendation(ai)
+        if ai.id is None:
+            raise ValueError("AI 분석 행 id가 없습니다.")
         entity = VocalRecommendationEntity(
             sing_evaluation_id=row.id,
-            pitch_score_snapshot=row.pitch_score,
-            rhythm_score_snapshot=row.rhythm_score,
-            vocal_grade_snapshot=row.vocal_grade,
+            ai_vocal_analysis_id=ai.id,
             vocalization_pattern=pattern,
             recommended_genres=genres,
             recommended_songs=songs,
@@ -87,26 +91,35 @@ class SuggestService:
             saved.sing_evaluation_id,
             genres,
         )
-        return _entity_to_response(saved)
+        return await _entity_to_response(self._repository, saved)
 
     async def get_latest(self, sing_evaluation_id: int) -> VocalRecommendationResponse | None:
         entity = await self._repository.get_latest_by_evaluation_id(sing_evaluation_id)
         if entity is None:
             return None
-        return _entity_to_response(entity)
+        return await _entity_to_response(self._repository, entity)
 
 
-def _entity_to_response(
+async def _entity_to_response(
+    repo: SuggestRepository,
     e: VocalRecommendationEntity,
 ) -> VocalRecommendationResponse:
+    ai = await repo.get_ai_analysis_by_id(e.ai_vocal_analysis_id)
+    if ai is None:
+        raise RuntimeError(
+            "vocal_recommendations.ai_vocal_analysis_id 가 가리키는 분석 행을 찾을 수 없습니다."
+        )
     genres = [str(x) for x in (e.recommended_genres or [])]
     songs = [str(x) for x in (e.recommended_songs or [])]
+    pitch = ai.pitch_score
+    rhythm = ai.rhythm_score
+    grade = ai.vocal_grade
     return VocalRecommendationResponse(
         id=e.id,
         sing_evaluation_id=e.sing_evaluation_id,
-        pitch_score_snapshot=e.pitch_score_snapshot,
-        rhythm_score_snapshot=e.rhythm_score_snapshot,
-        vocal_grade_snapshot=e.vocal_grade_snapshot,
+        pitch_score_snapshot=pitch,
+        rhythm_score_snapshot=rhythm,
+        vocal_grade_snapshot=grade,
         vocalization_pattern=e.vocalization_pattern,
         recommended_genres=genres,
         recommended_songs=songs,
