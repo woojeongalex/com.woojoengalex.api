@@ -11,7 +11,7 @@ _VALID_SEX = {"male", "female"}
 _VALID_EMBARKED = {"C", "Q", "S"}
 
 
-class CaledonValidation:
+class ValidationUseCase:
     def __init__(self) -> None:
         pass
 
@@ -40,8 +40,8 @@ class CaledonValidation:
         if missing:
             raise ValueError(f"학습 데이터에 필수 컬럼이 없습니다: {sorted(missing)}")
 
-        if not df[ML_TARGET_COLUMN].apply(CaledonValidation.validate_survived).all():
+        if not df[ML_TARGET_COLUMN].apply(ValidationUseCase.validate_survived).all():
             raise ValueError(f"{ML_TARGET_COLUMN} 값은 0 또는 1이어야 합니다.")
 
-        if "Sex" in df.columns and not df["Sex"].apply(CaledonValidation.validate_sex).all():
+        if "Sex" in df.columns and not df["Sex"].apply(ValidationUseCase.validate_sex).all():
             raise ValueError("Sex 값은 male 또는 female이어야 합니다.")

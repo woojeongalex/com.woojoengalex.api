@@ -95,6 +95,6 @@ EXTRA_CSV_COLUMNS: tuple[ColumnSpec, ...] = (
     },
 )
 
-# 결정 트리 학습에 사용하는 피처 (JackService)
+# 결정 트리 학습에 사용하는 피처 (TrainUseCase)
 ML_FEATURE_COLUMNS: tuple[str, ...] = ("Pclass", "Sex", "Age", "Fare")
 ML_TARGET_COLUMN: str = "Survived"

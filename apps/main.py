@@ -13,9 +13,7 @@ from logging_setup import configure_logging
 configure_logging()
 
 from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
-from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,7 +33,6 @@ import music.app.models.speech_evaluation_model  # noqa: F401
 import music.app.models.speech_recording_model  # noqa: F401
 import music.app.models.speech_feedback_analysis_model  # noqa: F401
 import secom.app.entities.user_entity  # noqa: F401
-from doro.app.doro_director import DoroDirector
 from matrix.app.keymaker import get_keymaker
 from music.app.controllers.list_controller import ListController
 from music.app.controllers.evaluation_controller import EvaluationController
@@ -68,10 +65,7 @@ from secom.app.schemas.user_schema import (
     SignupResponse,
     UsernameCheckResponse,
 )
-from titanic.app.controllers.james_controller import JamesController
-from titanic.app.schemas.titanic_schema import TitanicDatasetSchemaResponse
-
-
+from titanic.adapter.inbound.api.v1.titanic_query_router import titanic_query_router
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +158,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(titanic_query_router)
 
 
 @app.get("/")
@@ -655,63 +651,6 @@ def chat(req: ChatRequest) -> ChatResponse:
 async def check_db(db: AsyncSession = Depends(get_db)):
     return await DbHealthAdapter.neon_time_check(db)
 
-
-@app.get("/titanic/data")
-def read_titanic_data():
-    james = JamesController()
-    df = james.get_data()
-
-    return df.to_dict(orient="records")
-
-
-@app.get("/titanic/count")
-def read_titanic_count():
-    james = JamesController()
-    count = james.get_count()
-
-    return {"count": count}
-
-
-@app.get("/titanic/count/survived")
-def read_titanic_survived_count():
-    james = JamesController()
-    count = james.get_survived_count()
-    return {"survived_count": count}
-
-
-@app.get("/titanic/count/dead")
-def read_titanic_dead_count():
-    james = JamesController()
-    count = james.get_dead_count()
-    return {"dead_count": count}
-
-
-@app.get("/titanic/tree")
-def read_titanic_tree():
-    james = JamesController()
-    tree = james.has_decision_tree_model()
-
-    return {"tree": tree}
-
-
-@app.get("/titanic/schema", response_model=TitanicDatasetSchemaResponse)
-def read_titanic_schema() -> TitanicDatasetSchemaResponse:
-    """데이터셋 컬럼 설명·ML 피처 목록."""
-    return JamesController().get_dataset_schema()
-
-
-@app.get("/titanic/model")
-def read_titanic_model():
-    metrics = JamesController().get_model_name_and_accuracy()
-    return JSONResponse(content=jsonable_encoder(metrics.model_dump()))
-
-
-@app.get("/doro/data")
-def read_doro_data():
-    doro_director = DoroDirector()
-    df = doro_director.get_data()
-
-    return df.to_dict(orient="records")
 
 #회원가입
 

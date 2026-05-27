@@ -4,7 +4,6 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from titanic.app.models.rose_model import RoseModel
-from titanic.app.repositories.walter_repository import WalterRepository
 from titanic.app.schemas.dataset_columns import (
     EXTRA_CSV_COLUMNS,
     ML_FEATURE_COLUMNS,
@@ -16,32 +15,33 @@ from titanic.app.schemas.titanic_schema import (
     TitanicDatasetSchemaResponse,
     TitanicModelMetricsResponse,
 )
-from titanic.app.validators.caledon_validation import CaledonValidation
+from titanic.app.use_cases.reader_use_case import ReaderUseCase
+from titanic.app.use_cases.validation_use_case import ValidationUseCase
 
 logger = logging.getLogger(__name__)
 
 
-class JackService:
+class TrainUseCase:
     _RANDOM_STATE = 42
     _accuracy: float | None = None
     _model_name: str | None = None
 
     def __init__(self) -> None:
-        self._repository = WalterRepository()
+        self._reader = ReaderUseCase()
         self._rose = RoseModel()
-        self._validation = CaledonValidation()
+        self._validation = ValidationUseCase()
 
     def get_data(self) -> pd.DataFrame:
-        return self._repository.get_sample_row()
+        return self._reader.get_sample_row()
 
     def get_count(self) -> int:
-        return self._repository.get_passenger_count()
+        return self._reader.get_passenger_count()
 
     def get_survived_count(self) -> int:
-        return self._repository.get_survived_count()
+        return self._reader.get_survived_count()
 
     def get_dead_count(self) -> int:
-        return self._repository.get_dead_count()
+        return self._reader.get_dead_count()
 
     def has_decision_tree_model(self) -> bool:
         return self._rose.model is not None
@@ -55,8 +55,8 @@ class JackService:
         )
 
     def get_model_name_and_accuracy(self) -> TitanicModelMetricsResponse:
-        if JackService._accuracy is None:
-            df = self._repository.get_full_data()
+        if TrainUseCase._accuracy is None:
+            df = self._reader.get_full_data()
             df = df[list(ML_FEATURE_COLUMNS) + [ML_TARGET_COLUMN]].copy()
             self._validation.validate_training_frame(df)
 
@@ -74,15 +74,15 @@ class JackService:
             )
             self._rose.model.fit(X_train, y_train)
 
-            JackService._accuracy = float(self._rose.model.score(X_test, y_test))
-            JackService._model_name = self._rose.get_model_name()
+            TrainUseCase._accuracy = float(self._rose.model.score(X_test, y_test))
+            TrainUseCase._model_name = self._rose.get_model_name()
             logger.info(
-                "[TITANIC][jack][4/service] 모델 학습 완료 name=%s accuracy=%.4f",
-                JackService._model_name,
-                JackService._accuracy,
+                "[TITANIC][train][use_case] 모델 학습 완료 name=%s accuracy=%.4f",
+                TrainUseCase._model_name,
+                TrainUseCase._accuracy,
             )
 
         return TitanicModelMetricsResponse(
-            model_name=JackService._model_name or "",
-            accuracy=JackService._accuracy or 0.0,
+            model_name=TrainUseCase._model_name or "",
+            accuracy=TrainUseCase._accuracy or 0.0,
         )
