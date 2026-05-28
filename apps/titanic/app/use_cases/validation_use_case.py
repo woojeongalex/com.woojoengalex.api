@@ -4,7 +4,10 @@ from typing import Any
 
 import pandas as pd
 
-from titanic.app.schemas.dataset_columns import ML_FEATURE_COLUMNS, ML_TARGET_COLUMN
+from titanic.adapter.inbound.api.schemas.dataset_columns import (
+    ML_FEATURE_COLUMNS,
+    ML_TARGET_COLUMN,
+)
 
 _VALID_SURVIVED = {0, 1}
 _VALID_SEX = {"male", "female"}

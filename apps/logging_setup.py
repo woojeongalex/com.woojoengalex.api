@@ -4,13 +4,20 @@ import sys
 
 def configure_logging() -> None:
     """터미널에 secom·main 로그가 보이도록 설정합니다."""
-    formatter = logging.Formatter("%(levelname)s [%(name)s] %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)s [%(name)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
 
     root = logging.getLogger()
     root.setLevel(logging.INFO)
-    if not any(isinstance(h, logging.StreamHandler) for h in root.handlers):
+    stream_handlers = [h for h in root.handlers if isinstance(h, logging.StreamHandler)]
+    if stream_handlers:
+        for stream_handler in stream_handlers:
+            stream_handler.setFormatter(formatter)
+    else:
         root.addHandler(handler)
 
     for name in (
@@ -35,6 +42,17 @@ def configure_logging() -> None:
         "music.app.controllers.sing_controller",
         "music.app.services.sing_service",
         "music.app.repositories.sing_repository",
+        "titanic",
+        "titanic.app.titanic_flow_log",
+        "titanic.adapter.inbound.api.v1.james_router",
+        "titanic.app.ports.input.james_use_case",
+        "titanic.app.ports.output.james_repository",
+        "titanic.adapter.outbound.pg.james_pg_repository",
+        "titanic.adapter.inbound.api.v1.walter_router",
+        "titanic.app.use_cases.walter_query",
+        "titanic.app.use_cases.walter_use_case",
+        "titanic.app.ports.output.walter_repository",
+        "titanic.adapter.outbound.pg.walter_pg_repository",
     ):
         pkg_logger = logging.getLogger(name)
         pkg_logger.setLevel(logging.INFO)

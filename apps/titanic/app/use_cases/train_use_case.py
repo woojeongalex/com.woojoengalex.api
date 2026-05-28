@@ -3,20 +3,20 @@ import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from titanic.app.models.rose_model import RoseModel
-from titanic.app.schemas.dataset_columns import (
+from titanic.app.use_cases.rose_query import RoseQuery
+from titanic.adapter.inbound.api.schemas.dataset_columns import (
     EXTRA_CSV_COLUMNS,
     ML_FEATURE_COLUMNS,
     ML_TARGET_COLUMN,
     TITANIC_COLUMN_SPECS,
 )
-from titanic.app.schemas.titanic_schema import (
+from titanic.adapter.inbound.api.schemas.titanic_schema import (
     TitanicColumnInfo,
     TitanicDatasetSchemaResponse,
     TitanicModelMetricsResponse,
 )
-from titanic.app.use_cases.reader_use_case import ReaderUseCase
 from titanic.app.use_cases.validation_use_case import ValidationUseCase
+from titanic.app.use_cases.walter_query import WalterUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ class TrainUseCase:
     _model_name: str | None = None
 
     def __init__(self) -> None:
-        self._reader = ReaderUseCase()
-        self._rose = RoseModel()
+        self._reader = WalterUseCase()
+        self._rose_query = RoseQuery()
         self._validation = ValidationUseCase()
 
     def get_data(self) -> pd.DataFrame:
@@ -44,7 +44,7 @@ class TrainUseCase:
         return self._reader.get_dead_count()
 
     def has_decision_tree_model(self) -> bool:
-        return self._rose.model is not None
+        return self._rose_query.model is not None
 
     def get_dataset_schema(self) -> TitanicDatasetSchemaResponse:
         specs = TITANIC_COLUMN_SPECS + EXTRA_CSV_COLUMNS
@@ -72,10 +72,10 @@ class TrainUseCase:
                 test_size=0.2,
                 random_state=self._RANDOM_STATE,
             )
-            self._rose.model.fit(X_train, y_train)
+            self._rose_query.model.fit(X_train, y_train)
 
-            TrainUseCase._accuracy = float(self._rose.model.score(X_test, y_test))
-            TrainUseCase._model_name = self._rose.get_model_name()
+            TrainUseCase._accuracy = float(self._rose_query.model.score(X_test, y_test))
+            TrainUseCase._model_name = self._rose_query.get_model_name()
             logger.info(
                 "[TITANIC][train][use_case] 모델 학습 완료 name=%s accuracy=%.4f",
                 TrainUseCase._model_name,
