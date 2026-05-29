@@ -1,13 +1,13 @@
-"""Neon `titanic_passengers` ORM — 업로드 CSV 1행 = 1레코드."""
+"""Neon `titanic_passengers` ORM."""
 
 from datetime import datetime
 from typing import Optional
 
 from pydantic import ConfigDict
-from sqlalchemy import Column, DateTime, String, func
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field, SQLModel
 
-from titanic.adapter.inbound.api.schemas.titanic_request import TitanicCommandRequest
+from titanic.app.dtos.passenger_row import PassengerRowDto
 
 
 class TitanicPassengerOrm(SQLModel, table=True):
@@ -37,21 +37,21 @@ class TitanicPassengerOrm(SQLModel, table=True):
     )
 
     @classmethod
-    def from_command(
+    def from_passenger_row(
         cls,
         source_file: str,
-        command: TitanicCommandRequest,
+        passenger: PassengerRowDto,
     ) -> "TitanicPassengerOrm":
         return cls(
             source_file=source_file,
-            dataset_passenger_id=command.passenger_id,
-            survived=command.survived,
-            pclass=command.pclass,
-            name=command.name,
-            gender=command.gender,
-            age=command.age,
-            sib_sp=command.sib_sp,
-            parch=command.parch,
-            ticket=command.ticket,
-            fare=command.fare,
+            dataset_passenger_id=passenger.passenger_id,
+            survived=passenger.survived,
+            pclass=passenger.pclass,
+            name=passenger.name,
+            gender=passenger.gender,
+            age=passenger.age,
+            sib_sp=passenger.sib_sp,
+            parch=passenger.parch,
+            ticket=passenger.ticket,
+            fare=passenger.fare,
         )

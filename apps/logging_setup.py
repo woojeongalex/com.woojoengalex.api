@@ -45,13 +45,12 @@ def configure_logging() -> None:
         "titanic",
         "titanic.app.titanic_flow_log",
         "titanic.adapter.inbound.api.v1.james_router",
-        "titanic.app.ports.input.james_use_case",
-        "titanic.app.ports.output.james_repository",
+        "titanic.app.factories.titanic_use_case_factory",
+        "titanic.adapter.outbound.factories.pg_titanic_use_case_factory",
+        "titanic.app.use_cases.james_command",
         "titanic.adapter.outbound.pg.james_pg_repository",
         "titanic.adapter.inbound.api.v1.walter_router",
         "titanic.app.use_cases.walter_query",
-        "titanic.app.use_cases.walter_use_case",
-        "titanic.app.ports.output.walter_repository",
         "titanic.adapter.outbound.pg.walter_pg_repository",
     ):
         pkg_logger = logging.getLogger(name)

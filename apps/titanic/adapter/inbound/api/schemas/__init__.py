@@ -5,7 +5,7 @@ from titanic.adapter.inbound.api.schemas.dataset_columns import (
     TITANIC_COLUMN_SPECS,
     ColumnSpec,
 )
-from titanic.adapter.inbound.api.schemas.titanic_request import TitanicCommandRequest
+from titanic.adapter.inbound.api.schemas.titanic_request import PassengerCsvRow
 from titanic.adapter.inbound.api.schemas.titanic_schema import (
     TitanicColumnInfo,
     TitanicCountResponse,
@@ -23,7 +23,7 @@ __all__ = [
     "ML_TARGET_COLUMN",
     "TITANIC_COLUMN_SPECS",
     "TitanicColumnInfo",
-    "TitanicCommandRequest",
+    "PassengerCsvRow",
     "TitanicCountResponse",
     "TitanicDatasetSchemaResponse",
     "TitanicDeadCountResponse",

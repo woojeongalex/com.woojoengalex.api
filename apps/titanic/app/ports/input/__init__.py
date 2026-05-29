@@ -1,4 +1,6 @@
-from titanic.app.ports.input.james_use_case import JamesUseCase, build_james_use_case
-from titanic.app.ports.input.walter_query_port import WalterQueryPort
+"""입력 Port — James(upload), Walter(read)."""
 
-__all__ = ["JamesUseCase", "WalterQueryPort", "build_james_use_case"]
+from titanic.app.ports.input.james_use_case import JamesUseCase
+from titanic.app.ports.input.walter_use_case import WalterUseCase
+
+__all__ = ["JamesUseCase", "WalterUseCase"]

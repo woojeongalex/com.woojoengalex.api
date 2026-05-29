@@ -1,60 +1,47 @@
 import logging
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import delete
 
-from titanic.adapter.inbound.api.schemas.titanic_request import TitanicCommandRequest
 from titanic.adapter.outbound.orm.titanic_passenger_orm import TitanicPassengerOrm
+from titanic.app.dtos.passenger_row import PassengerRowDto
+from titanic.app.ports.output.james_repository_port import JamesRepositoryPort
 from titanic.app.titanic_flow_log import titanic_flow_log
 
 logger = logging.getLogger(__name__)
 
 
-class JamesPgRepository:
-    """PG 어댑터 — CSV row를 Neon `titanic_passengers`에 저장."""
+class JamesPgRepository(JamesRepositoryPort):
+    db: AsyncSession
 
-    def __init__(self, db: AsyncSession) -> None:
-        self._db = db
-
-    async def move_uploaded_rows(
-        self,
-        file_name: str,
-        rows: list[TitanicCommandRequest],
-    ) -> dict[str, object]:
-        entities = [
-            TitanicPassengerOrm.from_command(file_name, row) for row in rows
+    @staticmethod
+    async def save_upload(
+        file_name: str, records: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        passengers = [PassengerRowDto(**row) for row in records]
+        orm_rows = [
+            TitanicPassengerOrm.from_passenger_row(file_name, passenger)
+            for passenger in passengers
         ]
         titanic_flow_log(
             "james-upload",
-            "5/outbound->pg",
-            "replace-mode start file=%s rows=%s",
-            file_name,
-            len(entities),
+            "outbound",
+            "Neon replace rows=%s",
+            len(orm_rows),
+            source_file=file_name,
         )
         try:
-            # 업로드 시점에 기존 누적 데이터를 비우고 현재 파일만 유지.
-            await self._db.execute(delete(TitanicPassengerOrm))
-            self._db.add_all(entities)
-            await self._db.commit()
-        except Exception as exc:
-            await self._db.rollback()
+            await JamesPgRepository.db.execute(delete(TitanicPassengerOrm))
+            JamesPgRepository.db.add_all(orm_rows)
+            await JamesPgRepository.db.commit()
+        except Exception:
+            await JamesPgRepository.db.rollback()
             logger.exception(
-                "[TITANIC-FLOW][james-upload][5/outbound->pg] DB commit 실패 file=%s rows=%s error=%s",
+                "[TITANIC-FLOW][james-upload][outbound] source_file=%s | commit failed rows=%s",
                 file_name,
-                len(entities),
-                exc,
+                len(orm_rows),
             )
             raise
 
-        titanic_flow_log(
-            "james-upload",
-            "5/outbound->pg",
-            "replace-mode commit file=%s saved=%s",
-            file_name,
-            len(entities),
-        )
-        return {
-            "file_name": file_name,
-            "count": len(entities),
-            "rows": [],
-        }
+        return {"file_name": file_name, "count": len(orm_rows)}

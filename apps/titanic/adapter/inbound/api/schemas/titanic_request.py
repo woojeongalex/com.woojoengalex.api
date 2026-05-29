@@ -1,13 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class TitanicCommandRequest(BaseModel):
-    """
-    Titanic 단일 레코드 입력 스키마.
-
-    - 모든 타입은 `str`로 고정합니다.
-    - 데이터셋 컬럼 `Sex`를 API 도메인 필드명 `gender`로 매핑합니다.
-    """
+class PassengerCsvRow(BaseModel):
+    """CSV 1행 — 컬럼명은 Titanic 데이터셋 헤더와 동일."""
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -21,4 +16,3 @@ class TitanicCommandRequest(BaseModel):
     parch: str = Field(alias="Parch")
     ticket: str = Field(alias="Ticket")
     fare: str = Field(alias="Fare")
-

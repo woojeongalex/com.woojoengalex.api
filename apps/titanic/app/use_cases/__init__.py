@@ -1,19 +1,9 @@
-from titanic.app.use_cases.rose_query import RoseQuery
-from titanic.app.use_cases.train_use_case import TrainUseCase
-from titanic.app.use_cases.validation_use_case import ValidationUseCase
-from titanic.app.use_cases.walter_query import (
-    WalterQuery,
-    WalterUseCase,
-    build_walter_use_case,
-    get_walter_query,
-)
+from titanic.app.use_cases.james_command import JamesCommand, JamesCommandImpl
+from titanic.app.use_cases.walter_query import WalterQuery, WalterQueryImpl
 
 __all__ = [
-    "RoseQuery",
+    "JamesCommand",
+    "JamesCommandImpl",
     "WalterQuery",
-    "TrainUseCase",
-    "ValidationUseCase",
-    "WalterUseCase",
-    "build_walter_use_case",
-    "get_walter_query",
+    "WalterQueryImpl",
 ]

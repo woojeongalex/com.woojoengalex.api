@@ -9,6 +9,10 @@ from pathlib import Path
 _APPS_DIR = Path(__file__).resolve().parent
 _BACKEND_DIR = _APPS_DIR.parent
 
+from dotenv import load_dotenv
+
+load_dotenv(_BACKEND_DIR / ".env", override=True)
+
 for _dir in (_APPS_DIR, _BACKEND_DIR):
     _entry = str(_dir)
     if _entry not in sys.path:
