@@ -52,19 +52,19 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
 
 def _register_orm_models() -> None:
     """create_all 전에 모든 SQLModel 테이블 메타데이터를 등록."""
-    import music.app.models.ai_vocal_analysis_model  # noqa: F401
-    import music.app.models.evaluation_models  # noqa: F401
-    import music.app.models.instrument_evaluation_model  # noqa: F401
-    import music.app.models.instrument_recording_model  # noqa: F401
-    import music.app.models.instrument_tuning_analysis_model  # noqa: F401
-    import music.app.models.list_model  # noqa: F401
-    import music.app.models.sing_model  # noqa: F401
-    import music.app.models.speech_evaluation_model  # noqa: F401
-    import music.app.models.speech_feedback_analysis_model  # noqa: F401
-    import music.app.models.speech_recording_model  # noqa: F401
-    import music.app.models.suggest_model  # noqa: F401
-    import music.app.models.user_vocal_recording_model  # noqa: F401
-    import secom.app.entities.user_entity  # noqa: F401
+    import music.adapter.outbound.orm.ai_vocal_analysis_model  # noqa: F401
+    import music.adapter.outbound.orm.evaluation_models  # noqa: F401
+    import music.adapter.outbound.orm.instrument_evaluation_model  # noqa: F401
+    import music.adapter.outbound.orm.instrument_recording_model  # noqa: F401
+    import music.adapter.outbound.orm.instrument_tuning_analysis_model  # noqa: F401
+    import music.adapter.outbound.orm.list_model  # noqa: F401
+    import music.adapter.outbound.orm.sing_model  # noqa: F401
+    import music.adapter.outbound.orm.speech_evaluation_model  # noqa: F401
+    import music.adapter.outbound.orm.speech_feedback_analysis_model  # noqa: F401
+    import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
+    import music.adapter.outbound.orm.suggest_model  # noqa: F401
+    import music.adapter.outbound.orm.user_vocal_recording_model  # noqa: F401
+    import friday13th.adapter.outbound.orm.user_model  # noqa: F401
     import titanic.adapter.outbound.orm.titanic_passenger_orm  # noqa: F401
 
 

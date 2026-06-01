@@ -20,7 +20,7 @@ from logging_setup import configure_logging
 
 configure_logging()
 
-from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
@@ -31,54 +31,23 @@ try:
     from database import dispose_engine, get_db, init_db
 except ModuleNotFoundError:
     from apps.database import dispose_engine, get_db, init_db
-import music.app.models.list_model  # noqa: F401
-import music.app.models.ai_vocal_analysis_model  # noqa: F401
-import music.app.models.user_vocal_recording_model  # noqa: F401
-import music.app.models.evaluation_models  # noqa: F401
-import music.app.models.sing_model  # noqa: F401
-import music.app.models.suggest_model  # noqa: F401
-import music.app.models.instrument_evaluation_model  # noqa: F401
-import music.app.models.instrument_recording_model  # noqa: F401
-import music.app.models.instrument_tuning_analysis_model  # noqa: F401
-import music.app.models.speech_evaluation_model  # noqa: F401
-import music.app.models.speech_recording_model  # noqa: F401
-import music.app.models.speech_feedback_analysis_model  # noqa: F401
-import secom.app.entities.user_entity  # noqa: F401
+import music.adapter.outbound.orm.ai_vocal_analysis_model  # noqa: F401
+import music.adapter.outbound.orm.user_vocal_recording_model  # noqa: F401
+import music.adapter.outbound.orm.evaluation_models  # noqa: F401
+import music.adapter.outbound.orm.sing_model  # noqa: F401
+import music.adapter.outbound.orm.suggest_model  # noqa: F401
+import music.adapter.outbound.orm.instrument_evaluation_model  # noqa: F401
+import music.adapter.outbound.orm.instrument_recording_model  # noqa: F401
+import music.adapter.outbound.orm.instrument_tuning_analysis_model  # noqa: F401
+import music.adapter.outbound.orm.speech_evaluation_model  # noqa: F401
+import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
+import music.adapter.outbound.orm.speech_feedback_analysis_model  # noqa: F401
+import music.adapter.outbound.orm.list_model  # noqa: F401
+import friday13th.adapter.outbound.orm.user_model  # noqa: F401
 from matrix.app.keymaker import get_keymaker
-from music.app.controllers.list_controller import ListController
-from music.app.controllers.evaluation_controller import EvaluationController
-from music.app.controllers.suggest_controller import SuggestController
-from music.app.controllers.video_analysis_controller import VideoAnalysisController
-from music.app.services.instrument_service import InstrumentService
-from music.app.services.speech_service import SpeechService
-from music.app.schemas.video_analysis_schema import VideoVocalAnalysisResponse
-from music.app.schemas.list_schema import SongMrSearchResponse
-from music.app.schemas.sing_schema import SingEvaluationCreateRequest, SingEvaluationResponse
-from music.app.schemas.suggest_schema import (
-    VocalRecommendationCreateRequest,
-    VocalRecommendationResponse,
-)
-from music.app.schemas.instrument_schemas import (
-    InstrumentCatalogResponse,
-    InstrumentEvaluationCreateRequest,
-    InstrumentEvaluationResponse,
-)
-from music.app.schemas.speech_schemas import (
-    SpeechEvaluationCreateRequest,
-    SpeechEvaluationResponse,
-    SpeechTopicsResponse,
-)
-from secom.app import auth_routes
-from secom.app.schemas.user_schema import (
-    LoginRequest,
-    LoginResponse,
-    SignupRequest,
-    SignupResponse,
-    UsernameCheckResponse,
-)
-from titanic.adapter.inbound.api.v1.james_router import james_router
-from titanic.adapter.inbound.api.v1.rose_router import rose_router
-from titanic.adapter.inbound.api.v1.walter_router import walter_router
+from music.adapter.inbound.api import music_router
+from friday13th.adapter.inbound.api.v1 import login_router, signup_router
+from titanic.adapter.inbound.api import titanic_router
 
 logger = logging.getLogger(__name__)
 
@@ -172,231 +141,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(rose_router)
-app.include_router(james_router)
-app.include_router(walter_router)
+app.include_router(signup_router)
+app.include_router(login_router)
+app.include_router(titanic_router)
+app.include_router(music_router)
 
 
 @app.get("/")
 def read_root():
     return {"message": "FAST API 메인 페이지 ", "docs": "/docs"}
-
-
-@app.post("/api/auth/signup", response_model=SignupResponse)
-async def signup(
-    request: SignupRequest,
-    db: AsyncSession = Depends(get_db),
-) -> SignupResponse:
-    logger.info(
-        "[AUTH-FLOW][signup][1/main] POST /api/auth/signup username=%s",
-        request.username.strip(),
-    )
-    return await auth_routes.signup_user(db, request)
-
-
-@app.get("/api/auth/check-id", response_model=UsernameCheckResponse)
-async def check_username(
-    username: str = Query(..., min_length=1),
-    db: AsyncSession = Depends(get_db),
-) -> UsernameCheckResponse:
-    return await auth_routes.check_username_available(db, username)
-
-
-@app.get("/api/auth/check-nickname", response_model=UsernameCheckResponse)
-async def check_nickname(
-    nickname: str = Query(..., min_length=1),
-    db: AsyncSession = Depends(get_db),
-) -> UsernameCheckResponse:
-    return await auth_routes.check_nickname_available(db, nickname)
-
-
-@app.post("/api/auth/login", response_model=LoginResponse)
-async def login(
-    request: LoginRequest,
-    db: AsyncSession = Depends(get_db),
-) -> LoginResponse:
-    logger.info(
-        "[AUTH-FLOW][login][1/main] POST /api/auth/login username=%s",
-        request.username.strip(),
-    )
-    return await auth_routes.login_user(db, request)
-
-
-@app.get("/api/songs/search", response_model=SongMrSearchResponse)
-async def songs_search(
-    q: str = Query(..., min_length=1, description="노래 제목·MR·아티스트 검색어"),
-    db: AsyncSession = Depends(get_db),
-) -> SongMrSearchResponse:
-    logger.info("[MUSIC][search][1/main] GET /api/songs/search q=%s", q.strip())
-    try:
-        result = await ListController(db).search_mr(q)
-        logger.info(
-            "[MUSIC][search][1/main] 완료 q=%s count=%s titles=%s",
-            result.query,
-            result.count,
-            [h.title for h in result.hits],
-        )
-        return result
-    except SQLAlchemyError as exc:
-        logger.exception("[music] GET /api/songs/search DB 오류: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
-        ) from exc
-
-
-@app.get("/api/music/instrument-catalog", response_model=InstrumentCatalogResponse)
-async def get_instrument_catalog(
-    q: str = Query("", description="악기 검색어"),
-) -> InstrumentCatalogResponse:
-    return InstrumentService(None).list_catalog(q)
-
-
-@app.post(
-    "/api/music/instrument-evaluation",
-    response_model=InstrumentEvaluationResponse,
-)
-async def post_instrument_evaluation(
-    body: InstrumentEvaluationCreateRequest,
-    db: AsyncSession = Depends(get_db),
-) -> InstrumentEvaluationResponse:
-    try:
-        return await InstrumentService(db).save_evaluation(body)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except SQLAlchemyError as exc:
-        logger.exception("[MUSIC][instrument] DB 오류: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
-        ) from exc
-
-
-@app.get("/api/music/speech-topics", response_model=SpeechTopicsResponse)
-async def get_speech_topics() -> SpeechTopicsResponse:
-    return SpeechService(None).list_topics()
-
-
-@app.post("/api/music/speech-evaluation", response_model=SpeechEvaluationResponse)
-async def post_speech_evaluation(
-    body: SpeechEvaluationCreateRequest,
-    db: AsyncSession = Depends(get_db),
-) -> SpeechEvaluationResponse:
-    try:
-        return await SpeechService(db).save_evaluation(body)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except SQLAlchemyError as exc:
-        logger.exception("[MUSIC][speech] DB 오류: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
-        ) from exc
-
-
-@app.post("/api/music/sing-evaluation", response_model=SingEvaluationResponse)
-async def post_sing_evaluation(
-    body: SingEvaluationCreateRequest,
-    db: AsyncSession = Depends(get_db),
-) -> SingEvaluationResponse:
-    logger.info(
-        "[MUSIC][sing][1/main] POST /api/music/sing-evaluation input=%s",
-        body.input_source,
-    )
-    try:
-        return await EvaluationController(db).save_evaluation(body)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except SQLAlchemyError as exc:
-        logger.exception("[MUSIC][sing][1/main] DB 오류: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
-        ) from exc
-
-
-@app.post("/api/music/vocal-recommendations", response_model=VocalRecommendationResponse)
-async def post_vocal_recommendations(
-    body: VocalRecommendationCreateRequest,
-    db: AsyncSession = Depends(get_db),
-) -> VocalRecommendationResponse:
-    """저장된 보컬 평가(`sing_evaluations.id`)을 기준으로 추천 장르·곡을 계산해 Neon에 저장."""
-    logger.info(
-        "[MUSIC][suggest][1/main] POST /api/music/vocal-recommendations "
-        "singEvaluationId=%s",
-        body.sing_evaluation_id,
-    )
-    try:
-        return await SuggestController(db).create_recommendation(body)
-    except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except SQLAlchemyError as exc:
-        logger.exception("[MUSIC][suggest][1/main] DB 오류: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
-        ) from exc
-
-
-@app.get("/api/music/vocal-recommendations", response_model=VocalRecommendationResponse)
-async def get_vocal_recommendations(
-    singEvaluationId: int = Query(
-        ...,
-        ge=1,
-        alias="singEvaluationId",
-        description="sing_evaluations.id",
-    ),
-    db: AsyncSession = Depends(get_db),
-) -> VocalRecommendationResponse:
-    """해당 평가에 대해 가장 최근에 저장된 추천 배너 데이터 조회."""
-    logger.info(
-        "[MUSIC][suggest][1/main] GET /api/music/vocal-recommendations "
-        "singEvaluationId=%s",
-        singEvaluationId,
-    )
-    try:
-        out = await SuggestController(db).get_latest(singEvaluationId)
-    except SQLAlchemyError as exc:
-        logger.exception("[MUSIC][suggest][1/main] DB 오류: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="DB 연결에 실패했습니다. 서버 로그를 확인하세요.",
-        ) from exc
-    if out is None:
-        raise HTTPException(
-            status_code=404,
-            detail="해당 분석에 대한 추천이 없습니다. 먼저 POST로 생성하세요.",
-        )
-    return out
-
-
-@app.post("/api/music/analyze-video", response_model=VideoVocalAnalysisResponse)
-async def analyze_video_upload(
-    file: UploadFile = File(..., description="노래 부르는 영상 (mp4, mov 등)"),
-) -> VideoVocalAnalysisResponse:
-    data = await file.read()
-    if not data:
-        raise HTTPException(status_code=400, detail="파일이 비어 있습니다.")
-    filename = file.filename or "upload.mp4"
-    logger.info(
-        "[MUSIC][video_analysis][1/main] POST /api/music/analyze-video file=%s bytes=%s",
-        filename,
-        len(data),
-    )
-    try:
-        return await asyncio.to_thread(
-            VideoAnalysisController().analyze_video_upload,
-            data,
-            filename,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("[MUSIC][video_analysis][1/main] 분석 실패: %s", exc)
-        raise HTTPException(
-            status_code=502,
-            detail="비디오 분석에 실패했습니다. ffmpeg 설치·파일 형식을 확인하거나 로그를 확인하세요.",
-        ) from exc
 
 
 def _require_openweather_key() -> str:
@@ -665,9 +418,6 @@ def chat(req: ChatRequest) -> ChatResponse:
 @app.get("/db-check")
 async def check_db(db: AsyncSession = Depends(get_db)):
     return await DbHealthAdapter.neon_time_check(db)
-
-
-#회원가입
 
 
 if __name__ == "__main__":

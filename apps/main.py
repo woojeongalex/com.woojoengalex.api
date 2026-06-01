@@ -18,7 +18,6 @@ for _dir in (_APPS_DIR, _BACKEND_DIR):
     if _entry not in sys.path:
         sys.path.insert(0, _entry)
 
-
 def _load_backend_app():
     """`backend/main.py`의 `app`을 이 모듈로 노출 (이 파일과 이름 충돌 방지)."""
     module_name = "backend_main"

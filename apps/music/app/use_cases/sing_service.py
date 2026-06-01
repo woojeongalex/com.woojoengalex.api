@@ -1,0 +1,24 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from music.adapter.inbound.api.schemas.sing_schema import (
+    SingEvaluationCreateRequest,
+    SingEvaluationResponse,
+)
+from music.adapter.outbound.pg.evaluation_pg_repository import EvaluationRepository
+from music.adapter.outbound.pg.list_pg_repository import ListRepository
+from music.app.use_cases.evaluation_service import EvaluationService
+
+
+class SingService:
+    """호환 — 저장은 `EvaluationService`에 위임."""
+
+    def __init__(self, db: AsyncSession | None = None) -> None:
+        self._evaluation = EvaluationService(
+            repository=EvaluationRepository(db),
+            list_repository=ListRepository(db),
+        )
+
+    async def save_sing_evaluation(
+        self, body: SingEvaluationCreateRequest
+    ) -> SingEvaluationResponse:
+        return await self._evaluation.save_evaluation(body)

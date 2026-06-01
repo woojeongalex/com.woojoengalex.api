@@ -31,18 +31,22 @@ async def main() -> int:
 
     from sqlalchemy import text
 
-    import secom.app.entities.user_entity  # noqa: F401
-    import music.app.models.instrument_evaluation_model  # noqa: F401
-    import music.app.models.instrument_recording_model  # noqa: F401
-    import music.app.models.instrument_tuning_analysis_model  # noqa: F401
-    import music.app.models.speech_evaluation_model  # noqa: F401
-    import music.app.models.speech_recording_model  # noqa: F401
-    import music.app.models.speech_feedback_analysis_model  # noqa: F401
+    import friday13th.adapter.outbound.orm.user_model  # noqa: F401
+    import music.adapter.outbound.orm.instrument_evaluation_model  # noqa: F401
+    import music.adapter.outbound.orm.instrument_recording_model  # noqa: F401
+    import music.adapter.outbound.orm.instrument_tuning_analysis_model  # noqa: F401
+    import music.adapter.outbound.orm.speech_evaluation_model  # noqa: F401
+    import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
+    import music.adapter.outbound.orm.speech_feedback_analysis_model  # noqa: F401
     from database import dispose_engine, get_session_factory, init_db
-    from music.app.schemas.instrument_schemas import InstrumentEvaluationCreateRequest
-    from music.app.schemas.speech_schemas import SpeechEvaluationCreateRequest
-    from music.app.services.instrument_service import InstrumentService
-    from music.app.services.speech_service import SpeechService
+    from music.adapter.inbound.api.schemas.instrument_schemas import (
+        InstrumentEvaluationCreateRequest,
+    )
+    from music.adapter.inbound.api.schemas.speech_schemas import SpeechEvaluationCreateRequest
+    from music.adapter.outbound.pg.instrument_pg_repository import InstrumentRepository
+    from music.adapter.outbound.pg.speech_pg_repository import SpeechRepository
+    from music.app.use_cases.instrument_service import InstrumentService
+    from music.app.use_cases.speech_service import SpeechService
 
     await init_db()
     factory = get_session_factory()
@@ -69,7 +73,7 @@ async def main() -> int:
             return 1
 
         inst_id = (
-            await InstrumentService(session).save_evaluation(
+            await InstrumentService(InstrumentRepository(session)).save_evaluation(
                 InstrumentEvaluationCreateRequest(
                     instrumentId="guitar",
                     tuningAccuracy=90,
@@ -82,7 +86,7 @@ async def main() -> int:
             )
         ).id
         speech_id = (
-            await SpeechService(session).save_evaluation(
+            await SpeechService(SpeechRepository(session)).save_evaluation(
                 SpeechEvaluationCreateRequest(
                     topicId="daily",
                     clarityScore=85,
