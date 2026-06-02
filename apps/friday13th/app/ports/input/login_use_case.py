@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from friday13th.app.dtos.auth_result import LoginResultDto
+from friday13th.app.dtos.login_result import LoginResultDto
 
 
 class LoginUseCase(ABC):

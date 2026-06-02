@@ -1,4 +1,4 @@
-from friday13th.app.dtos.auth_result import LoginResultDto
+from friday13th.app.dtos.login_result import LoginResultDto
 from friday13th.app.ports.input.login_use_case import LoginUseCase
 from friday13th.app.ports.output.login_repository_port import LoginRepositoryPort
 

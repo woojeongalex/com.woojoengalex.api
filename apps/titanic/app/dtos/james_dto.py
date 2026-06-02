@@ -68,3 +68,5 @@ class BookingCommand:
     fare: str
     cabin: str
     embarked: str
+
+

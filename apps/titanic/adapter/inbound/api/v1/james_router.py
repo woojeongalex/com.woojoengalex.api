@@ -7,6 +7,8 @@ from titanic.adapter.inbound.api.parsers.james_csv_parser import JamesCsvError, 
 from titanic.adapter.inbound.api.schemas.james_schema import JamesSchema, JamesUploadResponse
 from titanic.app.ports.input.james_use_case import JamesUseCase
 
+
+
 james_router = APIRouter(prefix="/titanic/james", tags=["james"])
 
 
@@ -17,18 +19,21 @@ async def upload_titanic_csv(
     james: JamesUseCase = Depends(get_james_use_case),
 ) -> JamesUploadResponse:
     _ = request
+    if file.content_type not in {"text/csv", "application/vnd.ms-excel", "text/plain"}:
+        raise HTTPException(status_code=400, detail="CSV 파일을 업로드해주세요.")
+
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="업로드 파일이 비어 있습니다.")
 
     try:
-        rows: list[JamesSchema] = parse_james_csv(raw.decode("utf-8-sig"))
+        rows: list[JamesSchema] = parse_james_csv(raw.decode("utf-8-sig", errors="replace"))
     except JamesCsvError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except ValidationError as exc:
         raise HTTPException(status_code=400, detail=exc.errors()) from exc
 
-    print(f"[제임스 라우터] JamesSchema {len(rows)}건, 상위 5개:")
+    print("[제임스 라우터] 업로드된 CSV 파일에서 스키마로 옮겨진 상위 5개 레코드:")
     for row in rows[:5]:
         print(row.model_dump())
 

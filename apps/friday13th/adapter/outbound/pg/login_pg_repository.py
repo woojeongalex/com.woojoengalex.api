@@ -2,7 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from friday13th.adapter.outbound.orm.user_model import UserEntity, verify_password
-from friday13th.app.dtos.auth_result import LoginResultDto
+from friday13th.app.dtos.login_result import LoginResultDto
 from friday13th.app.ports.output.login_repository_port import LoginRepositoryPort
 
 
