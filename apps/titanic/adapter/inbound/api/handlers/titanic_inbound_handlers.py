@@ -1,7 +1,12 @@
 """Titanic inbound — HTTP·DB 경계 (라우터는 Use Case만 호출)."""
 
+from dataclasses import asdict
+
 from fastapi import Request
 
+from titanic.adapter.inbound.api.mappers.james_inbound_mapper import (
+    james_schema_to_person_command,
+)
 from titanic.adapter.inbound.api.schemas.james_schema import JamesSchema, JamesUploadResponse
 from titanic.app.titanic_flow_log import titanic_flow_log
 from titanic.adapter.inbound.api.schemas.titanic_schema import (
@@ -17,7 +22,10 @@ async def pass_james_upload(
     file_name: str,
     rows: list[JamesSchema],
 ) -> JamesUploadResponse:
-    payload = [row.to_passenger_row_dict() for row in rows]
+    payload = [
+        asdict(james_schema_to_person_command(row).to_passenger_row())
+        for row in rows
+    ]
     result = await james.receive_uploaded_records(payload, file_name)
     titanic_flow_log(
         "james-upload",

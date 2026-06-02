@@ -45,21 +45,6 @@ class JamesSchema(BaseModel):
     cabin: str = Field(default="", alias="Cabin")
     embarked: str = Field(default="", alias="Embarked")
 
-    def to_passenger_row_dict(self) -> dict[str, str]:
-        """Use Case·DTO 저장용 (Cabin/Embarked 제외)."""
-        return {
-            "passenger_id": self.passenger_id,
-            "survived": self.survived,
-            "pclass": self.pclass,
-            "name": self.name,
-            "gender": self.gender,
-            "age": self.age,
-            "sib_sp": self.sib_sp,
-            "parch": self.parch,
-            "ticket": self.ticket,
-            "fare": self.fare,
-        }
-
 
 class JamesUploadResponse(BaseModel):
     """POST /titanic/james/upload 응답."""

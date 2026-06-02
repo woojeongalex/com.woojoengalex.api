@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass
 class WalterPassengerItemDto:
     id: int
     source_file: str
@@ -20,7 +20,7 @@ class WalterPassengerItemDto:
     created_at: str | None = None
 
 
-@dataclass(frozen=True)
+@dataclass
 class WalterPassengerPageDto:
     source_file: str | None
     page: int

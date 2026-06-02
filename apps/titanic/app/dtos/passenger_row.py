@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass
 class PassengerRowDto:
     passenger_id: str
     survived: str
@@ -15,3 +15,5 @@ class PassengerRowDto:
     parch: str
     ticket: str
     fare: str
+    cabin: str
+    embarked: str

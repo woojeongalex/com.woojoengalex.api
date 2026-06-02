@@ -4,7 +4,8 @@ from typing import Any
 
 from titanic.app.ports.input.james_use_case import JamesUseCase
 from titanic.app.ports.output.james_repository_port import JamesRepositoryPort
-
+from titanic.app.dtos.james_dto import PersonCommand, BookingCommand
+from titanic.adapter.inbound.api.schemas.james_schema import JamesSchema
 
 class JamesInteractor(JamesUseCase):
     repository: type[JamesRepositoryPort]
@@ -13,4 +14,11 @@ class JamesInteractor(JamesUseCase):
     async def receive_uploaded_records(
         cls, records: list[dict[str, Any]], file_name: str
     ) -> dict[str, Any]:
+
+        print(f"[제임스 유스케이스] JamesSchema {len(records)}건, 상위 5개:")
+        for record in records[:5]:
+            print(record)
+
+    #schema를 PersonCommand 및 BookingCommand로 나눠서 옮겨담기
+
         return await cls.repository.save_upload(file_name, records)
