@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from titanic.app.dtos.james_dto import PersonCommand
+from titanic.app.dtos.james_command import PersonCommand
 
 
 class JamesUseCase(ABC):

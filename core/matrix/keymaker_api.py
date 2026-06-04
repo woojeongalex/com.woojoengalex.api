@@ -8,8 +8,8 @@ from typing import Any
 
 
 def default_backend_env_path() -> Path:
-    """`backend/.env` — 이 파일: `apps/matrix/app/keymaker.py` 기준."""
-    return Path(__file__).resolve().parent.parent.parent.parent / ".env"
+    """`backend/.env` 경로 (`core/matrix/keymaker_api.py` 기준)."""
+    return Path(__file__).resolve().parents[2] / ".env"
 
 
 class Keymaker:

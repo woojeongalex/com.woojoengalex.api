@@ -1,9 +1,10 @@
 """James upload — `Titanic-Dataset.csv` 기준 Use Case Command DTO.
 
-- HTTP(Pydantic)와 분리: 변환은 `adapter/inbound/api/mappers/james_inbound_mapper.py`
-- Neon flat 저장: `PersonCommand.to_passenger_row()` → `PassengerRowDto`
+- HTTP(Pydantic)와 분리: `adapter/inbound/api/mappers/james_inbound_mapper.py`
+- Neon 저장: `PersonCommand` → `person_orm`, `BookingCommand` → `booking_orm`
 """
 
+__all__ = ["PERSON_COMMAND_FIELDS", "BookingCommand", "PersonCommand"]
 from dataclasses import dataclass
 
 from titanic.app.dtos.passenger_row import PassengerRowDto

@@ -1,7 +1,7 @@
 """James inbound — HTTP 스키마 ↔ app/dtos 변환 (Adapter 경계 1회)."""
 
 from titanic.adapter.inbound.api.schemas.james_schema import JamesSchema
-from titanic.app.dtos.james_dto import BookingCommand, PersonCommand
+from titanic.app.dtos.james_command import BookingCommand, PersonCommand
 
 
 def james_schema_to_person_command(row: JamesSchema) -> PersonCommand:

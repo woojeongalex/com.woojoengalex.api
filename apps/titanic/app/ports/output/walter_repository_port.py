@@ -1,12 +1,16 @@
-"""[Layer: Ports] Walter 출력 Port — read 조회 계약."""
+"""[Layer: Ports] Walter 출력 Port — 승객 조회."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+
+from titanic.app.dtos.walter_page import WalterPassengerPageDto
 
 
 class WalterRepositoryPort(ABC):
+    @staticmethod
     @abstractmethod
     async def read_passengers(
-        source_file: str | None, page: int, page_size: int
-    ) -> dict[str, Any]:
+        source_file: str | None,
+        page: int,
+        size: int,
+    ) -> WalterPassengerPageDto:
         pass

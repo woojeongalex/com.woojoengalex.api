@@ -1,27 +1,29 @@
-"""[Layer: Use Cases] Walter — read 업무 오케스트레이션 (WalterUseCase 구현)."""
+"""[Layer: Use Cases] Walter — 승객 조회."""
 
-from typing import Any
+import logging
 
+from titanic.app.dtos.walter_page import WalterPassengerPageDto
 from titanic.app.ports.input.walter_use_case import WalterUseCase
 from titanic.app.ports.output.walter_repository_port import WalterRepositoryPort
-from titanic.app.titanic_flow_log import titanic_flow_log
+
+logger = logging.getLogger(__name__)
 
 
 class WalterInteractor(WalterUseCase):
     repository: type[WalterRepositoryPort]
 
-    @staticmethod
+    @classmethod
     async def read_passengers(
-        source_file: str | None, page: int, page_size: int
-    ) -> dict[str, Any]:
-        titanic_flow_log(
-            "walter-read",
-            "usecase",
-            "read_passengers page=%s size=%s",
-            page,
-            page_size,
-            source_file=source_file or "latest",
-        )
-        return await WalterInteractor.repository.read_passengers(
-            source_file, page, page_size
-        )
+        cls,
+        source_file: str | None,
+        page: int,
+        size: int,
+    ) -> WalterPassengerPageDto:
+        result = await cls.repository.read_passengers(source_file, page, size)
+        logger.info("###############################################")
+        logger.info("💊[월터 유스케이스] 레포지터리 조회 결과")
+        logger.info(f"👍🏻total: {result.total}")
+        logger.info(f"🐥page: {result.page}")
+        logger.info(f"🦜상위 5개: {result.rows[:5]}")
+        logger.info("###############################################")
+        return result

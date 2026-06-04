@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from pydantic import ValidationError
 
@@ -7,7 +9,7 @@ from titanic.adapter.inbound.api.parsers.james_csv_parser import JamesCsvError, 
 from titanic.adapter.inbound.api.schemas.james_schema import JamesSchema, JamesUploadResponse
 from titanic.app.ports.input.james_use_case import JamesUseCase
 
-
+logger = logging.getLogger(__name__)
 
 james_router = APIRouter(prefix="/titanic/james", tags=["james"])
 
@@ -33,10 +35,11 @@ async def upload_titanic_csv(
     except ValidationError as exc:
         raise HTTPException(status_code=400, detail=exc.errors()) from exc
 
-    print("[제임스 라우터] 업로드된 CSV 파일에서 스키마로 옮겨진 상위 5개 레코드:")
-    for row in rows[:5]:
-        print(row.model_dump())
+    logger.info(
+        "[제임스 라우터] 업로드된 CSV 파일에서 스키마로 옮겨진 상위 5개 레코드: %s",
+        [row.model_dump() for row in rows[:5]],
+    )
 
     response = await pass_james_upload(james, file.filename or "upload.csv", rows)
-    print("[제임스 라우터] 업로드 결과:", response)
+    logger.info("[제임스 라우터] 업로드 결과: %s", response)
     return response

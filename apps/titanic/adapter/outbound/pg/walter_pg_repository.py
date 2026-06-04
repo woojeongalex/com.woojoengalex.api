@@ -1,118 +1,78 @@
-from dataclasses import asdict
+"""[Layer: Outbound] Walter PG — 승객 조회 (person + booking)."""
+
+import logging
 from math import ceil
-from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import func, select
+from sqlalchemy import func
+from sqlmodel import select
 
-from titanic.adapter.outbound.orm.titanic_passenger_orm import TitanicPassengerOrm
-from titanic.app.dtos.walter_page import WalterPassengerItemDto, WalterPassengerPageDto
+from titanic.adapter.outbound.orm.booking_orm import BookingOrm
+from titanic.adapter.outbound.orm.person_orm import PersonOrm
+from titanic.app.dtos.walter_page import WalterPassengerPageDto
 from titanic.app.ports.output.walter_repository_port import WalterRepositoryPort
-from titanic.app.titanic_flow_log import titanic_flow_log
 
-
-def _item_from_orm(orm_row: TitanicPassengerOrm) -> WalterPassengerItemDto:
-    created_at = orm_row.created_at.isoformat() if orm_row.created_at else None
-    return WalterPassengerItemDto(
-        id=int(orm_row.id or 0),
-        source_file=orm_row.source_file,
-        passenger_id=orm_row.dataset_passenger_id,
-        survived=orm_row.survived,
-        pclass=orm_row.pclass,
-        name=orm_row.name,
-        gender=orm_row.gender,
-        age=orm_row.age,
-        sib_sp=orm_row.sib_sp,
-        parch=orm_row.parch,
-        ticket=orm_row.ticket,
-        fare=orm_row.fare,
-        created_at=created_at,
-    )
-
-
-def _page_to_dict(page: WalterPassengerPageDto) -> dict[str, Any]:
-    body = asdict(page)
-    body["rows"] = [asdict(row) for row in page.rows]
-    return body
+logger = logging.getLogger(__name__)
 
 
 class WalterPgRepository(WalterRepositoryPort):
-    db: AsyncSession
-
-    @staticmethod
-    async def _resolve_source_file(source_file: str | None) -> str | None:
-        if source_file:
-            return source_file
-        stmt = (
-            select(TitanicPassengerOrm.source_file)
-            .order_by(TitanicPassengerOrm.id.desc())
-            .limit(1)
-        )
-        return await WalterPgRepository.db.scalar(stmt)
+    db = None
 
     @staticmethod
     async def read_passengers(
-        source_file: str | None, page: int, page_size: int
-    ) -> dict[str, Any]:
-        page = max(1, page)
-        page_size = max(1, min(page_size, 100))
-        source_file = await WalterPgRepository._resolve_source_file(source_file)
-
-        if not source_file:
-            titanic_flow_log(
-                "walter-read",
-                "outbound",
-                "Neon read empty (no rows in DB) page=%s size=%s",
-                page,
-                page_size,
-                source_file="(none)",
-            )
-            return _page_to_dict(
-                WalterPassengerPageDto(
-                    source_file=None,
-                    page=page,
-                    size=page_size,
-                    total=0,
-                    total_pages=0,
-                    rows=(),
-                )
-            )
-
+        source_file: str | None,
+        page: int,
+        size: int,
+    ) -> WalterPassengerPageDto:
+        base = select(PersonOrm, BookingOrm).join(
+            BookingOrm, BookingOrm.person_id == PersonOrm.id
+        )
         count_stmt = (
             select(func.count())
-            .select_from(TitanicPassengerOrm)
-            .where(TitanicPassengerOrm.source_file == source_file)
+            .select_from(PersonOrm)
+            .join(BookingOrm, BookingOrm.person_id == PersonOrm.id)
         )
-        total = int((await WalterPgRepository.db.scalar(count_stmt)) or 0)
-        total_pages = ceil(total / page_size) if total else 0
-        page = min(page, total_pages) if total_pages else 1
+        if source_file:
+            base = base.where(PersonOrm.source_file == source_file)
+            count_stmt = count_stmt.where(PersonOrm.source_file == source_file)
 
-        list_stmt = (
-            select(TitanicPassengerOrm)
-            .where(TitanicPassengerOrm.source_file == source_file)
-            .order_by(TitanicPassengerOrm.id.asc())
-            .offset((page - 1) * page_size)
-            .limit(page_size)
+        total = (await WalterPgRepository.db.execute(count_stmt)).scalar_one()
+        result = await WalterPgRepository.db.execute(
+            base.order_by(PersonOrm.id)
+            .offset((page - 1) * size)
+            .limit(size)
         )
-        orm_rows = (await WalterPgRepository.db.execute(list_stmt)).scalars().all()
+        pairs = result.all()
 
-        titanic_flow_log(
-            "walter-read",
-            "outbound",
-            "Neon read total=%s page=%s size=%s",
-            total,
-            page,
-            page_size,
+        rows = [
+            {
+                "id": person.id,
+                "source_file": person.source_file,
+                "passenger_id": person.passenger_id,
+                "survived": person.survived,
+                "pclass": booking.pclass,
+                "name": person.name,
+                "gender": person.gender,
+                "age": person.age,
+                "sib_sp": person.sib_sp,
+                "parch": person.parch,
+                "ticket": booking.ticket,
+                "fare": booking.fare,
+                "created_at": person.created_at.isoformat() if person.created_at else None,
+            }
+            for person, booking in pairs
+        ]
+        logger.info("###############################################")
+        logger.info("💊[월터 레포지터리] Neon 조회")
+        logger.info(f"👍🏻total: {total}")
+        logger.info(f"🐥page: {page}")
+        logger.info(f"🦜상위 5개: {rows[:5]}")
+        logger.info("###############################################")
+
+        return WalterPassengerPageDto(
             source_file=source_file,
-        )
-
-        return _page_to_dict(
-            WalterPassengerPageDto(
-                source_file=source_file,
-                page=page,
-                size=page_size,
-                total=total,
-                total_pages=total_pages,
-                rows=tuple(_item_from_orm(row) for row in orm_rows),
-            )
+            page=page,
+            size=size,
+            total=total,
+            total_pages=ceil(total / size) if total else 0,
+            rows=rows,
         )

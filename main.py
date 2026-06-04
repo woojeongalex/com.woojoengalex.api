@@ -44,7 +44,7 @@ import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
 import music.adapter.outbound.orm.speech_feedback_analysis_model  # noqa: F401
 import music.adapter.outbound.orm.list_model  # noqa: F401
 import friday13th.adapter.outbound.orm.user_model  # noqa: F401
-from matrix.app.keymaker import get_keymaker
+from core.matrix.keymaker_api import get_keymaker
 from music.adapter.inbound.api import music_router
 from friday13th.adapter.inbound.api.v1 import login_router, signup_router
 from titanic.adapter.inbound.api import titanic_router

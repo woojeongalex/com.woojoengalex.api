@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from titanic.app.dtos.james_dto import BookingCommand, PersonCommand
+from titanic.app.dtos.james_command import BookingCommand, PersonCommand
 
 
 class JamesRepositoryPort(ABC):
@@ -13,5 +13,6 @@ class JamesRepositoryPort(ABC):
         self,
         person_commands: list[PersonCommand],
         booking_commands: list[BookingCommand],
+        file_name: str,
     ) -> int:
         pass
