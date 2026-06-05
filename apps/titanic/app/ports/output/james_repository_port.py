@@ -9,7 +9,7 @@ from titanic.app.dtos.james_command import BookingCommand, PersonCommand
 
 class JamesRepositoryPort(ABC):
     @abstractmethod
-    async def receive_uploaded_records(
+    async def upload(
         self,
         person_commands: list[PersonCommand],
         booking_commands: list[BookingCommand],

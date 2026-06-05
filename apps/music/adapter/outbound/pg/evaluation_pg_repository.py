@@ -10,16 +10,11 @@ from music.app.ports.output.evaluation_repository_port import EvaluationReposito
 logger = logging.getLogger(__name__)
 
 
-class EvaluationRepository(EvaluationRepositoryPort):
+class EvaluationPgRepository(EvaluationRepositoryPort):
     """세션 + 녹음 + AI(녹음 대상) → Neon INSERT (한 트랜잭션)."""
 
-    def __init__(self, db: AsyncSession | None = None) -> None:
-        self.db = db
-
-    def _require_db(self) -> AsyncSession:
-        if self.db is None:
-            raise RuntimeError("DB session is not available.")
-        return self.db
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
 
     async def save_evaluation_bundle(
         self,
@@ -27,7 +22,7 @@ class EvaluationRepository(EvaluationRepositoryPort):
         vocal_recording: UserVocalRecordingEntity,
         ai_analysis: AiVocalAnalysisEntity,
     ) -> tuple[SingEvaluationEntity, UserVocalRecordingEntity, AiVocalAnalysisEntity]:
-        db = self._require_db()
+        db = self._session
         db.add(evaluation)
         await db.flush()
         eval_id = evaluation.id

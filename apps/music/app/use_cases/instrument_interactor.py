@@ -18,11 +18,11 @@ from music.app.ports.output.instrument_repository_port import InstrumentReposito
 logger = logging.getLogger(__name__)
 
 
-class InstrumentService(InstrumentUseCase):
+class InstrumentInteractor(InstrumentUseCase):
     def __init__(self, repository: InstrumentRepositoryPort) -> None:
         self._repository = repository
 
-    def list_catalog(self, q: str = "") -> InstrumentCatalogResultDto:
+    def search(self, q: str = "") -> InstrumentCatalogResultDto:
         hits = [
             InstrumentCatalogHitDto(
                 instrument_id=item.instrument_id,
@@ -34,7 +34,7 @@ class InstrumentService(InstrumentUseCase):
         ]
         return InstrumentCatalogResultDto(query=q.strip(), hits=hits, count=len(hits))
 
-    async def save_evaluation(
+    async def upload(
         self, command: InstrumentEvaluationCreateCommand
     ) -> InstrumentEvaluationResultDto:
         evaluation = InstrumentEvaluationEntity(user_id=None)
@@ -58,5 +58,5 @@ class InstrumentService(InstrumentUseCase):
             recording,
             analysis,
         )
-        logger.info("[MUSIC][instrument][service] 저장 eval=%s", saved_eval.id)
+        logger.info("[MUSIC][instrument][interactor] 저장 eval=%s", saved_eval.id)
         return InstrumentEvaluationResultDto(id=saved_eval.id)

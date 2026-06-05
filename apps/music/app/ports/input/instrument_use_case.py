@@ -11,11 +11,11 @@ from music.app.dtos.instrument_dto import (
 
 class InstrumentUseCase(ABC):
     @abstractmethod
-    def list_catalog(self, q: str = "") -> InstrumentCatalogResultDto:
+    def search(self, q: str = "") -> InstrumentCatalogResultDto:
         pass
 
     @abstractmethod
-    async def save_evaluation(
+    async def upload(
         self, command: InstrumentEvaluationCreateCommand
     ) -> InstrumentEvaluationResultDto:
         pass

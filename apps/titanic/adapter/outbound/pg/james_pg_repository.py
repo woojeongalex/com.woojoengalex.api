@@ -1,7 +1,9 @@
 import logging
 
 from dataclasses import asdict
+
 from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from titanic.adapter.outbound.orm.booking_orm import BookingOrm
@@ -14,10 +16,11 @@ logger = logging.getLogger(__name__)
 
 
 class JamesPgRepository(JamesRepositoryPort):
-    db = None
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
 
-    @staticmethod
-    async def receive_uploaded_records(
+    async def upload(
+        self,
         person_commands: list[PersonCommand],
         booking_commands: list[BookingCommand],
         file_name: str,
@@ -32,29 +35,29 @@ class JamesPgRepository(JamesRepositoryPort):
         )
 
         person_ids = (
-            await JamesPgRepository.db.execute(
+            await self._session.execute(
                 select(PersonOrm.id).where(PersonOrm.source_file == file_name)
             )
         ).scalars().all()
         if person_ids:
-            await JamesPgRepository.db.execute(
+            await self._session.execute(
                 delete(BookingOrm).where(BookingOrm.person_id.in_(person_ids))
             )
-        await JamesPgRepository.db.execute(
+        await self._session.execute(
             delete(PersonOrm).where(PersonOrm.source_file == file_name)
         )
 
         persons = [
             PersonOrm.from_command(file_name, person) for person in person_commands
         ]
-        JamesPgRepository.db.add_all(persons)
-        await JamesPgRepository.db.flush()
+        self._session.add_all(persons)
+        await self._session.flush()
 
         bookings = [
             BookingOrm.from_command(person.id, booking)
             for person, booking in zip(persons, booking_commands, strict=True)
         ]
-        JamesPgRepository.db.add_all(bookings)
+        self._session.add_all(bookings)
 
         logger.info(
             "[제임스 레포지터리] 저장 시작 file=%s rows=%s",
@@ -68,7 +71,7 @@ class JamesPgRepository(JamesRepositoryPort):
             len(persons),
             source_file=file_name,
         )
-        await JamesPgRepository.db.commit()
+        await self._session.commit()
         logger.info(
             "[제임스 레포지터리] 저장 완료 file=%s rows=%s",
             file_name,

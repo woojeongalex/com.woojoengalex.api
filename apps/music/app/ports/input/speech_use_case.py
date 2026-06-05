@@ -11,11 +11,11 @@ from music.app.dtos.speech_dto import (
 
 class SpeechUseCase(ABC):
     @abstractmethod
-    def list_topics(self) -> SpeechTopicsResultDto:
+    def read_topics(self) -> SpeechTopicsResultDto:
         pass
 
     @abstractmethod
-    async def save_evaluation(
+    async def upload(
         self, command: SpeechEvaluationCreateCommand
     ) -> SpeechEvaluationResultDto:
         pass

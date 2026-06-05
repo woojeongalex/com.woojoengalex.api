@@ -7,7 +7,7 @@ from music.app.dtos.video_analysis_dto import VideoVocalAnalysisResultDto
 
 class VideoAnalysisUseCase(ABC):
     @abstractmethod
-    def analyze_video_bytes(
+    def analyze(
         self, data: bytes, original_filename: str
     ) -> VideoVocalAnalysisResultDto:
         pass

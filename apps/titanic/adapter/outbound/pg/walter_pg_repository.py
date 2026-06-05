@@ -4,6 +4,7 @@ import logging
 from math import ceil
 
 from sqlalchemy import func
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from titanic.adapter.outbound.orm.booking_orm import BookingOrm
@@ -15,10 +16,11 @@ logger = logging.getLogger(__name__)
 
 
 class WalterPgRepository(WalterRepositoryPort):
-    db = None
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
 
-    @staticmethod
     async def read_passengers(
+        self,
         source_file: str | None,
         page: int,
         size: int,
@@ -35,8 +37,8 @@ class WalterPgRepository(WalterRepositoryPort):
             base = base.where(PersonOrm.source_file == source_file)
             count_stmt = count_stmt.where(PersonOrm.source_file == source_file)
 
-        total = (await WalterPgRepository.db.execute(count_stmt)).scalar_one()
-        result = await WalterPgRepository.db.execute(
+        total = (await self._session.execute(count_stmt)).scalar_one()
+        result = await self._session.execute(
             base.order_by(PersonOrm.id)
             .offset((page - 1) * size)
             .limit(size)

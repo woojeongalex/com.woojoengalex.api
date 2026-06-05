@@ -18,11 +18,11 @@ from music.app.speech_catalog import get_speech_topic, list_speech_topics
 logger = logging.getLogger(__name__)
 
 
-class SpeechService(SpeechUseCase):
+class SpeechInteractor(SpeechUseCase):
     def __init__(self, repository: SpeechRepositoryPort) -> None:
         self._repository = repository
 
-    def list_topics(self) -> SpeechTopicsResultDto:
+    def read_topics(self) -> SpeechTopicsResultDto:
         hits = [
             SpeechTopicHitDto(
                 topic_id=item.topic_id,
@@ -33,7 +33,7 @@ class SpeechService(SpeechUseCase):
         ]
         return SpeechTopicsResultDto(hits=hits, count=len(hits))
 
-    async def save_evaluation(
+    async def upload(
         self, command: SpeechEvaluationCreateCommand
     ) -> SpeechEvaluationResultDto:
         if get_speech_topic(command.topic_id) is None:
@@ -61,5 +61,5 @@ class SpeechService(SpeechUseCase):
             recording,
             analysis,
         )
-        logger.info("[MUSIC][speech][service] 저장 eval=%s", saved_eval.id)
+        logger.info("[MUSIC][speech][interactor] 저장 eval=%s", saved_eval.id)
         return SpeechEvaluationResultDto(id=saved_eval.id)

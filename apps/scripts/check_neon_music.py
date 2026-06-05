@@ -43,10 +43,14 @@ async def main() -> int:
         InstrumentEvaluationCreateRequest,
     )
     from music.adapter.inbound.api.schemas.speech_schemas import SpeechEvaluationCreateRequest
-    from music.adapter.outbound.pg.instrument_pg_repository import InstrumentRepository
-    from music.adapter.outbound.pg.speech_pg_repository import SpeechRepository
-    from music.app.use_cases.instrument_service import InstrumentService
-    from music.app.use_cases.speech_service import SpeechService
+    from music.adapter.inbound.api.mappers.music_inbound_mapper import (
+        from_instrument_create,
+        from_speech_create,
+    )
+    from music.adapter.outbound.pg.instrument_pg_repository import InstrumentPgRepository
+    from music.adapter.outbound.pg.speech_pg_repository import SpeechPgRepository
+    from music.app.use_cases.instrument_interactor import InstrumentInteractor
+    from music.app.use_cases.speech_interactor import SpeechInteractor
 
     await init_db()
     factory = get_session_factory()
@@ -73,29 +77,37 @@ async def main() -> int:
             return 1
 
         inst_id = (
-            await InstrumentService(InstrumentRepository(session)).save_evaluation(
-                InstrumentEvaluationCreateRequest(
-                    instrumentId="guitar",
-                    tuningAccuracy=90,
-                    pitchDeviationCents=4,
-                    summary="integration check",
-                    stringReadings=[{"label": "E2", "cents": 2}],
-                    fileName="check.webm",
-                    durationSec=2,
+            await InstrumentInteractor(
+                InstrumentPgRepository(session=session)
+            ).upload(
+                from_instrument_create(
+                    InstrumentEvaluationCreateRequest(
+                        instrumentId="guitar",
+                        tuningAccuracy=90,
+                        pitchDeviationCents=4,
+                        summary="integration check",
+                        stringReadings=[{"label": "E2", "cents": 2}],
+                        fileName="check.webm",
+                        durationSec=2,
+                    )
                 )
             )
         ).id
         speech_id = (
-            await SpeechService(SpeechRepository(session)).save_evaluation(
-                SpeechEvaluationCreateRequest(
-                    topicId="daily",
-                    clarityScore=85,
-                    paceScore=83,
-                    toneScore=84,
-                    summary="integration check",
-                    feedbackPoints=["test"],
-                    fileName="check.webm",
-                    durationSec=2,
+            await SpeechInteractor(
+                SpeechPgRepository(session=session)
+            ).upload(
+                from_speech_create(
+                    SpeechEvaluationCreateRequest(
+                        topicId="daily",
+                        clarityScore=85,
+                        paceScore=83,
+                        toneScore=84,
+                        summary="integration check",
+                        feedbackPoints=["test"],
+                        fileName="check.webm",
+                        durationSec=2,
+                    )
                 )
             )
         ).id

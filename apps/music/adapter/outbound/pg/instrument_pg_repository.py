@@ -9,14 +9,9 @@ from music.adapter.outbound.pg.pg_bundle_repository import save_three_part_bundl
 from music.app.ports.output.instrument_repository_port import InstrumentRepositoryPort
 
 
-class InstrumentRepository(InstrumentRepositoryPort):
-    def __init__(self, db: AsyncSession | None = None) -> None:
-        self._db = db
-
-    def _require_db(self) -> AsyncSession:
-        if self._db is None:
-            raise RuntimeError("DB session is not available.")
-        return self._db
+class InstrumentPgRepository(InstrumentRepositoryPort):
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
 
     async def save_evaluation_bundle(
         self,
@@ -29,7 +24,7 @@ class InstrumentRepository(InstrumentRepositoryPort):
         InstrumentTuningAnalysisEntity,
     ]:
         return await save_three_part_bundle(
-            self._require_db(),
+            self._session,
             evaluation,
             recording,
             analysis,

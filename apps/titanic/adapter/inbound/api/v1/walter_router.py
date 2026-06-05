@@ -1,40 +1,36 @@
-import logging
-
 from fastapi import APIRouter, Depends, Query
 
 from titanic.adapter.inbound.api.deps.titanic_deps import get_walter_use_case
-from titanic.adapter.inbound.api.schemas.titanic_schema import (
-    WalterPassengerItem,
-    WalterPassengerPageResponse,
+from titanic.adapter.inbound.api.mappers.walter_inbound_mapper import (
+    walter_page_dto_to_response,
 )
+from titanic.adapter.inbound.api.schemas.titanic_schema import WalterPassengerPageResponse
 from titanic.adapter.inbound.api.schemas.walter_schema import WalterSchema
+from titanic.app.dtos.walter_query import WalterResponse
 from titanic.app.ports.input.walter_use_case import WalterUseCase
 
-logger = logging.getLogger(__name__)
 walter_router = APIRouter(prefix="/titanic/walter", tags=["walter"])
 
 
-@walter_router.get("/passengers", response_model=WalterPassengerPageResponse)
-async def read_walter_passengers(
-    source_file: str | None = Query(default=None),
-    page: int = Query(default=1, ge=1),
-    size: int = Query(default=30, ge=1, le=100),
-    walter: type[WalterUseCase] = Depends(get_walter_use_case),
-) -> WalterPassengerPageResponse:
-    schema = WalterSchema()
-    logger.info("###############################################")
-    logger.info("💊[월터 라우터] 월터의 자기소개글을 가져오는 API 호출")
-    logger.info(f"👍🏻ID: {schema.id}")
-    logger.info(f"🐥이름: {schema.name}")
-    logger.info(f"🦜메모: {schema.memo}")
-    logger.info("###############################################")
-    result = await walter.read_passengers(source_file, page, size)
-    response = WalterPassengerPageResponse(
-        source_file=result.source_file,
-        page=result.page,
-        size=result.size,
-        total=result.total,
-        total_pages=result.total_pages,
-        rows=[WalterPassengerItem(**row) for row in result.rows],
+@walter_router.get("/myself")
+async def introduce_myself(
+    walter: WalterUseCase = Depends(get_walter_use_case),
+) -> WalterResponse:
+    return await walter.introduce_myself(
+        WalterSchema(
+            id=2,
+            name="Walter Nichols",
+            memo="타이타닉 탑승자 데이터 분석",
+        )
     )
-    return response
+
+
+@walter_router.get("/passengers", response_model=WalterPassengerPageResponse)
+async def read_passengers(
+    source_file: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    size: int = Query(50, ge=1, le=200),
+    walter: WalterUseCase = Depends(get_walter_use_case),
+) -> WalterPassengerPageResponse:
+    page_dto = await walter.read_passengers(source_file, page, size)
+    return walter_page_dto_to_response(page_dto)

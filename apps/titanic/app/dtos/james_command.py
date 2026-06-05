@@ -71,3 +71,6 @@ class BookingCommand:
     embarked: str
 
 
+@dataclass
+class JamesResponse:
+    answer: str

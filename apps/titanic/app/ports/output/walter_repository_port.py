@@ -6,9 +6,9 @@ from titanic.app.dtos.walter_page import WalterPassengerPageDto
 
 
 class WalterRepositoryPort(ABC):
-    @staticmethod
     @abstractmethod
     async def read_passengers(
+        self,
         source_file: str | None,
         page: int,
         size: int,

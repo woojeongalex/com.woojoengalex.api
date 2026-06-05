@@ -10,16 +10,16 @@ logger = logging.getLogger(__name__)
 
 
 class WalterInteractor(WalterUseCase):
-    repository: type[WalterRepositoryPort]
+    def __init__(self, repository: WalterRepositoryPort) -> None:
+        self._repository = repository
 
-    @classmethod
     async def read_passengers(
-        cls,
+        self,
         source_file: str | None,
         page: int,
         size: int,
     ) -> WalterPassengerPageDto:
-        result = await cls.repository.read_passengers(source_file, page, size)
+        result = await self._repository.read_passengers(source_file, page, size)
         logger.info("###############################################")
         logger.info("💊[월터 유스케이스] 레포지터리 조회 결과")
         logger.info(f"👍🏻total: {result.total}")

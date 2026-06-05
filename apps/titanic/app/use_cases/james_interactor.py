@@ -10,12 +10,13 @@ from titanic.app.ports.output.james_repository_port import JamesRepositoryPort
 
 logger = logging.getLogger(__name__)
 
-class JamesInteractor(JamesUseCase):
-    repository: type[JamesRepositoryPort]
 
-    @classmethod
-    async def receive_uploaded_records(
-        cls, person_commands: list[PersonCommand], file_name: str
+class JamesInteractor(JamesUseCase):
+    def __init__(self, repository: JamesRepositoryPort) -> None:
+        self._repository = repository
+
+    async def upload(
+        self, person_commands: list[PersonCommand], file_name: str
     ) -> dict[str, Any]:
         booking_commands: list[BookingCommand] = [
             BookingCommand(
@@ -33,7 +34,7 @@ class JamesInteractor(JamesUseCase):
             [asdict(person) for person in person_commands[:5]],
         )
 
-        count = await cls.repository.receive_uploaded_records(
+        count = await self._repository.upload(
             person_commands,
             booking_commands,
             file_name,

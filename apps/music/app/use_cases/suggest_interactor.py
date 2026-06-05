@@ -58,11 +58,11 @@ def _compose_recommendation(
     return genres, songs, pattern
 
 
-class SuggestService(SuggestUseCase):
+class SuggestInteractor(SuggestUseCase):
     def __init__(self, repository: SuggestRepositoryPort) -> None:
         self._repository = repository
 
-    async def create_from_saved_evaluation(
+    async def upload(
         self, command: VocalRecommendationCreateCommand
     ) -> VocalRecommendationResultDto:
         row = await self._repository.get_sing_evaluation_by_id(command.sing_evaluation_id)
@@ -85,14 +85,14 @@ class SuggestService(SuggestUseCase):
         )
         saved = await self._repository.save_recommendation(entity)
         logger.info(
-            "[MUSIC][suggest][4/service] 추천 저장 id=%s evaluation_id=%s genres=%s",
+            "[MUSIC][suggest][4/interactor] 추천 저장 id=%s evaluation_id=%s genres=%s",
             saved.id,
             saved.sing_evaluation_id,
             genres,
         )
         return await _entity_to_dto(self._repository, saved)
 
-    async def get_latest(
+    async def read(
         self, sing_evaluation_id: int
     ) -> VocalRecommendationResultDto | None:
         entity = await self._repository.get_latest_by_evaluation_id(sing_evaluation_id)

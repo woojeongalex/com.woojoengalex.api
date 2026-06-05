@@ -12,26 +12,21 @@ from music.app.ports.output.suggest_repository_port import SuggestRepositoryPort
 logger = logging.getLogger(__name__)
 
 
-class SuggestRepository(SuggestRepositoryPort):
-    def __init__(self, db: AsyncSession | None = None) -> None:
-        self.db = db
-
-    def _require_db(self) -> AsyncSession:
-        if self.db is None:
-            raise RuntimeError("DB session is not available.")
-        return self.db
+class SuggestPgRepository(SuggestRepositoryPort):
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
 
     async def get_sing_evaluation_by_id(
         self, evaluation_id: int
     ) -> SingEvaluationEntity | None:
-        db = self._require_db()
+        db = self._session
         stmt = select(SingEvaluationEntity).where(SingEvaluationEntity.id == evaluation_id)
         return (await db.execute(stmt)).scalar_one_or_none()
 
     async def get_ai_analysis_for_sing_evaluation(
         self, sing_evaluation_id: int
     ) -> AiVocalAnalysisEntity | None:
-        db = self._require_db()
+        db = self._session
         stmt = (
             select(AiVocalAnalysisEntity)
             .join(
@@ -46,7 +41,7 @@ class SuggestRepository(SuggestRepositoryPort):
     async def get_ai_analysis_by_id(
         self, ai_analysis_id: int
     ) -> AiVocalAnalysisEntity | None:
-        db = self._require_db()
+        db = self._session
         stmt = select(AiVocalAnalysisEntity).where(
             AiVocalAnalysisEntity.id == ai_analysis_id
         )
@@ -55,7 +50,7 @@ class SuggestRepository(SuggestRepositoryPort):
     async def save_recommendation(
         self, row: VocalRecommendationEntity
     ) -> VocalRecommendationEntity:
-        db = self._require_db()
+        db = self._session
         db.add(row)
         await db.commit()
         await db.refresh(row)
@@ -71,7 +66,7 @@ class SuggestRepository(SuggestRepositoryPort):
     async def get_latest_by_evaluation_id(
         self, sing_evaluation_id: int
     ) -> VocalRecommendationEntity | None:
-        db = self._require_db()
+        db = self._session
         stmt = (
             select(VocalRecommendationEntity)
             .where(

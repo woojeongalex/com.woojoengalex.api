@@ -8,7 +8,7 @@ from titanic.app.dtos.james_command import PersonCommand
 
 class JamesUseCase(ABC):
     @abstractmethod
-    async def receive_uploaded_records(
+    async def upload(
         self, person_commands: list[PersonCommand], file_name: str
     ) -> dict[str, Any]:
         pass

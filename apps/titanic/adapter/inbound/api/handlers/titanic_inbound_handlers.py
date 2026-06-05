@@ -14,7 +14,7 @@ async def pass_james_upload(
     rows: list[JamesSchema],
 ) -> JamesUploadResponse:
     person_commands = [james_schema_to_person_command(row) for row in rows]
-    result = await james.receive_uploaded_records(person_commands, file_name)
+    result = await james.upload(person_commands, file_name)
     titanic_flow_log(
         "james-upload",
         "inbound",

@@ -4,6 +4,10 @@ from titanic.adapter.inbound.api.schemas.james_schema import JamesSchema
 from titanic.app.dtos.james_command import BookingCommand, PersonCommand
 
 
+def james_schemas_to_person_commands(rows: list[JamesSchema]) -> list[PersonCommand]:
+    return [james_schema_to_person_command(row) for row in rows]
+
+
 def james_schema_to_person_command(row: JamesSchema) -> PersonCommand:
     return PersonCommand(
         passenger_id=row.passenger_id,

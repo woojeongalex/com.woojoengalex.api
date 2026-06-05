@@ -14,7 +14,7 @@ from music.app.ports.output.list_repository_port import ListRepositoryPort
 logger = logging.getLogger(__name__)
 
 
-class EvaluationService(EvaluationUseCase):
+class EvaluationInteractor(EvaluationUseCase):
     """평가 요청을 세션(허브) → 녹음 → AI 분석으로 분리 저장 (3NF)."""
 
     def __init__(
@@ -44,13 +44,13 @@ class EvaluationService(EvaluationUseCase):
             and catalog_song_id != resolved_catalog
         ):
             logger.warning(
-                "[MUSIC][evaluation][4/service] catalogSongId=%s → MR 기준 %s 로 정정",
+                "[MUSIC][evaluation][4/interactor] catalogSongId=%s → MR 기준 %s 로 정정",
                 catalog_song_id,
                 resolved_catalog,
             )
         return resolved_catalog, mr_search_list_id
 
-    async def save_evaluation(
+    async def upload(
         self, command: VocalEvaluationCreateCommand
     ) -> VocalEvaluationResultDto:
         catalog_song_id, mr_search_list_id = await self._resolve_catalog_and_mr(
@@ -85,7 +85,7 @@ class EvaluationService(EvaluationUseCase):
             evaluation, vocal_recording, ai_analysis
         )
         logger.info(
-            "[MUSIC][evaluation][4/service] 저장 완료 eval=%s recording=%s ai=%s",
+            "[MUSIC][evaluation][4/interactor] 저장 완료 eval=%s recording=%s ai=%s",
             saved_eval.id,
             saved_rec.id,
             saved_ai.id,

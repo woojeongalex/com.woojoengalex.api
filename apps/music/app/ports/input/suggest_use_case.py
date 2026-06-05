@@ -10,13 +10,13 @@ from music.app.dtos.suggest_dto import (
 
 class SuggestUseCase(ABC):
     @abstractmethod
-    async def create_from_saved_evaluation(
+    async def upload(
         self, command: VocalRecommendationCreateCommand
     ) -> VocalRecommendationResultDto:
         pass
 
     @abstractmethod
-    async def get_latest(
+    async def read(
         self, sing_evaluation_id: int
     ) -> VocalRecommendationResultDto | None:
         pass

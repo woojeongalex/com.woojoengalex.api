@@ -10,7 +10,7 @@ from music.app.dtos.evaluation_dto import (
 
 class EvaluationUseCase(ABC):
     @abstractmethod
-    async def save_evaluation(
+    async def upload(
         self, command: VocalEvaluationCreateCommand
     ) -> VocalEvaluationResultDto:
         pass

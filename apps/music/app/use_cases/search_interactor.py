@@ -9,14 +9,14 @@ from music.app.ports.output.list_repository_port import ListRepositoryPort
 logger = logging.getLogger(__name__)
 
 
-class ListService(SearchUseCase):
+class SearchInteractor(SearchUseCase):
     def __init__(
         self,
         repository: ListRepositoryPort,
     ) -> None:
         self._repository = repository
 
-    async def search_and_persist(self, raw_query: str) -> SongMrSearchResultDto:
+    async def search(self, raw_query: str) -> SongMrSearchResultDto:
         q = raw_query.strip()
         matches = find_vocal_catalog_by_query(q)
         entities = [
@@ -35,13 +35,13 @@ class ListService(SearchUseCase):
         ]
         if not entities:
             logger.info(
-                "[MUSIC][search][4/service] MR search query=%s match_count=0 (DB 저장 없음)",
+                "[MUSIC][search][4/interactor] MR search query=%s match_count=0 (DB 저장 없음)",
                 q,
             )
             return SongMrSearchResultDto(query=q, hits=[], count=0)
         saved = await self._repository.save_search_results(entities)
         logger.info(
-            "[MUSIC][search][4/service] MR search query=%s persisted_rows=%s titles=%s",
+            "[MUSIC][search][4/interactor] MR search query=%s persisted_rows=%s titles=%s",
             q,
             len(saved),
             [e.title for e in saved],

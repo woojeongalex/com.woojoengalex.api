@@ -7,5 +7,5 @@ from music.app.dtos.search_dto import SongMrSearchResultDto
 
 class SearchUseCase(ABC):
     @abstractmethod
-    async def search_and_persist(self, raw_query: str) -> SongMrSearchResultDto:
+    async def search(self, raw_query: str) -> SongMrSearchResultDto:
         pass

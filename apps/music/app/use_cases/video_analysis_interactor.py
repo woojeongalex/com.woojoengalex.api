@@ -21,10 +21,10 @@ from music.app.use_cases.video_audio_preprocess import (
 logger = logging.getLogger(__name__)
 
 
-class VideoAnalysisService(VideoAnalysisUseCase):
+class VideoAnalysisInteractor(VideoAnalysisUseCase):
     """상태 없음 — 바이트 단위 분석."""
 
-    def analyze_video_bytes(
+    def analyze(
         self, data: bytes, original_filename: str
     ) -> VideoVocalAnalysisResultDto:
         if not data:

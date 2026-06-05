@@ -1,18 +1,20 @@
-from pydantic import BaseModel, Field
+"""MR 검색 API 응답 스키마."""
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SongMrHitResponse(BaseModel):
-    """DB에 저장된 검색 결과 1건."""
+    model_config = ConfigDict(populate_by_name=True)
 
-    id: int = Field(description="시스템 PK (song_mr_search_lists.id)")
-    catalog_song_id: str
+    id: int
+    catalog_song_id: str = Field(alias="catalogSongId")
     title: str
     artist: str
     bpm: int
-    song_key: str
-    range_label: str
-    mr_track_name: str
-    mr_description: str
+    song_key: str = Field(alias="songKey")
+    range_label: str = Field(alias="rangeLabel")
+    mr_track_name: str = Field(alias="mrTrackName")
+    mr_description: str = Field(alias="mrDescription")
 
 
 class SongMrSearchResponse(BaseModel):
