@@ -1,29 +1,29 @@
-"""출력 Port — v1 라우터·input Port와 1:1 (*_repository_port)."""
+"""출력 Port — v1 라우터·input Port와 1:1 (*_repository)."""
 
-from titanic.app.ports.output.andrews_blueprint_repository_port import (
-    AndrewsBlueprintRepositoryPort,
-)
-from titanic.app.ports.output.cal_pistol_repository_port import CalPistolRepositoryPort
-from titanic.app.ports.output.hartley_violin_repository_port import (
-    HartleyViolinRepositoryPort,
-)
-from titanic.app.ports.output.isidor_bed_repository_port import IsidorBedRepositoryPort
-from titanic.app.ports.output.jack_sketch_repository_port import JackSketchRepositoryPort
-from titanic.app.ports.output.james_repository_port import JamesRepositoryPort
-from titanic.app.ports.output.rose_repository_port import RoseRepositoryPort
-from titanic.app.ports.output.ruth_corset_repository_port import RuthCorsetRepositoryPort
-from titanic.app.ports.output.smith_captain_repository_port import SmithCaptainRepositoryPort
-from titanic.app.ports.output.walter_repository_port import WalterRepositoryPort
+from titanic.app.ports.output.crew_andrews_architect_repository import AndrewsArchitectRepository
+from titanic.app.ports.output.passenger_cal_tester_repository import CalTestRepository
+from titanic.app.ports.output.crew_hartley_violin_repository import HartleyViolinRepository
+from titanic.app.ports.output.passenger_isidor_couple_repository import IsidorCoupleRepository
+from titanic.app.ports.output.passenger_jack_trainer_repository import JackTrainRepository
+from titanic.app.ports.output.crew_james_repository import JamesRepository
+from titanic.app.ports.output.crew_lowe_boat_repository import LoweBoatRepository
+from titanic.app.ports.output.passenger_molly_scaler_repository import MollyScalerRepository
+from titanic.app.ports.output.passenger_rose_model_repository import RoseModelRepository
+from titanic.app.ports.output.passenger_ruth_survivor_repository import RuthSurvivorRepository
+from titanic.app.ports.output.crew_smith_captain_repository import SmithCaptainRepository
+from titanic.app.ports.output.crew_walter_director_repository import WalterDirectorRepository
 
 __all__ = [
-    "JamesRepositoryPort",
-    "WalterRepositoryPort",
-    "RoseRepositoryPort",
-    "AndrewsBlueprintRepositoryPort",
-    "JackSketchRepositoryPort",
-    "RuthCorsetRepositoryPort",
-    "IsidorBedRepositoryPort",
-    "SmithCaptainRepositoryPort",
-    "HartleyViolinRepositoryPort",
-    "CalPistolRepositoryPort",
+    "JamesRepository",
+    "WalterDirectorRepository",
+    "RoseModelRepository",
+    "AndrewsArchitectRepository",
+    "JackTrainRepository",
+    "RuthSurvivorRepository",
+    "IsidorCoupleRepository",
+    "SmithCaptainRepository",
+    "HartleyViolinRepository",
+    "CalTestRepository",
+    "LoweBoatRepository",
+    "MollyScalerRepository",
 ]

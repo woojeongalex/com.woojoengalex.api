@@ -4,7 +4,7 @@ from titanic.adapter.inbound.api.schemas.titanic_schema import (
     WalterPassengerItem,
     WalterPassengerPageResponse,
 )
-from titanic.app.dtos.walter_page import WalterPassengerPageDto
+from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto
 
 
 def walter_page_dto_to_response(page: WalterPassengerPageDto) -> WalterPassengerPageResponse:

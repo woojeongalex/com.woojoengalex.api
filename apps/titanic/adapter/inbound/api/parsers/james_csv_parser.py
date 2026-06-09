@@ -6,7 +6,7 @@ import io
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
 
-from titanic.adapter.inbound.api.schemas.james_schema import (
+from titanic.adapter.inbound.api.schemas.crew_james_schema import (
     JAMES_CSV_COLUMNS,
     JamesSchema,
     has_james_csv_column,

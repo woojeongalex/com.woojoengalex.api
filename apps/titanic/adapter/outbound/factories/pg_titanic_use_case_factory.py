@@ -2,13 +2,13 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from titanic.adapter.outbound.pg.james_pg_repository import JamesPgRepository
+from titanic.adapter.outbound.pg.crew_james_pg_repository import JamesPgRepository
 from titanic.app.factories.titanic_use_case_factory import TitanicUseCaseFactory
-from titanic.app.ports.input.james_use_case import JamesUseCase
-from titanic.app.ports.input.walter_use_case import WalterUseCase
-from titanic.app.use_cases.james_interactor import JamesInteractor
-from titanic.app.use_cases.walter_interactor import WalterInteractor
-from titanic.adapter.outbound.pg.walter_pg_repository import WalterPgRepository
+from titanic.app.ports.input.crew_james_use_case import JamesUseCase
+from titanic.app.ports.input.crew_walter_use_case import WalterUseCase
+from titanic.app.use_cases.crew_james_interactor import JamesInteractor
+from titanic.app.use_cases.crew_walter_interactor import WalterInteractor
+from titanic.adapter.outbound.pg.crew_walter_pg_repository import WalterPgRepository
 
 
 class PgTitanicUseCaseFactory(TitanicUseCaseFactory):

@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import ConfigDict
 from sqlmodel import Field, SQLModel
 
-from titanic.app.dtos.james_command import BookingCommand
+from titanic.app.dtos.crew_james_command import BookingCommand
 
 
 class BookingOrm(SQLModel, table=True):

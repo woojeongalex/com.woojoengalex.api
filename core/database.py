@@ -1,17 +1,13 @@
-"""Neon DB — `core.matrix.oracle_database` re-export."""
+"""Neon DB — `core.matrix.database_manager` re-export."""
 
-from core.matrix.oracle_database import (
+from core.matrix.database_manager import (
+    create_all_tables as init_db,
     dispose_engine,
     get_db,
-    get_engine,
-    get_session_factory,
-    init_db,
 )
 
 __all__ = [
     "dispose_engine",
     "get_db",
-    "get_engine",
-    "get_session_factory",
     "init_db",
 ]

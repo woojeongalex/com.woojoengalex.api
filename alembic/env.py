@@ -31,19 +31,25 @@ if config.config_file_name is not None:
 target_metadata = SQLModel.metadata
 
 
+_ALEMBIC_SYNC_TO_ASYNC_PREFIX: dict[str, str] = {
+    "postgresql://": "postgresql+asyncpg://",
+    "postgres://": "postgresql+asyncpg://",
+    "postgresql+psycopg://": "postgresql+asyncpg://",
+}
+
+_ALEMBIC_ALREADY_ASYNC = ("postgresql+asyncpg://",)
+
+
 def _alembic_database_url() -> str:
     """온라인(async) 마이그레이션용 URL."""
     url = os.getenv("DATABASE_URL", "").strip()
     if not url:
         raise RuntimeError("DATABASE_URL이 설정되지 않았습니다. backend/.env를 확인하세요.")
-    if url.startswith("postgresql+asyncpg://"):
+    if url.startswith(_ALEMBIC_ALREADY_ASYNC):
         return url
-    if url.startswith("postgresql://"):
-        return "postgresql+asyncpg://" + url[len("postgresql://") :]
-    if url.startswith("postgres://"):
-        return "postgresql+asyncpg://" + url[len("postgres://") :]
-    if url.startswith("postgresql+psycopg://"):
-        return "postgresql+asyncpg://" + url[len("postgresql+psycopg://") :]
+    for sync_prefix, async_prefix in _ALEMBIC_SYNC_TO_ASYNC_PREFIX.items():
+        if url.startswith(sync_prefix):
+            return async_prefix + url[len(sync_prefix):]
     return url
 
 

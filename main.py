@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from pathlib import Path
 
 import requests
@@ -305,39 +306,57 @@ def get_all_weather_forecasts() -> AllForecastsResponse:
         raise HTTPException(status_code=502, detail=f"OpenWeather 응답 형식 오류: {exc!s}") from exc
 
 
+@dataclass(frozen=True)
+class _GeminiErrorRule:
+    keywords: tuple[str, ...]
+    status_code: int
+    detail: str
+    retryable: bool
+
+
+_GEMINI_ERROR_RULES: tuple[_GeminiErrorRule, ...] = (
+    _GeminiErrorRule(
+        keywords=("429", "quota", "resource_exhausted"),
+        status_code=429,
+        detail=(
+            "Gemini API 할당량을 초과했거나, 이 모델은 현재 요금제에서 사용할 수 없습니다. "
+            "Google AI Studio에서 사용량·결제를 확인하거나, "
+            "backend/.env 에 GEMINI_MODEL=gemini-2.5-flash 를 넣은 뒤 서버를 재시작해 보세요."
+        ),
+        retryable=True,
+    ),
+    _GeminiErrorRule(
+        keywords=("404", "not found"),
+        status_code=502,
+        detail=(
+            "지원하지 않는 Gemini 모델입니다. "
+            "backend/.env 에 GEMINI_MODEL=gemini-2.5-flash 를 설정해 보세요."
+        ),
+        retryable=True,
+    ),
+)
+
+
+def _match_gemini_rule(exc: Exception) -> _GeminiErrorRule | None:
+    msg = str(exc).lower()
+    for rule in _GEMINI_ERROR_RULES:
+        if any(kw in msg for kw in rule.keywords):
+            return rule
+    return None
+
+
 def _gemini_error_to_http(exc: Exception) -> HTTPException:
+    rule = _match_gemini_rule(exc)
+    if rule:
+        return HTTPException(status_code=rule.status_code, detail=rule.detail)
     msg = str(exc)
-    lower = msg.lower()
-    if "429" in msg or "quota" in lower or "resource_exhausted" in lower:
-        return HTTPException(
-            status_code=429,
-            detail=(
-                "Gemini API 할당량을 초과했거나, 이 모델은 현재 요금제에서 사용할 수 없습니다. "
-                "Google AI Studio에서 사용량·결제를 확인하거나, "
-                "backend/.env 에 GEMINI_MODEL=gemini-2.5-flash 를 넣은 뒤 서버를 재시작해 보세요."
-            ),
-        )
-    if "404" in msg or "not found" in lower:
-        return HTTPException(
-            status_code=502,
-            detail=(
-                "지원하지 않는 Gemini 모델입니다. "
-                "backend/.env 에 GEMINI_MODEL=gemini-2.5-flash 를 설정해 보세요."
-            ),
-        )
     short = msg if len(msg) <= 280 else msg[:280] + "…"
     return HTTPException(status_code=502, detail=f"Gemini 호출 실패: {short}")
 
 
 def _should_try_next_model(exc: Exception) -> bool:
-    msg = str(exc).lower()
-    return (
-        "429" in str(exc)
-        or "quota" in msg
-        or "resource_exhausted" in msg
-        or "404" in str(exc)
-        or "not found" in msg
-    )
+    rule = _match_gemini_rule(exc)
+    return rule is not None and rule.retryable
 
 
 def _generate_gemini_reply(message: str) -> str:

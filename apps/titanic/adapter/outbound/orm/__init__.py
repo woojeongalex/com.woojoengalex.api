@@ -1,3 +1,7 @@
-from titanic.adapter.outbound.orm.titanic_passenger_orm import TitanicPassengerOrm
+from titanic.adapter.outbound.orm.passenger_orm import PersonOrm
+from titanic.adapter.outbound.orm.booking_orm import BookingOrm
 
-__all__ = ["TitanicPassengerOrm"]
+__all__ = [
+    "PersonOrm",
+    "BookingOrm",
+]
