@@ -17,7 +17,10 @@ _COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     "embarked": ("embarked", "Embarked"),
 }
 
-JAMES_CSV_COLUMNS: tuple[str, ...] = tuple(_COLUMN_ALIASES.keys())
+_OPTIONAL_COLUMNS: frozenset[str] = frozenset({"survived"})
+JAMES_CSV_COLUMNS: tuple[str, ...] = tuple(
+    col for col in _COLUMN_ALIASES if col not in _OPTIONAL_COLUMNS
+)
 
 
 def has_james_csv_column(col: str, headers: list[str]) -> bool:

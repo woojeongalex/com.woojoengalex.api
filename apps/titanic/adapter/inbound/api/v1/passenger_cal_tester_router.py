@@ -10,7 +10,7 @@ from titanic.dependencies.passenger_cal_tester_provider import get_cal_test_use_
 로즈의 오만한 약혼자. 1등석 승객이자 재력가로 잭과 대립하며 테스트 성격의 악역을 맡음
 '''
 
-cal_tester_router = APIRouter(prefix="/titanic/cal", tags=["cal"])
+cal_tester_router = APIRouter(prefix="/cal", tags=["cal"])
 
 
 @cal_tester_router.get("/myself")

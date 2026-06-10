@@ -32,6 +32,10 @@ try:
     from database import dispose_engine, get_db, init_db
 except ModuleNotFoundError:
     from apps.database import dispose_engine, get_db, init_db
+import titanic.adapter.outbound.orm.passenger_orm  # noqa: F401
+import titanic.adapter.outbound.orm.booking_orm  # noqa: F401
+import titanic.adapter.outbound.orm.passenger_rose_model_orm  # noqa: F401
+import titanic.adapter.outbound.orm.passenger_jack_trainer_orm  # noqa: F401
 import music.adapter.outbound.orm.ai_vocal_analysis_model  # noqa: F401
 import music.adapter.outbound.orm.user_vocal_recording_model  # noqa: F401
 import music.adapter.outbound.orm.evaluation_models  # noqa: F401
@@ -60,7 +64,6 @@ GEMINI_FALLBACK_MODELS = (
     "gemini-2.0-flash-lite",
     "gemini-1.5-flash-8b",
 )
-
 
 class ChatRequest(BaseModel):
     """채팅 요청 본문. 사용자 메시지를 JSON으로 전달합니다."""
@@ -146,6 +149,11 @@ app.include_router(signup_router)
 app.include_router(login_router)
 app.include_router(titanic_router)
 app.include_router(music_router)
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 
 @app.get("/")
@@ -442,6 +450,6 @@ async def check_db(db: AsyncSession = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 
 

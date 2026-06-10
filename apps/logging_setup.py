@@ -67,4 +67,12 @@ def configure_logging() -> None:
         pkg_logger.setLevel(logging.INFO)
         pkg_logger.propagate = True
 
-    logging.getLogger("uvicorn.access").setLevel(logging.INFO)
+    access_logger = logging.getLogger("uvicorn.access")
+    access_logger.setLevel(logging.INFO)
+
+    class _HealthFilter(logging.Filter):
+        def filter(self, record: logging.LogRecord) -> bool:
+            msg = record.getMessage()
+            return "/health" not in msg
+
+    access_logger.addFilter(_HealthFilter())

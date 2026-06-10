@@ -4,8 +4,9 @@
 - Neon 저장: `PersonCommand` → `person_orm`, `BookingCommand` → `booking_orm`
 """
 
-__all__ = ["PERSON_COMMAND_FIELDS", "BookingCommand", "PersonCommand"]
-from dataclasses import dataclass
+__all__ = ["PERSON_COMMAND_FIELDS", "BookingCommand", "PersonCommand", "JamesQuery", "JamesIntroduceResponse"]
+from dataclasses import dataclass, field
+from typing import Optional
 
 from titanic.app.dtos.passenger_row import PassengerRowDto
 
@@ -30,18 +31,18 @@ PERSON_COMMAND_FIELDS: tuple[str, ...] = (
 class PersonCommand:
     """CSV 1행 = Person + Booking + Port(country 제외) 역정규화."""
 
-    passenger_id: str
-    survived: str
-    pclass: str
-    name: str
-    gender: str
-    age: str
-    sib_sp: str
-    parch: str
-    ticket: str
-    fare: str
-    cabin: str
-    embarked: str
+    passenger_id: Optional[str] = field(default=None)
+    survived: Optional[str] = field(default=None)
+    pclass: Optional[str] = field(default=None)
+    name: Optional[str] = field(default=None)
+    gender: Optional[str] = field(default=None)
+    age: Optional[str] = field(default=None)
+    sib_sp: Optional[str] = field(default=None)
+    parch: Optional[str] = field(default=None)
+    ticket: Optional[str] = field(default=None)
+    fare: Optional[str] = field(default=None)
+    cabin: Optional[str] = field(default=None)
+    embarked: Optional[str] = field(default=None)
 
     def to_passenger_row(self) -> PassengerRowDto:
         return PassengerRowDto(
@@ -64,13 +65,20 @@ class PersonCommand:
 class BookingCommand:
     """Booking + Port(embarked만) — `Titanic-Dataset.csv`에 있는 컬럼만."""
 
-    pclass: str
-    ticket: str
-    fare: str
-    cabin: str
-    embarked: str
+    pclass: Optional[str] = field(default=None)
+    ticket: Optional[str] = field(default=None)
+    fare: Optional[str] = field(default=None)
+    cabin: Optional[str] = field(default=None)
+    embarked: Optional[str] = field(default=None)
 
 
-@dataclass
-class JamesResponse:
-    answer: str
+@dataclass(frozen=True)
+class JamesQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class JamesIntroduceResponse:
+    id: int
+    name: str

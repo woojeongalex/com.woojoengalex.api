@@ -39,17 +39,17 @@ class TitanicDatasetSchemaResponse(BaseModel):
 
 class WalterPassengerItem(BaseModel):
     id: int
-    source_file: str
-    passenger_id: str
-    survived: str
-    pclass: str
-    name: str
-    gender: str
-    age: str
-    sib_sp: str
-    parch: str
-    ticket: str
-    fare: str
+    source_file: str | None = None
+    passenger_id: str | None = None
+    survived: str | None = None
+    pclass: str | None = None
+    name: str | None = None
+    gender: str | None = None
+    age: str | None = None
+    sib_sp: str | None = None
+    parch: str | None = None
+    ticket: str | None = None
+    fare: str | None = None
     created_at: str | None = None
 
 

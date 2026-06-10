@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from titanic.adapter.outbound.orm.booking_orm import BookingOrm
 from titanic.adapter.outbound.orm.passenger_orm import PersonOrm
-from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto
+from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto, WalterQuery, WalterResponse
 from titanic.app.ports.output.crew_walter_director_repository import WalterDirectorRepository
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,14 @@ def _row_to_dict(person: PersonOrm, booking: BookingOrm | None) -> dict[str, Any
 class WalterPgRepository(WalterDirectorRepository):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def introduce_myself(self, query: WalterQuery) -> WalterResponse:
+        logger.info(f"[WalterPgRepository] introduce_myself 진입 | request_data={query}")
+        response: WalterResponse = WalterResponse(
+            id=query.id * 10000,
+            name=query.name + "가 레포지토리에 다녀옴",
+        )
+        return response
 
     async def read_passengers(
         self,

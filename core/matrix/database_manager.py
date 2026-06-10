@@ -56,13 +56,29 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def create_all_tables() -> None:
-    # 테이블 생성 시에도 엔진 초기화 여부 체크 추가
+    import logging
+    from sqlalchemy import text
+
+    log = logging.getLogger("backend_main")
+
     if engine is None:
         init_engine()
-        
+
     if engine is not None:
+        from sqlmodel import SQLModel
+        from core.matrix.theone_base import Base as TheOneBase
+
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(TheOneBase.metadata.create_all)
+            await conn.run_sync(SQLModel.metadata.create_all)
+
+        async with async_session_factory() as session:
+            result = await session.execute(
+                text("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")
+            )
+            tables = [r[0] for r in result.fetchall()]
+            log.info("Neon DB 테이블 목록 (%d개): %s", len(tables), ", ".join(tables))
 
 
 async def dispose_engine() -> None:

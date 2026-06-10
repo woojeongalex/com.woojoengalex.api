@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any
 
-from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto
+from titanic.adapter.inbound.api.schemas.crew_walter_schema import WalterSchema
+from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto, WalterResponse
 
 
 class WalterUseCase(ABC):
     @abstractmethod
-    async def introduce_myself(self) -> dict[str, Any]:
+    async def introduce_myself(self, schema: WalterSchema) -> WalterResponse:
         pass
 
     @abstractmethod

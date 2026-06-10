@@ -1,4 +1,4 @@
-from backend.core.matrix.theone_base import Base
+from core.matrix.theone_base import Base
 
 class WalterOrm(Base):
 

@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 
-from titanic.app.dtos.crew_james_command import BookingCommand, PersonCommand
+from titanic.app.dtos.crew_james_command import BookingCommand, JamesIntroduceResponse, JamesQuery, PersonCommand
 
 
 class JamesRepository(ABC):
+    @abstractmethod
+    async def introduce_myself(self, query: JamesQuery) -> JamesIntroduceResponse:
+        pass
+
     @abstractmethod
     async def upload(
         self,

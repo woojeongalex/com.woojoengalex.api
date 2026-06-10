@@ -4,18 +4,16 @@ from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass
+@dataclass(frozen=True)
 class WalterQuery:
     id: int
     name: str
-    memo: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class WalterResponse:
     id: int
     name: str
-    memo: str
 
 
 @dataclass

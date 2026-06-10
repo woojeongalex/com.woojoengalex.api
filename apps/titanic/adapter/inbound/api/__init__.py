@@ -13,7 +13,7 @@ from titanic.adapter.inbound.api.v1.passenger_ruth_survivor_router import ruth_s
 from titanic.adapter.inbound.api.v1.crew_smith_captain_router import smith_captain_router
 from titanic.adapter.inbound.api.v1.crew_walter_router import walter_router
 
-titanic_router = APIRouter()
+titanic_router = APIRouter(prefix="/titanic", tags=["titanic"])
 
 titanic_router.include_router(james_router)
 titanic_router.include_router(rose_model_router)

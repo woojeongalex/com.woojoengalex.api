@@ -11,7 +11,7 @@ from titanic.dependencies.passenger_isidor_couple_provider import get_isidor_cou
 
 추천 파일명: isidor_couple_router.py (Couple: 마지막을 함께한 부부)
 '''
-isidor_couple_router = APIRouter(prefix="/titanic/isidor", tags=["isidor"])
+isidor_couple_router = APIRouter(prefix="/isidor", tags=["isidor"])
 
 @isidor_couple_router.get("/myself")
 async def introduce_myself(
@@ -19,7 +19,7 @@ async def introduce_myself(
 ) -> IsidorCoupleResponse :
     return await isidor.introduce_myself(
         IsidorCoupleSchema(
-            id=12,
+            id=8,
             name="이시도르 & 이다 스트라우스 부부 (Isidor & Ida Straus)"
         )
     )

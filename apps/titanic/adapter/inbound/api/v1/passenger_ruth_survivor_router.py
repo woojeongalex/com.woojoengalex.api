@@ -11,7 +11,7 @@ from titanic.dependencies.passenger_ruth_survivor_provider import get_ruth_survi
 통제욕의 상징. 1등석 승객(상류층) 조회를 담당한다.
 '''
 
-ruth_survivor_router = APIRouter(prefix="/titanic/ruth", tags=["ruth"])
+ruth_survivor_router = APIRouter(prefix="/ruth", tags=["ruth"])
 
 
 @ruth_survivor_router.get("/myself")
@@ -20,7 +20,7 @@ async def introduce_myself(
 ) -> RuthSurvivorResponse:
     return await ruth.introduce_myself(
         RuthSurvivorSchema(
-            id=11,
+            id=12,
             name="루스 드윗 부카터 (Ruth DeWitt Bukater)"
         )
     )

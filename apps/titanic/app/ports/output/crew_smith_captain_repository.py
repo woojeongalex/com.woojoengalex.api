@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any
+
+from titanic.app.dtos.crew_smith_captain_dto import SmithCaptainQuery, SmithCaptainResponse
 
 
 class SmithCaptainRepository(ABC):
     @abstractmethod
-    async def get_smith_captain(self) -> dict[str, Any]:
+    async def introduce_myself(self, query: SmithCaptainQuery) -> SmithCaptainResponse:
         pass
