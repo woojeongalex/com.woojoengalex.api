@@ -6,7 +6,7 @@ from titanic.adapter.outbound.pg.crew_andrews_architect_pg_repository import (
 from titanic.adapter.outbound.pg.passenger_cal_tester_pg_repository import CalTestPgRepository
 from titanic.adapter.outbound.pg.crew_hartley_violin_pg_repository import HartleyViolinPgRepository
 from titanic.adapter.outbound.pg.passenger_isidor_couple_pg_repository import IsidorCouplePgRepository
-from titanic.adapter.outbound.pg.passenger_jack_trainer_pg_repository import JackTrainPgRepository
+from titanic.adapter.outbound.pg.passenger_jack_trainer_pg_repository import JackTrainerPgRepository
 from titanic.adapter.outbound.pg.crew_james_pg_repository import JamesPgRepository
 from titanic.adapter.outbound.pg.crew_lowe_boat_pg_repository import LoweBoatPgRepository
 from titanic.adapter.outbound.pg.passenger_molly_scaler_pg_repository import MollyScalerPgRepository
@@ -20,7 +20,7 @@ __all__ = [
     "WalterPgRepository",
     "RoseModelPgRepository",
     "AndrewsArchitectPgRepository",
-    "JackTrainPgRepository",
+    "JackTrainerPgRepository",
     "RuthSurvivorPgRepository",
     "IsidorCouplePgRepository",
     "SmithCaptainPgRepository",

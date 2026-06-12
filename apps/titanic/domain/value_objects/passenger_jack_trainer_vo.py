@@ -1,71 +1,133 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Literal
+from enum import Enum
+
+
+class GenderType(Enum):
+    MALE = "male"
+    FEMALE = "female"
+    UNKNOWN = "unknown"
+
 
 @dataclass(frozen=True)
 class PassengerId:
-    """승객 고유 식별 번호 VO (자체 검증 로직 포함)"""
-    value: int
+    value: str
 
     def __post_init__(self):
-        if self.value < 0:
-            raise ValueError("승객 ID는 음수일 수 없습니다.")
+        if not self.value or not self.value.strip():
+            raise ValueError("빈 값")
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass(frozen=True)
 class PassengerName:
-    """승객 이름 VO"""
-    value: str
+    full_name: str
 
     def __post_init__(self):
-        if not self.value or len(self.value.strip()) == 0:
-            raise ValueError("승객 이름은 비어있을 수 없습니다.")
+        if not self.full_name or not self.full_name.strip():
+            raise ValueError("빈 값")
+        if len(self.full_name) > 200:
+            raise ValueError("200자 초과")
+
+    @property
+    def normalized(self) -> str:
+        return self.full_name.strip()
 
 
 @dataclass(frozen=True)
 class Gender:
-    """성별 VO (정해진 도메인 값만 허용)"""
-    value: Literal["male", "female", "unknown"]
+    value: GenderType
 
     @classmethod
-    def from_str(cls, val: str | None) -> "Gender":
-        if not val:
-            return cls("unknown")
-        clean_val = val.strip().lower()
-        if clean_val in ["male", "female"]:
-            return cls(clean_val)
-        return cls("unknown")
+    def from_raw(cls, raw: str | None) -> Gender:
+        if not raw:
+            return cls(GenderType.UNKNOWN)
+        normalized = raw.strip().lower()
+        if normalized == "male":
+            return cls(GenderType.MALE)
+        if normalized == "female":
+            return cls(GenderType.FEMALE)
+        return cls(GenderType.UNKNOWN)
+
+    def is_female(self) -> bool:
+        return self.value == GenderType.FEMALE
 
 
 @dataclass(frozen=True)
 class Age:
-    """나이 VO (결측치 및 도메인 범위 검증)"""
     value: float | None
 
     def __post_init__(self):
         if self.value is not None and (self.value < 0 or self.value > 120):
-            raise ValueError("유효하지 않은 나이 범위입니다.")
+            raise ValueError("유효하지 않은 나이 범위")
+
+    @classmethod
+    def from_raw(cls, raw: str | None) -> Age:
+        if not raw or not raw.strip():
+            return cls(None)
+        try:
+            return cls(float(raw))
+        except (ValueError, TypeError):
+            raise ValueError("파싱 실패")
 
     @property
-    def is_missing(self) -> bool:
+    def is_unknown(self) -> bool:
         return self.value is None
+
+    @property
+    def is_minor(self) -> bool:
+        if self.value is None:
+            return False
+        return self.value < 18
 
 
 @dataclass(frozen=True)
-class FamilyRelations:
-    """가족 관계 VO (형제/배우자 수와 부모/자녀 수를 결합한 개념)"""
-    sib_sp: int  # 형제 자매 / 배우자 수
-    parch: int   # 부모 / 자녀 수
+class FamilyRelation:
+    sib_sp: int
+    parch: int
 
     def __post_init__(self):
-        if self.sib_sp < 0 or self.parch < 0:
-            raise ValueError("가족 구성원 수는 음수일 수 없습니다.")
+        if self.sib_sp < 0:
+            raise ValueError("sib_sp는 음수 불가")
+        if self.parch < 0:
+            raise ValueError("parch는 음수 불가")
 
     @property
     def total_family_size(self) -> int:
-        """비즈니스 로직: 동반한 총 가족 수 계산"""
         return self.sib_sp + self.parch
-    
+
     @property
-    def Is_alone(self) -> bool:
-        """비즈니스 로직: 홀로 탑승했는지 여부"""
+    def is_alone(self) -> bool:
         return self.total_family_size == 0
+
+    @classmethod
+    def from_raw(cls, sib_sp_raw, parch_raw) -> FamilyRelation:
+        sib_sp = int(sib_sp_raw) if sib_sp_raw is not None else 0
+        parch = int(parch_raw) if parch_raw is not None else 0
+        return cls(sib_sp=sib_sp, parch=parch)
+
+
+@dataclass(frozen=True)
+class SurvivalStatus:
+    survived: bool | None
+
+    @classmethod
+    def from_raw(cls, raw: str | None) -> SurvivalStatus:
+        if not raw:
+            return cls(None)
+        if raw == "1":
+            return cls(True)
+        if raw == "0":
+            return cls(False)
+        raise ValueError("파싱 실패")
+
+    @property
+    def is_unknown(self) -> bool:
+        return self.survived is None
+
+
+# alias used by domain __init__.py
+JackTrainerVo = SurvivalStatus

@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import asyncio
 import logging
 import sys
@@ -28,23 +29,6 @@ try:
     from database import dispose_engine, get_db, init_db
 except ModuleNotFoundError:
     from apps.database import dispose_engine, get_db, init_db
-import titanic.adapter.outbound.orm.passenger_orm  # noqa: F401
-import titanic.adapter.outbound.orm.booking_orm  # noqa: F401
-import titanic.adapter.outbound.orm.passenger_rose_model_orm  # noqa: F401
-import titanic.adapter.outbound.orm.passenger_jack_trainer_orm  # noqa: F401
-import music.adapter.outbound.orm.ai_vocal_analysis_model  # noqa: F401
-import music.adapter.outbound.orm.user_vocal_recording_model  # noqa: F401
-import music.adapter.outbound.orm.evaluation_models  # noqa: F401
-import music.adapter.outbound.orm.sing_model  # noqa: F401
-import music.adapter.outbound.orm.suggest_model  # noqa: F401
-import music.adapter.outbound.orm.instrument_evaluation_model  # noqa: F401
-import music.adapter.outbound.orm.instrument_recording_model  # noqa: F401
-import music.adapter.outbound.orm.instrument_tuning_analysis_model  # noqa: F401
-import music.adapter.outbound.orm.speech_evaluation_model  # noqa: F401
-import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
-import music.adapter.outbound.orm.speech_feedback_analysis_model  # noqa: F401
-import music.adapter.outbound.orm.list_model  # noqa: F401
-import friday13th.adapter.outbound.orm.user_model  # noqa: F401
 from core.matrix.keymaker_api import get_keymaker
 from music.adapter.inbound.api import music_router
 from friday13th.adapter.inbound.api.v1 import login_router, signup_router
@@ -61,6 +45,7 @@ GEMINI_FALLBACK_MODELS = (
     "gemini-1.5-flash-8b",
 )
 
+
 class ChatRequest(BaseModel):
     """채팅 요청 본문. 사용자 메시지를 JSON으로 전달합니다."""
 
@@ -69,7 +54,6 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-
 
 
 @asynccontextmanager
@@ -109,7 +93,6 @@ def health_check():
 @app.get("/")
 def read_root():
     return {"message": "FAST API 메인 페이지 ", "docs": "/docs"}
-
 
 
 @dataclass(frozen=True)
@@ -249,5 +232,3 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
-

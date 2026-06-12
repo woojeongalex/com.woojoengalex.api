@@ -2,13 +2,13 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class JackTrainQuery:
+class JackTrainerQuery:
     id: int
     name: str
 
 
 @dataclass(frozen=True)
-class JackTrainResponse:
+class JackTrainerResponse:
     id: int
     name: str
     role: str = ""

@@ -7,3 +7,7 @@ class SmithCaptainRepository(ABC):
     @abstractmethod
     async def introduce_myself(self, query: SmithCaptainQuery) -> SmithCaptainResponse:
         pass
+
+    @abstractmethod
+    async def chat(self, message: str) -> SmithCaptainResponse:
+        pass

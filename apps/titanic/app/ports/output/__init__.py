@@ -4,7 +4,7 @@ from titanic.app.ports.output.crew_andrews_architect_repository import AndrewsAr
 from titanic.app.ports.output.passenger_cal_tester_repository import CalTestRepository
 from titanic.app.ports.output.crew_hartley_violin_repository import HartleyViolinRepository
 from titanic.app.ports.output.passenger_isidor_couple_repository import IsidorCoupleRepository
-from titanic.app.ports.output.passenger_jack_trainer_repository import JackTrainRepository
+from titanic.app.ports.output.passenger_jack_trainer_repository import JackTrainerRepository
 from titanic.app.ports.output.crew_james_repository import JamesRepository
 from titanic.app.ports.output.crew_lowe_boat_repository import LoweBoatRepository
 from titanic.app.ports.output.passenger_molly_scaler_repository import MollyScalerRepository
@@ -18,7 +18,7 @@ __all__ = [
     "WalterDirectorRepository",
     "RoseModelRepository",
     "AndrewsArchitectRepository",
-    "JackTrainRepository",
+    "JackTrainerRepository",
     "RuthSurvivorRepository",
     "IsidorCoupleRepository",
     "SmithCaptainRepository",

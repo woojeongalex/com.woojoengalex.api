@@ -1,38 +1,64 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Literal
-from domain.value_objects import PassengerId, PassengerName, Gender, Age, FamilyRelations
+from typing import Optional
+
+from titanic.domain.value_objects.passenger_jack_trainer_vo import (
+    Age,
+    FamilyRelation,
+    Gender,
+    PassengerId,
+    PassengerName,
+    SurvivalStatus,
+)
+
 
 @dataclass
-class TitanicPassenger:
-    """타이타닉 승객 도메인 엔티티 (핵심 비즈니스 중심점)"""
-    
-    # 💡 엔티티의 핵심: 고유 식별자(Identity)
-    id: int | None  # DB 저장 전에는 None일 수 있음
-    
-    # 💡 모든 속성은 원시 타입(str, int)이 아닌 도메인 VO로 구성
-    passenger_id: PassengerId | None
-    name: PassengerName
+class PassengerEntity:
+    id: int
+    passenger_id: Optional[PassengerId]
+    name: Optional[PassengerName]
     gender: Gender
     age: Age
-    family: FamilyRelations
-    _survived: Literal["survived", "perished", "unknown"]  # 캡슐화를 위해 내부 상태로 관리
+    family_relation: FamilyRelation
+    survival_status: SurvivalStatus
 
-    @property
-    def survived_status(self) -> str:
-        return self._survived
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PassengerEntity):
+            return False
+        return self.id == other.id
 
-    # 💡 안방마님 역할: 엔티티 내부에서 비즈니스 로직을 직접 수행 (Rich Domain Model)
-    def record_survival_result(self, survived_code: int | None) -> None:
-        """승객의 생존 결과를 도메인 규칙에 맞게 판별 및 기록"""
-        if survived_code == 1:
-            self._survived = "survived"
-        elif survived_code == 0:
-            self._survived = "perished"
-        else:
-            self._survived = "unknown"
+    def __hash__(self) -> int:
+        return hash(self.id)
 
-    def is_vulnerable_demographic(self) -> bool:
-        """비즈니스 로직: 구조 우선순위가 높은 취약 계층(여성 또는 아동)인지 판별"""
-        is_child = self.age.value is not None and self.age.value < 16
-        is_female = self.gender.value == "female"
-        return is_child or is_female
+    def is_high_risk(self) -> bool:
+        if self.gender.is_female():
+            return False
+        if self.age.is_minor:
+            return False
+        if not self.family_relation.is_alone:
+            return False
+        return True
+
+    def has_family(self) -> bool:
+        return not self.family_relation.is_alone
+
+    def record_survival(self, survived: bool) -> None:
+        self.survival_status = SurvivalStatus(survived=survived)
+
+    @classmethod
+    def from_orm(cls, orm) -> PassengerEntity:
+        return cls(
+            id=orm.id,
+            passenger_id=PassengerId(str(orm.passenger_id)) if orm.passenger_id is not None else None,
+            name=PassengerName(orm.name) if orm.name is not None else None,
+            gender=Gender.from_raw(orm.gender),
+            age=Age.from_raw(str(orm.age) if orm.age is not None else None),
+            family_relation=FamilyRelation.from_raw(orm.sib_sp, orm.parch),
+            survival_status=SurvivalStatus.from_raw(str(orm.survived) if orm.survived is not None else None),
+        )
+
+
+# backward-compat aliases
+TitanicPassenger = PassengerEntity
+JackTrainerEntity = PassengerEntity

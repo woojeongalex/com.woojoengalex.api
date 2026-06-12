@@ -1,1 +1,6 @@
-pass
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class MollyScalerVo:
+    pass

@@ -1,41 +1,41 @@
 from titanic.adapter.outbound.orm.passenger_orm import PersonOrm
-from titanic.domain.entities.passenger_jack_trainer_entity import TitanicPassenger
+from titanic.domain.entities.passenger_jack_trainer_entity import PassengerEntity
 from titanic.domain.value_objects.passenger_jack_trainer_vo import (
     Age,
-    FamilyRelations,
+    FamilyRelation,
     Gender,
     PassengerId,
     PassengerName,
+    SurvivalStatus,
 )
 
 
-def orm_to_entity(orm: PersonOrm) -> TitanicPassenger:
-    entity = TitanicPassenger(
+def orm_to_entity(orm: PersonOrm) -> PassengerEntity:
+    return PassengerEntity(
         id=orm.id,
-        passenger_id=PassengerId(int(orm.passenger_id)) if orm.passenger_id else None,
-        name=PassengerName(orm.name),
-        gender=Gender.from_str(orm.gender),
-        age=Age(float(orm.age) if orm.age else None),
-        family=FamilyRelations(
-            sib_sp=int(orm.sib_sp) if orm.sib_sp else 0,
-            parch=int(orm.parch) if orm.parch else 0,
-        ),
-        _survived="unknown",
+        passenger_id=PassengerId(str(orm.passenger_id)) if orm.passenger_id else None,
+        name=PassengerName(orm.name) if orm.name else None,
+        gender=Gender.from_raw(orm.gender),
+        age=Age.from_raw(str(orm.age) if orm.age is not None else None),
+        family_relation=FamilyRelation.from_raw(orm.sib_sp, orm.parch),
+        survival_status=SurvivalStatus.from_raw(str(orm.survived) if orm.survived is not None else None),
     )
-    survived_code = int(orm.survived) if orm.survived in ("0", "1") else None
-    entity.record_survival_result(survived_code)
-    return entity
 
 
-def entity_to_orm(entity: TitanicPassenger, source_file: str = "") -> PersonOrm:
+def entity_to_orm(entity: PassengerEntity, source_file: str = "") -> PersonOrm:
+    survived_val = (
+        "1" if entity.survival_status.survived is True
+        else "0" if entity.survival_status.survived is False
+        else ""
+    )
     return PersonOrm(
         id=entity.id,
         source_file=source_file,
-        passenger_id=str(entity.passenger_id.value) if entity.passenger_id else "",
-        survived="1" if entity.survived_status == "survived" else "0" if entity.survived_status == "perished" else "",
-        name=entity.name.value,
-        gender=entity.gender.value,
-        age=str(entity.age.value) if not entity.age.is_missing else "",
-        sib_sp=str(entity.family.sib_sp),
-        parch=str(entity.family.parch),
+        passenger_id=str(entity.passenger_id) if entity.passenger_id else "",
+        survived=survived_val,
+        name=entity.name.full_name if entity.name else "",
+        gender=entity.gender.value.value,
+        age=str(entity.age.value) if not entity.age.is_unknown else "",
+        sib_sp=str(entity.family_relation.sib_sp),
+        parch=str(entity.family_relation.parch),
     )
