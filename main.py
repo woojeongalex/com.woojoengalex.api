@@ -27,7 +27,7 @@ from adapters.db_health_adapter import DbHealthAdapter
 try:
     from database import dispose_engine, get_db, init_db
 except ModuleNotFoundError:
-from apps.database import dispose_engine, get_db, init_db
+    from apps.database import dispose_engine, get_db, init_db
 import titanic.adapter.outbound.orm.passenger_orm  # noqa: F401
 import titanic.adapter.outbound.orm.booking_orm  # noqa: F401
 import titanic.adapter.outbound.orm.passenger_rose_model_orm  # noqa: F401
