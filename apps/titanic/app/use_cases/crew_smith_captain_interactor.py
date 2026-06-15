@@ -12,12 +12,12 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
         self._repository = repository
 
     async def chat(
-        self,
-        schema: ChatSchema,
+        self, schema: ChatSchema,
         jack: JackTrainerUseCase,
         rose: RoseModelUseCase,
     ) -> SmithCaptainResponse:
-        return await self._repository.chat(schema.messages)
+        '''Smith 선장의 채팅 응답 — schema.messages를 레포지토리로 전달'''
+        return await self._repository.chat(message=schema.messages)
 
     async def introduce_myself(self, schema: SmithCaptainSchema) -> SmithCaptainResponse:
         return await self._repository.introduce_myself(SmithCaptainQuery(

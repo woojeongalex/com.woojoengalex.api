@@ -1,4 +1,9 @@
+"""[Layer: Use Cases] Mia 보컬 평가 DTO."""
+from __future__ import annotations
+
 from dataclasses import dataclass
+
+__all__ = ["VocalEvaluationCreateCommand", "VocalEvaluationResultDto"]
 
 
 @dataclass(frozen=True)

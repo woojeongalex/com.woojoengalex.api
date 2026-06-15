@@ -10,7 +10,7 @@ class ChatSchema(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "messages": "타이타닉이 침몰할 때 어떤 결정을 하셨나요?",
+                "messages": "탑승객이 몇 명이야?",
             }
         }
     }

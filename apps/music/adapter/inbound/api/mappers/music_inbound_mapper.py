@@ -1,27 +1,26 @@
-"""HTTP 스키마 ↔ app/dtos 변환 (inbound 경계)."""
+"""Music inbound — HTTP 스키마 ↔ app/dtos 변환 (Adapter 경계 1회)."""
+from __future__ import annotations
 
-from music.adapter.inbound.api.schemas.evaluation_schemas import (
-    VocalEvaluationCreateRequest,
-    VocalEvaluationResponse,
-)
-from music.adapter.inbound.api.schemas.instrument_schemas import (
+from music.adapter.inbound.api.schemas.instrument_andrew_recorder_schema import InstrumentEvaluationCreateRequest
+from music.adapter.inbound.api.schemas.instrument_fletcher_tuner_schema import InstrumentEvaluationResponse
+from music.adapter.inbound.api.schemas.instrument_franz_catalog_schema import (
     InstrumentCatalogHit,
     InstrumentCatalogResponse,
-    InstrumentEvaluationCreateRequest,
-    InstrumentEvaluationResponse,
 )
-from music.adapter.inbound.api.schemas.list_schema import SongMrHitResponse, SongMrSearchResponse
-from music.adapter.inbound.api.schemas.speech_schemas import (
-    SpeechEvaluationCreateRequest,
-    SpeechEvaluationResponse,
+from music.adapter.inbound.api.schemas.speech_cicero_topic_schema import (
     SpeechTopicHit,
     SpeechTopicsResponse,
 )
-from music.adapter.inbound.api.schemas.suggest_schema import (
+from music.adapter.inbound.api.schemas.speech_herald_recorder_schema import SpeechEvaluationCreateRequest
+from music.adapter.inbound.api.schemas.speech_lumiere_video_schema import VideoVocalAnalysisResponse
+from music.adapter.inbound.api.schemas.speech_oracle_analyst_schema import SpeechEvaluationResponse
+from music.adapter.inbound.api.schemas.vocal_bard_searcher_schema import SongMrHitResponse, SongMrSearchResponse
+from music.adapter.inbound.api.schemas.vocal_maestro_analyzer_schema import VocalEvaluationResponse
+from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import VocalEvaluationCreateRequest
+from music.adapter.inbound.api.schemas.vocal_muse_recommender_schema import (
     VocalRecommendationCreateRequest,
     VocalRecommendationResponse,
 )
-from music.adapter.inbound.api.schemas.video_analysis_schema import VideoVocalAnalysisResponse
 from music.app.dtos.evaluation_dto import (
     VocalEvaluationCreateCommand,
     VocalEvaluationResultDto,

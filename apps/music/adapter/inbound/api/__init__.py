@@ -1,19 +1,23 @@
 from fastapi import APIRouter
 
-from music.adapter.inbound.api.v1.evaluation_router import evaluation_router
-from music.adapter.inbound.api.v1.instrument_router import instrument_router
-from music.adapter.inbound.api.v1.search_router import search_router
-from music.adapter.inbound.api.v1.speech_router import speech_router
-from music.adapter.inbound.api.v1.suggest_router import suggest_router
-from music.adapter.inbound.api.v1.video_router import video_router
+from music.adapter.inbound.api.v1.instrument_andrew_recorder_router import instrument_andrew_recorder_router
+from music.adapter.inbound.api.v1.instrument_franz_catalog_router import instrument_franz_catalog_router
+from music.adapter.inbound.api.v1.speech_cicero_topic_router import speech_cicero_topic_router
+from music.adapter.inbound.api.v1.speech_herald_recorder_router import speech_herald_recorder_router
+from music.adapter.inbound.api.v1.speech_lumiere_video_router import speech_lumiere_video_router
+from music.adapter.inbound.api.v1.vocal_bard_searcher_router import vocal_bard_searcher_router
+from music.adapter.inbound.api.v1.vocal_mia_recorder_router import vocal_mia_recorder_router
+from music.adapter.inbound.api.v1.vocal_muse_recommender_router import vocal_muse_recommender_router
 
 music_router = APIRouter()
 
-music_router.include_router(search_router)
-music_router.include_router(evaluation_router)
-music_router.include_router(suggest_router)
-music_router.include_router(instrument_router)
-music_router.include_router(speech_router)
-music_router.include_router(video_router)
+music_router.include_router(vocal_bard_searcher_router)
+music_router.include_router(vocal_mia_recorder_router)
+music_router.include_router(vocal_muse_recommender_router)
+music_router.include_router(instrument_franz_catalog_router)
+music_router.include_router(instrument_andrew_recorder_router)
+music_router.include_router(speech_cicero_topic_router)
+music_router.include_router(speech_herald_recorder_router)
+music_router.include_router(speech_lumiere_video_router)
 
 __all__ = ["music_router"]

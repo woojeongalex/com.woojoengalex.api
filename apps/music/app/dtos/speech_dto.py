@@ -1,4 +1,14 @@
+"""[Layer: Use Cases] Cicero/Herald 스피치 평가 DTO."""
+from __future__ import annotations
+
 from dataclasses import dataclass
+
+__all__ = [
+    "SpeechEvaluationCreateCommand",
+    "SpeechEvaluationResultDto",
+    "SpeechTopicHitDto",
+    "SpeechTopicsResultDto",
+]
 
 
 @dataclass(frozen=True)

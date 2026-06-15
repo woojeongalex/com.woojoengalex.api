@@ -1,15 +1,19 @@
-"""Suggest 의존성 조립소 — 추천 업로드·조회."""
-
+"""Suggest(Muse) 의존성 조립소 — 추천 업로드·조회."""
 from database import get_db
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from music.adapter.outbound.pg.suggest_pg_repository import SuggestPgRepository
-from music.app.ports.input.suggest_use_case import SuggestUseCase
-from music.app.ports.output.suggest_repository_port import SuggestRepositoryPort
-from music.app.use_cases.suggest_interactor import SuggestInteractor
+from music.adapter.outbound.pg.vocal_muse_recommender_pg_repository import MuseRecommenderPgRepository
+from music.app.ports.input.vocal_muse_recommender_use_case import SuggestUseCase
+from music.app.ports.output.vocal_muse_recommender_repository_port import SuggestRepositoryPort
+from music.app.use_cases.vocal_muse_recommender_interactor import MuseRecommenderInteractor
 
 
-def get_suggest_use_case(db: AsyncSession = Depends(get_db)) -> SuggestUseCase:
-    repository: SuggestRepositoryPort = SuggestPgRepository(session=db)
-    return SuggestInteractor(repository=repository)
+def get_suggest_repository(db: AsyncSession = Depends(get_db)) -> SuggestRepositoryPort:
+    return MuseRecommenderPgRepository(session=db)
+
+
+def get_suggest_use_case(
+    repository: SuggestRepositoryPort = Depends(get_suggest_repository),
+) -> SuggestUseCase:
+    return MuseRecommenderInteractor(repository=repository)
