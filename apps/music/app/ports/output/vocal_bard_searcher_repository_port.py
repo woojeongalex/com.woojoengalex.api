@@ -3,10 +3,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from music.app.dtos.search_dto import SongMrHitDto, SongMrSearchSaveDto
+from music.app.dtos.search_dto import BardIntroduceQuery, BardIntroduceResponse, SongMrHitDto, SongMrSearchSaveDto
 
 
 class ListRepositoryPort(ABC):
+    @abstractmethod
+    async def introduce_myself(self, query: BardIntroduceQuery) -> BardIntroduceResponse:
+        pass
+
     @abstractmethod
     async def get_by_id(self, mr_id: int) -> SongMrHitDto | None:
         pass

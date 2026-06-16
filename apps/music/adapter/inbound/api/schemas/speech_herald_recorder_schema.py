@@ -1,6 +1,16 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class HeraldIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Herald ID")
+    name: str = Field("스피치 헤럴드", description="Herald's name")
+
+
+class HeraldIntroduceResponse(BaseModel):
+    id: int
+    name: str
+
+
 class SpeechEvaluationCreateRequest(BaseModel):
     topic_id: str = Field(max_length=64, alias="topicId")
     clarity_score: int = Field(ge=0, le=100, alias="clarityScore")

@@ -1,8 +1,6 @@
 # CLAUDE.md — Titanic 앱 (레퍼런스)
 
-> 모노레포 루트 → [[CLAUDE|CLAUDE.md (woojeongalex.cloud 루트)]]  
-> 백엔드 전체 규칙 → [[woojeongai/CLAUDE|`woojeongai/CLAUDE.md`]]  
-> 전역 하네스 → [[woojeongai/_claude/CLAUDE|`woojeongai/_claude/CLAUDE.md`]]
+> 백엔드 허브 → [[woojeongai/CLAUDE|`woojeongai/CLAUDE.md`]]
 
 Titanic은 **James(업로드) / Walter(조회) 분리 패턴**의 정본이다.  
 신규 앱을 추가할 때 이 구조를 그대로 복제한다.
@@ -82,3 +80,13 @@ from titanic.dependencies.walter_roaster import get_walter_use_case
 3. `main.py` `include_router` 등록
 4. Alembic migration 작성
 5. `import main` + curl 로 검증
+
+## 타이타닉 도메인 문서 연결
+
+ * 타이타닉 도메인 문서 연결
+ * 타이타닉 피처 정리 : [[titanic-features]]
+ * 타이타닉 머신러닝 : [[titanic-machine-learning]]
+ * 타이타닉 ERD : [[TITANIC-ERD]]
+ * 타이타닉 알고리즘 : [[titanic-algorithm]]
+ * 타이타닉 NF : [[titanic-nf]]
+ * 

@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 
 from music.app.dtos.suggest_dto import (
     AiVocalAnalysisDto,
+    MuseIntroduceQuery,
+    MuseIntroduceResponse,
     SingEvaluationDto,
     VocalRecommendationResultDto,
     VocalRecommendationSaveCommand,
@@ -12,6 +14,10 @@ from music.app.dtos.suggest_dto import (
 
 
 class SuggestRepositoryPort(ABC):
+    @abstractmethod
+    async def introduce_myself(self, query: MuseIntroduceQuery) -> MuseIntroduceResponse:
+        pass
+
     @abstractmethod
     async def get_sing_evaluation_by_id(
         self, evaluation_id: int

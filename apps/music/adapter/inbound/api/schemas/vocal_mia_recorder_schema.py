@@ -60,3 +60,13 @@ class VocalEvaluationCreateRequest(BaseModel):
 
 
 SingEvaluationCreateRequest = VocalEvaluationCreateRequest
+
+
+class MiaIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Mia ID")
+    name: str = Field("보컬 미아", description="Mia's name")
+
+
+class MiaIntroduceResponse(BaseModel):
+    id: int
+    name: str

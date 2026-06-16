@@ -8,3 +8,13 @@ class VocalEvaluationResponse(BaseModel):
 
 
 SingEvaluationResponse = VocalEvaluationResponse
+
+
+class MaestroIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Maestro ID")
+    name: str = Field("보컬 마에스트로", description="Maestro's name")
+
+
+class MaestroIntroduceResponse(BaseModel):
+    id: int
+    name: str

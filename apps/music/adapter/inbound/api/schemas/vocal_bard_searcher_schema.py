@@ -19,3 +19,13 @@ class SongMrSearchResponse(BaseModel):
     query: str
     hits: list[SongMrHitResponse]
     count: int
+
+
+class BardIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Bard ID")
+    name: str = Field("보컬 바드", description="Bard's name")
+
+
+class BardIntroduceResponse(BaseModel):
+    id: int
+    name: str

@@ -3,10 +3,25 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from music.app.dtos.speech_dto import SpeechEvaluationCreateCommand, SpeechEvaluationResultDto
+from music.app.dtos.speech_dto import (
+    CiceroIntroduceQuery,
+    CiceroIntroduceResponse,
+    HeraldIntroduceQuery,
+    HeraldIntroduceResponse,
+    SpeechEvaluationCreateCommand,
+    SpeechEvaluationResultDto,
+)
 
 
 class SpeechRepositoryPort(ABC):
+    @abstractmethod
+    async def introduce_cicero(self, query: CiceroIntroduceQuery) -> CiceroIntroduceResponse:
+        pass
+
+    @abstractmethod
+    async def introduce_herald(self, query: HeraldIntroduceQuery) -> HeraldIntroduceResponse:
+        pass
+
     @abstractmethod
     async def save_evaluation_bundle(
         self, command: SpeechEvaluationCreateCommand

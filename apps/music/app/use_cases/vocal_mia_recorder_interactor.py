@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 from dataclasses import replace
 
-from music.app.dtos.evaluation_dto import VocalEvaluationCreateCommand, VocalEvaluationResultDto
+from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import MiaIntroduceSchema, MiaIntroduceResponse
+from music.app.dtos.evaluation_dto import MiaIntroduceQuery, VocalEvaluationCreateCommand, VocalEvaluationResultDto
 from music.app.ports.input.vocal_mia_recorder_use_case import EvaluationUseCase
 from music.app.ports.output.vocal_bard_searcher_repository_port import ListRepositoryPort
 from music.app.ports.output.vocal_mia_maestro_repository_port import EvaluationRepositoryPort
@@ -19,6 +20,9 @@ class MiaRecorderInteractor(EvaluationUseCase):
     ) -> None:
         self.repository = repository
         self.list_repository = list_repository
+
+    async def introduce_myself(self, schema: MiaIntroduceSchema) -> MiaIntroduceResponse:
+        return await self.repository.introduce_myself(MiaIntroduceQuery(id=schema.id, name=schema.name))
 
     async def _resolve_catalog_and_mr(
         self,

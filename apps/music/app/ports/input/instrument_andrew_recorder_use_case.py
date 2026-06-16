@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from music.adapter.inbound.api.schemas.instrument_andrew_recorder_schema import AndrewIntroduceSchema, AndrewIntroduceResponse
 from music.app.dtos.instrument_dto import (
     InstrumentEvaluationCreateCommand,
     InstrumentEvaluationResultDto,
@@ -10,6 +11,10 @@ from music.app.dtos.instrument_dto import (
 
 
 class InstrumentEvaluationUseCase(ABC):
+    @abstractmethod
+    async def introduce_myself(self, schema: AndrewIntroduceSchema) -> AndrewIntroduceResponse:
+        pass
+
     @abstractmethod
     async def upload(
         self, command: InstrumentEvaluationCreateCommand

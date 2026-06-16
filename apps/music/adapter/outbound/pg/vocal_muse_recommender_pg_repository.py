@@ -10,6 +10,8 @@ from music.adapter.outbound.orm.vocal_mia_recorder_model import UserVocalRecordi
 from music.adapter.outbound.orm.vocal_muse_recommender_model import VocalRecommendationEntity
 from music.app.dtos.suggest_dto import (
     AiVocalAnalysisDto,
+    MuseIntroduceQuery,
+    MuseIntroduceResponse,
     SingEvaluationDto,
     VocalRecommendationResultDto,
     VocalRecommendationSaveCommand,
@@ -22,6 +24,10 @@ logger = logging.getLogger(__name__)
 class MuseRecommenderPgRepository(SuggestRepositoryPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def introduce_myself(self, query: MuseIntroduceQuery) -> MuseIntroduceResponse:
+        logger.info("[MUSIC][muse][5/repository] introduce_myself name=%s", query.name)
+        return MuseIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
 
     async def get_sing_evaluation_by_id(
         self, evaluation_id: int

@@ -5,8 +5,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from music.domain.vocal_bard_searcher_catalog import VOCAL_CATALOG
+from music.adapter.inbound.api.schemas.vocal_muse_recommender_schema import MuseIntroduceSchema, MuseIntroduceResponse
 from music.app.dtos.suggest_dto import (
     AiVocalAnalysisDto,
+    MuseIntroduceQuery,
     VocalRecommendationCreateCommand,
     VocalRecommendationResultDto,
     VocalRecommendationSaveCommand,
@@ -87,6 +89,9 @@ def _compose_recommendation(
 class MuseRecommenderInteractor(SuggestUseCase):
     def __init__(self, repository: SuggestRepositoryPort) -> None:
         self.repository = repository
+
+    async def introduce_myself(self, schema: MuseIntroduceSchema) -> MuseIntroduceResponse:
+        return await self.repository.introduce_myself(MuseIntroduceQuery(id=schema.id, name=schema.name))
 
     async def upload(
         self, command: VocalRecommendationCreateCommand

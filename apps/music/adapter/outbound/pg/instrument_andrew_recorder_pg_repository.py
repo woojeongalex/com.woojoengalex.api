@@ -5,13 +5,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from music.adapter.outbound.orm.instrument_andrew_recorder_model import InstrumentRecordingEntity
 from music.adapter.outbound.orm.instrument_fletcher_tuner_model import InstrumentEvaluationEntity, InstrumentTuningAnalysisEntity
 from music.adapter.outbound.pg.pg_bundle_repository import save_three_part_bundle
-from music.app.dtos.instrument_dto import InstrumentEvaluationCreateCommand, InstrumentEvaluationResultDto
+from music.app.dtos.instrument_dto import AndrewIntroduceQuery, AndrewIntroduceResponse, FranzIntroduceQuery, FranzIntroduceResponse, InstrumentEvaluationCreateCommand, InstrumentEvaluationResultDto
 from music.app.ports.output.instrument_andrew_recorder_repository_port import InstrumentRepositoryPort
 
 
 class AndrewRecorderPgRepository(InstrumentRepositoryPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def introduce_franz(self, query: FranzIntroduceQuery) -> FranzIntroduceResponse:
+        return FranzIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
+
+    async def introduce_andrew(self, query: AndrewIntroduceQuery) -> AndrewIntroduceResponse:
+        return AndrewIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
 
     async def save_evaluation_bundle(
         self, command: InstrumentEvaluationCreateCommand

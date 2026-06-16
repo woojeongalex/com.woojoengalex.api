@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 
-from music.app.dtos.speech_dto import SpeechEvaluationCreateCommand, SpeechEvaluationResultDto
+from music.adapter.inbound.api.schemas.speech_herald_recorder_schema import HeraldIntroduceSchema, HeraldIntroduceResponse
+from music.app.dtos.speech_dto import HeraldIntroduceQuery, SpeechEvaluationCreateCommand, SpeechEvaluationResultDto
 from music.app.ports.input.speech_herald_recorder_use_case import SpeechEvaluationUseCase
 from music.app.ports.output.speech_herald_recorder_repository_port import SpeechRepositoryPort
 from music.domain.speech_cicero_topic_catalog import get_speech_topic
@@ -13,6 +14,9 @@ logger = logging.getLogger(__name__)
 class HeraldRecorderInteractor(SpeechEvaluationUseCase):
     def __init__(self, repository: SpeechRepositoryPort) -> None:
         self.repository = repository
+
+    async def introduce_myself(self, schema: HeraldIntroduceSchema) -> HeraldIntroduceResponse:
+        return await self.repository.introduce_herald(HeraldIntroduceQuery(id=schema.id, name=schema.name))
 
     async def upload(
         self, command: SpeechEvaluationCreateCommand

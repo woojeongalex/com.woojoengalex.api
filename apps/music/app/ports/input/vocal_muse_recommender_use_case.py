@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from music.adapter.inbound.api.schemas.vocal_muse_recommender_schema import MuseIntroduceSchema, MuseIntroduceResponse
 from music.app.dtos.suggest_dto import (
     VocalRecommendationCreateCommand,
     VocalRecommendationResultDto,
@@ -10,6 +11,10 @@ from music.app.dtos.suggest_dto import (
 
 
 class SuggestUseCase(ABC):
+    @abstractmethod
+    async def introduce_myself(self, schema: MuseIntroduceSchema) -> MuseIntroduceResponse:
+        pass
+
     @abstractmethod
     async def upload(
         self, command: VocalRecommendationCreateCommand

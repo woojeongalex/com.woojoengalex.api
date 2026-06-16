@@ -3,6 +3,16 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class AndrewIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Andrew ID")
+    name: str = Field("악기 앤드류", description="Andrew's name")
+
+
+class AndrewIntroduceResponse(BaseModel):
+    id: int
+    name: str
+
+
 class InstrumentEvaluationCreateRequest(BaseModel):
     instrument_id: Literal["guitar", "piano"] = Field(alias="instrumentId")
     tuning_accuracy: int = Field(ge=0, le=100, alias="tuningAccuracy")

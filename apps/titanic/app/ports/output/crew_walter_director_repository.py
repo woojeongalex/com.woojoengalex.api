@@ -9,6 +9,14 @@ class WalterDirectorRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_train_set(self) -> WalterResponse:
+        pass
+
+    @abstractmethod
+    async def get_test_set(self) -> WalterResponse:
+        pass
+
+    @abstractmethod
     async def read_passengers(
         self,
         source_file: str | None,

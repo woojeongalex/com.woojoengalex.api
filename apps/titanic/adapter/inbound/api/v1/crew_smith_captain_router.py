@@ -5,11 +5,7 @@ from fastapi import APIRouter, Depends, Body
 
 from titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import ChatSchema, SmithCaptainSchema
 from titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
-from titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
-from titanic.app.ports.input.passenger_rose_model_use_case import RoseModelUseCase
 from titanic.dependencies.crew_smith_captain_provider import get_smith_captain_use_case
-from titanic.dependencies.passenger_jack_trainer_provider import get_jack_trainer_use_case
-from titanic.dependencies.passenger_rose_model_provider import get_rose_model_use_case
 from titanic.app.dtos.crew_smith_captain_dto import SmithCaptainResponse
 
 logger = logging.getLogger("titanic_flow_log")
@@ -21,11 +17,9 @@ smith_captain_router = APIRouter(prefix="/smith", tags=["smith"])
 async def chat(
     schema: Annotated[ChatSchema, Body()],
     smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
-    jack: JackTrainerUseCase = Depends(get_jack_trainer_use_case),
-    rose: RoseModelUseCase = Depends(get_rose_model_use_case),
 ) -> SmithCaptainResponse:
     logger.info("[Smith Chat] 사용자 입력: %s", schema.messages)
-    return await smith.chat(schema, jack, rose)
+    return await smith.chat(schema)
 
 
 @smith_captain_router.get("/myself")

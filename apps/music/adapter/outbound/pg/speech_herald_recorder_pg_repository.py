@@ -5,13 +5,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from music.adapter.outbound.orm.speech_herald_recorder_model import SpeechRecordingEntity
 from music.adapter.outbound.orm.speech_oracle_analyst_model import SpeechEvaluationEntity, SpeechFeedbackAnalysisEntity
 from music.adapter.outbound.pg.pg_bundle_repository import save_three_part_bundle
-from music.app.dtos.speech_dto import SpeechEvaluationCreateCommand, SpeechEvaluationResultDto
+from music.app.dtos.speech_dto import CiceroIntroduceQuery, CiceroIntroduceResponse, HeraldIntroduceQuery, HeraldIntroduceResponse, SpeechEvaluationCreateCommand, SpeechEvaluationResultDto
 from music.app.ports.output.speech_herald_recorder_repository_port import SpeechRepositoryPort
 
 
 class HeraldRecorderPgRepository(SpeechRepositoryPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def introduce_cicero(self, query: CiceroIntroduceQuery) -> CiceroIntroduceResponse:
+        return CiceroIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
+
+    async def introduce_herald(self, query: HeraldIntroduceQuery) -> HeraldIntroduceResponse:
+        return HeraldIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
 
     async def save_evaluation_bundle(
         self, command: SpeechEvaluationCreateCommand

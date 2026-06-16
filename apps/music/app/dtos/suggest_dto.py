@@ -5,11 +5,25 @@ from dataclasses import dataclass
 
 __all__ = [
     "AiVocalAnalysisDto",
+    "MuseIntroduceQuery",
+    "MuseIntroduceResponse",
     "SingEvaluationDto",
     "VocalRecommendationCreateCommand",
     "VocalRecommendationResultDto",
     "VocalRecommendationSaveCommand",
 ]
+
+
+@dataclass(frozen=True)
+class MuseIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class MuseIntroduceResponse:
+    id: int
+    name: str
 
 
 @dataclass(frozen=True)

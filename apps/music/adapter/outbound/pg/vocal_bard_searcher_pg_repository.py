@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.adapter.outbound.orm.vocal_bard_searcher_model import SongMrSearchListEntity
-from music.app.dtos.search_dto import SongMrHitDto, SongMrSearchSaveDto
+from music.app.dtos.search_dto import BardIntroduceQuery, BardIntroduceResponse, SongMrHitDto, SongMrSearchSaveDto
 from music.app.ports.output.vocal_bard_searcher_repository_port import ListRepositoryPort
 
 logger = logging.getLogger(__name__)
@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 class BardSearcherPgRepository(ListRepositoryPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def introduce_myself(self, query: BardIntroduceQuery) -> BardIntroduceResponse:
+        logger.info("[MUSIC][bard][5/repository] introduce_myself name=%s", query.name)
+        return BardIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
 
     async def get_by_id(self, mr_id: int) -> SongMrHitDto | None:
         stmt = select(SongMrSearchListEntity).where(SongMrSearchListEntity.id == mr_id)

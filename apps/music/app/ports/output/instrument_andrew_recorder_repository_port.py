@@ -4,12 +4,24 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from music.app.dtos.instrument_dto import (
+    AndrewIntroduceQuery,
+    AndrewIntroduceResponse,
+    FranzIntroduceQuery,
+    FranzIntroduceResponse,
     InstrumentEvaluationCreateCommand,
     InstrumentEvaluationResultDto,
 )
 
 
 class InstrumentRepositoryPort(ABC):
+    @abstractmethod
+    async def introduce_franz(self, query: FranzIntroduceQuery) -> FranzIntroduceResponse:
+        pass
+
+    @abstractmethod
+    async def introduce_andrew(self, query: AndrewIntroduceQuery) -> AndrewIntroduceResponse:
+        pass
+
     @abstractmethod
     async def save_evaluation_bundle(
         self, command: InstrumentEvaluationCreateCommand

@@ -4,11 +4,53 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 __all__ = [
+    "CiceroIntroduceQuery",
+    "CiceroIntroduceResponse",
+    "HeraldIntroduceQuery",
+    "HeraldIntroduceResponse",
+    "OracleIntroduceQuery",
+    "OracleIntroduceResponse",
     "SpeechEvaluationCreateCommand",
     "SpeechEvaluationResultDto",
     "SpeechTopicHitDto",
     "SpeechTopicsResultDto",
 ]
+
+
+@dataclass(frozen=True)
+class CiceroIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class CiceroIntroduceResponse:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class HeraldIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class HeraldIntroduceResponse:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class OracleIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class OracleIntroduceResponse:
+    id: int
+    name: str
 
 
 @dataclass(frozen=True)

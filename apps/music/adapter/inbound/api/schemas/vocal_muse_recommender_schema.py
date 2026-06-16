@@ -34,3 +34,13 @@ class VocalRecommendationResponse(BaseModel):
     recommended_songs: list[str] = Field(alias="recommendedSongs")
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class MuseIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Muse ID")
+    name: str = Field("보컬 뮤즈", description="Muse's name")
+
+
+class MuseIntroduceResponse(BaseModel):
+    id: int
+    name: str

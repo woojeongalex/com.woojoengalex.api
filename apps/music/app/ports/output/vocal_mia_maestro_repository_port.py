@@ -3,10 +3,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from music.app.dtos.evaluation_dto import VocalEvaluationCreateCommand, VocalEvaluationResultDto
+from music.app.dtos.evaluation_dto import MiaIntroduceQuery, MiaIntroduceResponse, VocalEvaluationCreateCommand, VocalEvaluationResultDto
 
 
 class EvaluationRepositoryPort(ABC):
+    @abstractmethod
+    async def introduce_myself(self, query: MiaIntroduceQuery) -> MiaIntroduceResponse:
+        pass
+
     @abstractmethod
     async def save_evaluation_bundle(
         self, command: VocalEvaluationCreateCommand

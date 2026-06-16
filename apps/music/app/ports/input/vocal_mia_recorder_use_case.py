@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import MiaIntroduceSchema, MiaIntroduceResponse
 from music.app.dtos.evaluation_dto import (
     VocalEvaluationCreateCommand,
     VocalEvaluationResultDto,
@@ -10,6 +11,10 @@ from music.app.dtos.evaluation_dto import (
 
 
 class EvaluationUseCase(ABC):
+    @abstractmethod
+    async def introduce_myself(self, schema: MiaIntroduceSchema) -> MiaIntroduceResponse:
+        pass
+
     @abstractmethod
     async def upload(
         self, command: VocalEvaluationCreateCommand

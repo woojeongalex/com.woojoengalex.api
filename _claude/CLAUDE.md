@@ -1,6 +1,6 @@
 # CLAUDE.md — 모노레포 인수인계 (루트)
 
-> 모노레포 루트 → [[CLAUDE|CLAUDE.md (woojeongalex.cloud 루트)]]
+> 모노레포 루트 → `CLAUDE.md (woojeongalex.cloud 루트)`
 
 
 이 저장소는 **woojeongai(FastAPI 백엔드)** 와 **alexview(Next.js 프론트엔드)** 로 구성된 모노레포다.  
@@ -15,10 +15,8 @@
 | 순서 | 문서 | 역할 |
 |------|------|------|
 | 1 | **본 파일** `CLAUDE.md` | 전역 원칙·행동 하네스·링크 인덱스 |
-| 2 | [[woojeongai/CLAUDE\|`woojeongai/CLAUDE.md`]] | 백엔드 — FastAPI·클린 아키텍처·앱별 현황·ORM·체크리스트 |
-| 3 | [[alexview/_claude/CLAUDE\|`alexview/_claude/CLAUDE.md`]] | 프론트엔드 — Next.js·컴포넌트·상태관리·API 연동 |
-| 4 | [[woojeongai/apps/titanic/_docs/CLAUDE\|`woojeongai/apps/titanic/_docs/CLAUDE.md`]] | Titanic 레퍼런스 앱 상세 (James/Walter·ORM·Alembic) |
-| 5 | `AGENTS.md` | 행동 하네스 본문 — 가정 명시·범위 준수·검증 후 완료 |
+| 2 | `woojeongai/CLAUDE.md` | 백엔드 — FastAPI·클린 아키텍처·앱별 현황·ORM·체크리스트 |
+| 3 | `AGENTS.md` | 행동 하네스 본문 — 가정 명시·범위 준수·검증 후 완료 |
 
 **우선순위 (충돌 시):** 사용자 지시 > 각 앱 `CLAUDE.md` > 본 파일 > `AGENTS.md` > `.cursor/rules/*.mdc` > `.cursorrules`
 
@@ -104,8 +102,3 @@ woojeongalex.cloud/
 
 ---
 
-## 참고 문서 (vault)
-
-- [[vault/Backend/BACKEND_RULES|BACKEND_RULES]]
-- [[vault/Backend/CLEAN_ARCHITECTURE|CLEAN_ARCHITECTURE]]
-- [[vault/Backend/fastapi_rules|fastapi_rules]]

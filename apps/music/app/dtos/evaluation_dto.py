@@ -3,7 +3,31 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-__all__ = ["VocalEvaluationCreateCommand", "VocalEvaluationResultDto"]
+__all__ = ["VocalEvaluationCreateCommand", "VocalEvaluationResultDto", "MiaIntroduceQuery", "MiaIntroduceResponse", "MaestroIntroduceQuery", "MaestroIntroduceResponse"]
+
+
+@dataclass(frozen=True)
+class MiaIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class MiaIntroduceResponse:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class MaestroIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class MaestroIntroduceResponse:
+    id: int
+    name: str
 
 
 @dataclass(frozen=True)

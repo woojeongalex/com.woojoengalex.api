@@ -7,7 +7,8 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from music.app.dtos.video_analysis_dto import VideoVocalAnalysisResultDto
+from music.adapter.inbound.api.schemas.speech_lumiere_video_schema import LumiereIntroduceSchema, LumiereIntroduceResponse
+from music.app.dtos.video_analysis_dto import LumiereIntroduceQuery, VideoVocalAnalysisResultDto
 from music.app.ports.input.speech_lumiere_video_use_case import VideoAnalysisUseCase
 
 logger = logging.getLogger(__name__)
@@ -121,6 +122,12 @@ def _emotions_for_json(em: dict[str, float]) -> dict[str, float]:
 # ── interactor ────────────────────────────────────────────────────────────────
 
 class LumiereVideoInteractor(VideoAnalysisUseCase):
+    async def introduce_myself(self, schema: LumiereIntroduceSchema) -> LumiereIntroduceResponse:
+        return LumiereIntroduceResponse(
+            id=schema.id * 10000,
+            name=schema.name + "가 레포지토리에 다녀옴",
+        )
+
     def analyze(
         self, data: bytes, original_filename: str
     ) -> VideoVocalAnalysisResultDto:

@@ -2,14 +2,22 @@ from __future__ import annotations
 
 import logging
 
-from music.app.dtos.instrument_dto import InstrumentCatalogHitDto, InstrumentCatalogResultDto
+from music.adapter.inbound.api.schemas.instrument_franz_catalog_schema import FranzIntroduceSchema, FranzIntroduceResponse
+from music.app.dtos.instrument_dto import FranzIntroduceQuery, InstrumentCatalogHitDto, InstrumentCatalogResultDto
 from music.app.ports.input.instrument_franz_catalog_use_case import InstrumentCatalogUseCase
+from music.app.ports.output.instrument_andrew_recorder_repository_port import InstrumentRepositoryPort
 from music.domain.instrument_franz_catalog import search_instruments
 
 logger = logging.getLogger(__name__)
 
 
 class FranzCatalogInteractor(InstrumentCatalogUseCase):
+    def __init__(self, repository: InstrumentRepositoryPort) -> None:
+        self.repository = repository
+
+    async def introduce_myself(self, schema: FranzIntroduceSchema) -> FranzIntroduceResponse:
+        return await self.repository.introduce_franz(FranzIntroduceQuery(id=schema.id, name=schema.name))
+
     def search(self, q: str = "") -> InstrumentCatalogResultDto:
         hits = [
             InstrumentCatalogHitDto(

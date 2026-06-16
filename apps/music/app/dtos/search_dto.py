@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-__all__ = ["SongMrHitDto", "SongMrSearchResultDto", "SongMrSearchSaveDto"]
+__all__ = ["SongMrHitDto", "SongMrSearchResultDto", "SongMrSearchSaveDto", "BardIntroduceQuery", "BardIntroduceResponse"]
 
 
 @dataclass(frozen=True)
@@ -30,6 +30,18 @@ class SongMrHitDto:
     range_label: str
     mr_track_name: str
     mr_description: str
+
+
+@dataclass(frozen=True)
+class BardIntroduceQuery:
+    id: int
+    name: str
+
+
+@dataclass(frozen=True)
+class BardIntroduceResponse:
+    id: int
+    name: str
 
 
 @dataclass(frozen=True)

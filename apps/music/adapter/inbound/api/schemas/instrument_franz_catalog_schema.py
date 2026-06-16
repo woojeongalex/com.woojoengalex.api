@@ -12,3 +12,13 @@ class InstrumentCatalogResponse(BaseModel):
     query: str = ""
     hits: list[InstrumentCatalogHit]
     count: int
+
+
+class FranzIntroduceSchema(BaseModel):
+    id: int = Field(0, description="Franz ID")
+    name: str = Field("악기 프란츠", description="Franz's name")
+
+
+class FranzIntroduceResponse(BaseModel):
+    id: int
+    name: str
