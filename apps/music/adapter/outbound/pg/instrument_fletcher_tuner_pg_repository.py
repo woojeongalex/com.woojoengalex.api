@@ -5,12 +5,12 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.dtos.instrument_dto import FletcherIntroduceQuery, FletcherIntroduceResponse
-from music.app.ports.output.instrument_fletcher_tuner_repository_port import FletcherRepositoryPort
+from music.app.ports.output.instrument_fletcher_tuner_port import FletcherPort
 
 logger = logging.getLogger(__name__)
 
 
-class FletcherTunerPgRepository(FletcherRepositoryPort):
+class FletcherTunerPgRepository(FletcherPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

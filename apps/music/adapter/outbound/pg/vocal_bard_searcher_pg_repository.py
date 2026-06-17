@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.adapter.outbound.orm.vocal_bard_searcher_model import SongMrSearchListEntity
 from music.app.dtos.search_dto import BardIntroduceQuery, BardIntroduceResponse, SongMrHitDto, SongMrSearchSaveDto
-from music.app.ports.output.vocal_bard_searcher_repository_port import ListRepositoryPort
+from music.app.ports.output.vocal_bard_searcher_port import ListPort
 
 logger = logging.getLogger(__name__)
 
 
-class BardSearcherPgRepository(ListRepositoryPort):
+class BardSearcherPgRepository(ListPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

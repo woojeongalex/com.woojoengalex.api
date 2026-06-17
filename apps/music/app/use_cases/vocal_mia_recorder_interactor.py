@@ -6,8 +6,8 @@ from dataclasses import replace
 from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import MiaIntroduceSchema, MiaIntroduceResponse
 from music.app.dtos.evaluation_dto import MiaIntroduceQuery, VocalEvaluationCreateCommand, VocalEvaluationResultDto
 from music.app.ports.input.vocal_mia_recorder_use_case import EvaluationUseCase
-from music.app.ports.output.vocal_bard_searcher_repository_port import ListRepositoryPort
-from music.app.ports.output.vocal_mia_maestro_repository_port import EvaluationRepositoryPort
+from music.app.ports.output.vocal_bard_searcher_port import ListPort
+from music.app.ports.output.vocal_mia_maestro_port import EvaluationPort
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 class MiaRecorderInteractor(EvaluationUseCase):
     def __init__(
         self,
-        repository: EvaluationRepositoryPort,
-        list_repository: ListRepositoryPort,
+        repository: EvaluationPort,
+        list_repository: ListPort,
     ) -> None:
         self.repository = repository
         self.list_repository = list_repository

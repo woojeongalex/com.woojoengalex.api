@@ -6,10 +6,10 @@ from music.adapter.outbound.orm.speech_herald_recorder_model import SpeechRecord
 from music.adapter.outbound.orm.speech_oracle_analyst_model import SpeechEvaluationEntity, SpeechFeedbackAnalysisEntity
 from music.adapter.outbound.pg.pg_bundle_repository import save_three_part_bundle
 from music.app.dtos.speech_dto import CiceroIntroduceQuery, CiceroIntroduceResponse, HeraldIntroduceQuery, HeraldIntroduceResponse, SpeechEvaluationCreateCommand, SpeechEvaluationResultDto
-from music.app.ports.output.speech_herald_recorder_repository_port import SpeechRepositoryPort
+from music.app.ports.output.speech_herald_recorder_port import SpeechPort
 
 
-class HeraldRecorderPgRepository(SpeechRepositoryPort):
+class HeraldRecorderPgRepository(SpeechPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

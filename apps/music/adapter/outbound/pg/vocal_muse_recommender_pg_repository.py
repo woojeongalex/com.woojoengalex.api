@@ -16,12 +16,12 @@ from music.app.dtos.suggest_dto import (
     VocalRecommendationResultDto,
     VocalRecommendationSaveCommand,
 )
-from music.app.ports.output.vocal_muse_recommender_repository_port import SuggestRepositoryPort
+from music.app.ports.output.vocal_muse_recommender_port import SuggestPort
 
 logger = logging.getLogger(__name__)
 
 
-class MuseRecommenderPgRepository(SuggestRepositoryPort):
+class MuseRecommenderPgRepository(SuggestPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

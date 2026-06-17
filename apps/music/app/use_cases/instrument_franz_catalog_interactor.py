@@ -5,14 +5,14 @@ import logging
 from music.adapter.inbound.api.schemas.instrument_franz_catalog_schema import FranzIntroduceSchema, FranzIntroduceResponse
 from music.app.dtos.instrument_dto import FranzIntroduceQuery, InstrumentCatalogHitDto, InstrumentCatalogResultDto
 from music.app.ports.input.instrument_franz_catalog_use_case import InstrumentCatalogUseCase
-from music.app.ports.output.instrument_andrew_recorder_repository_port import InstrumentRepositoryPort
+from music.app.ports.output.instrument_andrew_recorder_port import InstrumentPort
 from music.domain.instrument_franz_catalog import search_instruments
 
 logger = logging.getLogger(__name__)
 
 
 class FranzCatalogInteractor(InstrumentCatalogUseCase):
-    def __init__(self, repository: InstrumentRepositoryPort) -> None:
+    def __init__(self, repository: InstrumentPort) -> None:
         self.repository = repository
 
     async def introduce_myself(self, schema: FranzIntroduceSchema) -> FranzIntroduceResponse:

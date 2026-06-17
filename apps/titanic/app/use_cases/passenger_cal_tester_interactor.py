@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from titanic.adapter.inbound.api.schemas.passenger_cal_tester_schema import CalTestSchema
 from titanic.app.dtos.passenger_cal_tester_dto import CalTestQuery, CalTestResponse
 from titanic.app.ports.input.passenger_cal_tester_use_case import CalTestUseCase
-from titanic.app.ports.output.passenger_cal_tester_repository import CalTestRepository
+from titanic.app.ports.output.passenger_cal_tester_port import CalTestPort
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ _DEFAULT_RULE = _ScoreRule(fit=5, balance=5, interpret=5, speed=5)
 
 
 class CalTestInteractor(CalTestUseCase):
-    def __init__(self, repository: CalTestRepository):
+    def __init__(self, repository: CalTestPort):
         self.repository = repository
 
     async def evaluate_models(self, train_manifest: dict) -> dict:

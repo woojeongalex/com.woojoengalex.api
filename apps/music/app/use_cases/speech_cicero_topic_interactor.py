@@ -5,14 +5,14 @@ import logging
 from music.adapter.inbound.api.schemas.speech_cicero_topic_schema import CiceroIntroduceSchema, CiceroIntroduceResponse
 from music.app.dtos.speech_dto import CiceroIntroduceQuery, SpeechTopicHitDto, SpeechTopicsResultDto
 from music.app.ports.input.speech_cicero_topic_use_case import SpeechTopicUseCase
-from music.app.ports.output.speech_herald_recorder_repository_port import SpeechRepositoryPort
+from music.app.ports.output.speech_herald_recorder_port import SpeechPort
 from music.domain.speech_cicero_topic_catalog import list_speech_topics
 
 logger = logging.getLogger(__name__)
 
 
 class CiceroTopicInteractor(SpeechTopicUseCase):
-    def __init__(self, repository: SpeechRepositoryPort) -> None:
+    def __init__(self, repository: SpeechPort) -> None:
         self.repository = repository
 
     async def introduce_myself(self, schema: CiceroIntroduceSchema) -> CiceroIntroduceResponse:

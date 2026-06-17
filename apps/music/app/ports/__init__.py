@@ -9,11 +9,11 @@ from music.app.ports.input import (
     VideoAnalysisUseCase,
 )
 from music.app.ports.output import (
-    EvaluationRepositoryPort,
-    InstrumentRepositoryPort,
-    ListRepositoryPort,
-    SpeechRepositoryPort,
-    SuggestRepositoryPort,
+    EvaluationPort,
+    InstrumentPort,
+    ListPort,
+    SpeechPort,
+    SuggestPort,
 )
 
 __all__ = [
@@ -25,9 +25,9 @@ __all__ = [
     "SpeechEvaluationUseCase",
     "SpeechTopicUseCase",
     "VideoAnalysisUseCase",
-    "ListRepositoryPort",
-    "EvaluationRepositoryPort",
-    "SuggestRepositoryPort",
-    "InstrumentRepositoryPort",
-    "SpeechRepositoryPort",
+    "ListPort",
+    "EvaluationPort",
+    "SuggestPort",
+    "InstrumentPort",
+    "SpeechPort",
 ]

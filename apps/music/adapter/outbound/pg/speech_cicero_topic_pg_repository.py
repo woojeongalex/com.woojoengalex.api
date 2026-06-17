@@ -5,12 +5,12 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.dtos.speech_dto import CiceroIntroduceQuery, CiceroIntroduceResponse
-from music.app.ports.output.speech_herald_recorder_repository_port import SpeechRepositoryPort
+from music.app.ports.output.speech_herald_recorder_port import SpeechPort
 
 logger = logging.getLogger(__name__)
 
 
-class CiceroTopicPgRepository(SpeechRepositoryPort):
+class CiceroTopicPgRepository(SpeechPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

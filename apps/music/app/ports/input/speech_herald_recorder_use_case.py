@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from music.adapter.inbound.api.schemas.speech_herald_recorder_schema import HeraldIntroduceSchema, HeraldIntroduceResponse
 from music.app.dtos.speech_dto import (
+    HeraldIntroduceQuery,
+    HeraldIntroduceResponse,
     SpeechEvaluationCreateCommand,
     SpeechEvaluationResultDto,
 )
@@ -12,7 +13,7 @@ from music.app.dtos.speech_dto import (
 
 class SpeechEvaluationUseCase(ABC):
     @abstractmethod
-    async def introduce_myself(self, schema: HeraldIntroduceSchema) -> HeraldIntroduceResponse:
+    async def introduce_myself(self, query: HeraldIntroduceQuery) -> HeraldIntroduceResponse:
         pass
 
     @abstractmethod

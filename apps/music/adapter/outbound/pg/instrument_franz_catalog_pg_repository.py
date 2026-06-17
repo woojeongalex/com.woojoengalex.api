@@ -5,12 +5,12 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.dtos.instrument_dto import FranzIntroduceQuery, FranzIntroduceResponse
-from music.app.ports.output.instrument_andrew_recorder_repository_port import InstrumentRepositoryPort
+from music.app.ports.output.instrument_andrew_recorder_port import InstrumentPort
 
 logger = logging.getLogger(__name__)
 
 
-class FranzCatalogPgRepository(InstrumentRepositoryPort):
+class FranzCatalogPgRepository(InstrumentPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

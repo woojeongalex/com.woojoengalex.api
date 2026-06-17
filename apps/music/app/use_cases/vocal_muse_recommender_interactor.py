@@ -14,7 +14,7 @@ from music.app.dtos.suggest_dto import (
     VocalRecommendationSaveCommand,
 )
 from music.app.ports.input.vocal_muse_recommender_use_case import SuggestUseCase
-from music.app.ports.output.vocal_muse_recommender_repository_port import SuggestRepositoryPort
+from music.app.ports.output.vocal_muse_recommender_port import SuggestPort
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ def _compose_recommendation(
 
 
 class MuseRecommenderInteractor(SuggestUseCase):
-    def __init__(self, repository: SuggestRepositoryPort) -> None:
+    def __init__(self, repository: SuggestPort) -> None:
         self.repository = repository
 
     async def introduce_myself(self, schema: MuseIntroduceSchema) -> MuseIntroduceResponse:

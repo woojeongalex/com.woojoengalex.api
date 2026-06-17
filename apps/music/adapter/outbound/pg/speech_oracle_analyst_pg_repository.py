@@ -5,12 +5,12 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from music.app.dtos.speech_dto import OracleIntroduceQuery, OracleIntroduceResponse
-from music.app.ports.output.speech_oracle_analyst_repository_port import OracleRepositoryPort
+from music.app.ports.output.speech_oracle_analyst_port import OraclePort
 
 logger = logging.getLogger(__name__)
 
 
-class OracleAnalystPgRepository(OracleRepositoryPort):
+class OracleAnalystPgRepository(OraclePort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 

@@ -7,12 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from music.adapter.outbound.orm.vocal_maestro_analyzer_model import AiVocalAnalysisEntity, SingEvaluationEntity
 from music.adapter.outbound.orm.vocal_mia_recorder_model import UserVocalRecordingEntity
 from music.app.dtos.evaluation_dto import MiaIntroduceQuery, MiaIntroduceResponse, VocalEvaluationCreateCommand, VocalEvaluationResultDto
-from music.app.ports.output.vocal_mia_maestro_repository_port import EvaluationRepositoryPort
+from music.app.ports.output.vocal_mia_maestro_port import EvaluationPort
 
 logger = logging.getLogger(__name__)
 
 
-class MiaRecorderPgRepository(EvaluationRepositoryPort):
+class MiaRecorderPgRepository(EvaluationPort):
     """Command를 받아 3NF INSERT(세션 → 녹음 → AI 분석) 후 DTO 반환."""
 
     def __init__(self, session: AsyncSession) -> None:

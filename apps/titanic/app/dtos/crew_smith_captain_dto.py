@@ -12,4 +12,5 @@ class SmithCaptainResponse:
     id: int   # 직관적인 타입 변경
     name: str
     answer: str = ""
+    accuracy: float = 0.0
  

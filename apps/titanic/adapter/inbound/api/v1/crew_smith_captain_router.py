@@ -18,6 +18,7 @@ async def chat(
     schema: Annotated[ChatSchema, Body()],
     smith: SmithCaptainUseCase = Depends(get_smith_captain_use_case),
 ) -> SmithCaptainResponse:
+    
     logger.info("[Smith Chat] 사용자 입력: %s", schema.messages)
     return await smith.chat(schema)
 
