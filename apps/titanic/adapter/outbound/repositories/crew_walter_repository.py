@@ -37,7 +37,7 @@ def _row_to_dict(person: PersonOrm, booking: BookingOrm | None) -> dict[str, Any
 
 
 def _to_sync_url(async_url: str) -> str:
-    return async_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+    return async_url.replace("postgresql+asyncpg://", "postgresql+psycopg://")
 
 
 class WalterRepository(WalterDirectorPort):

@@ -16,10 +16,10 @@ from titanic.app.dtos.crew_james_director_dto import (
 
 class JamesDirectorInteractor:
     def __init__(self, repository) -> None:
-        self._repository = repository
+        self.repository = repository
 
     async def introduce_myself(self, request) -> JamesDirectorResponse:
-        return await self._repository.introduce_myself(JamesDirectorQuery(
+        return await self.repository.introduce_myself(JamesDirectorQuery(
             id=request.id,
             name=request.name,
         ))
@@ -47,7 +47,7 @@ class JamesDirectorInteractor:
             )
             for row in rows
         ]
-        count = await self._repository.receive_uploaded_records(person_commands, booking_commands)
+        count = await self.repository.receive_uploaded_records(person_commands, booking_commands)
         return {"saved": count}
 
     async def upload(self, person_commands: list[PersonCommand], file_name: str) -> dict[str, Any]:
@@ -61,5 +61,5 @@ class JamesDirectorInteractor:
             )
             for cmd in person_commands
         ]
-        count = await self._repository.upload(person_commands, booking_commands, file_name)
+        count = await self.repository.upload(person_commands, booking_commands, file_name)
         return {"saved": count}

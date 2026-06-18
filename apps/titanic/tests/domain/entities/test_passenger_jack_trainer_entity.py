@@ -2,7 +2,7 @@ import pytest
 from types import SimpleNamespace
 
 from titanic.domain.entities.passenger_jack_trainer_entity import PassengerEntity
-from titanic.domain.value_objects.passenger_jack_trainer_vo import (
+from titanic.domain.value_objects.passenger_vo import (
     Age,
     FamilyRelation,
     Gender,

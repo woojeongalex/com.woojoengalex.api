@@ -16,6 +16,11 @@ from titanic.dependencies.passenger_cal_tester_provider import get_cal_test_use_
 from titanic.dependencies.crew_walter_provider import get_walter_use_case
 from titanic.dependencies.crew_andrews_architect_provider import get_andrews_architect_use_case
 from titanic.app.ports.input.crew_andrews_architect_use_case import AndrewsArchitectUseCase
+from titanic.dependencies.crew_lowe_boat_provider import get_lowe_boat_use_case
+from titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
+from titanic.dependencies.crew_hartley_provider import get_hartley_use_case
+from titanic.app.ports.input.crew_hartley_use_case import HartleyUseCase
+
 
 def get_smith_captain_repository(db: AsyncSession = Depends(get_db)) -> SmithCaptainPort:
     return SmithCaptainRepository(session=db)
@@ -28,6 +33,9 @@ def get_smith_captain_use_case(
     cal: CalTestUseCase = Depends(get_cal_test_use_case),
     walter: WalterUseCase = Depends(get_walter_use_case),
     andrews: AndrewsArchitectUseCase = Depends(get_andrews_architect_use_case),
+    lowe: LoweBoatUseCase = Depends(get_lowe_boat_use_case),
+    hartley: HartleyUseCase = Depends(get_hartley_use_case),
+    
 ) -> SmithCaptainUseCase:
     
     return SmithCaptainInteractor(
@@ -36,7 +44,8 @@ def get_smith_captain_use_case(
         rose=rose, 
         cal=cal, 
         walter=walter,
-        andrews=andrews
-        
-        )
+        andrews=andrews,
+        lowe=lowe,
+        hartley=hartley
+    )
 

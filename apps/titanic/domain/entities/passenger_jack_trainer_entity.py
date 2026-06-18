@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from titanic.domain.value_objects.passenger_jack_trainer_vo import (
+from titanic.domain.value_objects.passenger_vo import (
     Age,
     FamilyRelation,
     Gender,

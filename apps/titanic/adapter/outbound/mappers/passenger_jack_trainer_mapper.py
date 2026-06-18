@@ -1,6 +1,6 @@
 from titanic.adapter.outbound.orm.passenger_jack_trainer_orm import JackTrainerOrm
 from titanic.domain.entities.passenger_jack_trainer_entity import PassengerEntity
-from titanic.domain.value_objects.passenger_jack_trainer_vo import (
+from titanic.domain.value_objects.passenger_vo import (
     Age,
     FamilyRelation,
     Gender,

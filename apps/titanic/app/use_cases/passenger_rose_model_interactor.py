@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
 from titanic.adapter.outbound.orm.passenger_rose_model_strategies import build_all_strategies
@@ -313,9 +314,14 @@ class RoseModelInteractor(RoseModelUseCase):
         for col in train.columns:
             train[col] = pd.to_numeric(train[col], errors="coerce").fillna(0)
 
-        X_train: list[list[float]] = train.values.tolist()
+        X: list[list[float]] = train.values.tolist()
 
-        # 8. sklearn 10개 전략으로 학습 및 정확도 평가
+        # 검증 세트 20% 분리 (정확도는 검증 세트 기준)
+        X_tr, X_val, y_tr, y_val = train_test_split(
+            X, y_label, test_size=0.2, random_state=42
+        )
+
+        # 8. sklearn 10개 전략으로 학습 및 검증 세트 정확도 평가
         results: list[dict[str, Any]] = []
         best_name, best_acc = "RandomForest", 0.0
         self._trained_strategies: dict[str, Any] = {}
@@ -323,12 +329,13 @@ class RoseModelInteractor(RoseModelUseCase):
         for key, StrategyClass in build_all_strategies().items():
             strategy = StrategyClass()
             try:
-                strategy.fit(X_train, y_label)
-                preds = strategy.predict(X_train)
-                accuracy = sum(p == a for p, a in zip(preds, y_label)) / len(y_label)
+                strategy.fit(X_tr, y_tr)                  # 80% 학습
+                preds = strategy.predict(X_val)            # 20% 검증
+                accuracy = sum(p == a for p, a in zip(preds, y_val)) / len(y_val)
+                strategy.fit(X, y_label)                   # 예측용 전체 재학습
                 self._trained_strategies[key] = strategy
                 results.append({"name": strategy.name, "accuracy": round(accuracy, 4)})
-                logger.info(f"[RoseModelInteractor] {strategy.name} 정확도={accuracy:.2%}")
+                logger.info(f"[RoseModelInteractor] {strategy.name} val_accuracy={accuracy:.2%}")
                 if accuracy > best_acc:
                     best_acc, best_name = accuracy, strategy.name
             except Exception as e:
@@ -345,7 +352,7 @@ class RoseModelInteractor(RoseModelUseCase):
             "trained_strategies": self._trained_strategies,
         }
 
-    def analyze_and_answer(
+    def analyze_and_answer(  # noqa: C901
         self,
         intent: str,
         question: str,
@@ -356,76 +363,139 @@ class RoseModelInteractor(RoseModelUseCase):
         best_strategy: str,
         best_accuracy: float,
     ) -> str:
-        total = len(train_df) + len(test_df)
-        survived = int(pd.to_numeric(train_df["survived"], errors="coerce").fillna(0).sum()) if "survived" in train_df.columns else 0
-        death = len(train_df) - survived
-        acc = f"{best_accuracy:.2%}"
-        kw = set(keywords)
+        """질문 의도 + 키워드를 조합해 데이터프레임에서 정확한 통계를 조회해 반환한다.
 
-        # ── 성별 질문 ──────────────────────────────────────────────────────
-        if kw & {"여성", "여자", "여자분", "여", "female"}:
-            female_total = len(train_df[train_df["gender"] == "female"]) + len(test_df[test_df["gender"] == "female"]) if "gender" in train_df.columns else 0
-            female_survived = int((train_df["gender"] == "female").sum()) if "gender" in train_df.columns else 0
-            male_total = total - female_total
-            if kw & {"남성", "남자", "남"}:
-                male_survived = survived - female_survived
+        우선순위 체계
+        ─────────────────────────────────────────────────────────────────────
+        1. 이름 조회     — "이름"이 질문/키워드에 있으면 실제 이름 반환
+        2. 등급별 종합   — "등급별" 또는 전체 클래스 비교 질문
+        3. 성별 현황     — 여성/남성 키워드 (단독 or 조합)
+        4. 단일 등급     — 1등석/2등석/3등석 + 생존 통계
+        5. 평균 나이     — 나이/평균/연령 키워드
+        6. 생존율/사망률 — 비율 조회
+        7. 생존자 수     — "생존자" 키워드
+        8. 사망자 수     — "사망자" 키워드 (원인 질문과 분리)
+        9. 탑승항        — 출발항/항구 키워드
+        10. intent 기반  — death·general·count 폴백
+        ─────────────────────────────────────────────────────────────────────
+        """
+        # ── 기본 집계 (공통) ───────────────────────────────────────────────────
+        total  = len(train_df) + len(test_df)
+        s_col  = pd.to_numeric(train_df["survived"], errors="coerce").fillna(0) if "survived" in train_df.columns else pd.Series([0] * len(train_df))
+        survived   = int(s_col.sum())
+        death      = len(train_df) - survived
+        surv_rate  = survived / total if total else 0
+        kw         = set(keywords)
+
+        # ── 1. 이름 조회 ───────────────────────────────────────────────────────
+        if "이름" in question or kw & {"이름"}:
+            if "name" not in train_df.columns:
+                return "이름 데이터를 불러올 수 없습니다."
+            if kw & {"사망자", "사망"} or "사망자" in question:
+                names = train_df[s_col == 0]["name"].dropna().tolist()
+                label, n = "사망자", len(names)
+            else:
+                names = train_df[s_col == 1]["name"].dropna().tolist()
+                label, n = "생존자", len(names)
+            sample = names[:5]
+            return f"{label} 총 {n}명 중 대표 이름 5명:\n" + "\n".join(f"• {nm}" for nm in sample)
+
+        # ── 2. 등급별 종합 분석 ────────────────────────────────────────────────
+        if "등급별" in question or (kw & {"등급"} and any(w in question for w in ["현황", "비교", "각각", "각", "분포", "수는"])):
+            if "pclass" in train_df.columns:
+                lines = ["객실 등급별 탑승객 현황:"]
+                for cls in [1, 2, 3]:
+                    mask  = pd.to_numeric(train_df["pclass"], errors="coerce") == cls
+                    cnt   = int(mask.sum())
+                    s_cnt = int((mask & (s_col == 1)).sum())
+                    rate  = s_cnt / cnt if cnt else 0
+                    lines.append(f"• {cls}등석: 탑승 {cnt}명 / 생존 {s_cnt}명({rate:.1%}) / 사망 {cnt - s_cnt}명")
+                return "\n".join(lines)
+
+        # ── 3. 성별 현황 ───────────────────────────────────────────────────────
+        has_female = bool(kw & {"여성", "여자", "여자분"} or "female" in question)
+        has_male   = bool(kw & {"남성", "남자"} or "male" in question)
+
+        if (has_female or has_male) and "gender" in train_df.columns:
+            f_mask  = train_df["gender"] == "female"
+            m_mask  = train_df["gender"] == "male"
+            f_all   = int(f_mask.sum()) + (int((test_df["gender"] == "female").sum()) if "gender" in test_df.columns else 0)
+            m_all   = int(m_mask.sum()) + (int((test_df["gender"] == "male").sum())   if "gender" in test_df.columns else 0)
+            f_surv  = int((f_mask & (s_col == 1)).sum())
+            m_surv  = survived - f_surv
+            f_rate  = f_surv / f_all if f_all else 0
+            m_rate  = m_surv / m_all if m_all else 0
+
+            if has_female and has_male:
                 return (
-                    f"여성 탑승객은 {female_total}명, 남성 탑승객은 {male_total}명입니다. "
-                    f"여성 생존자 {female_survived}명, 남성 생존자 {survived - female_survived}명. (정확도: {acc})"
+                    f"여성 탑승객 {f_all}명 중 생존 {f_surv}명({f_rate:.1%}), "
+                    f"남성 탑승객 {m_all}명 중 생존 {m_surv}명({m_rate:.1%})입니다."
                 )
-            return f"여성 탑승객은 총 {female_total}명이었습니다. (정확도: {acc})"
+            if has_female:
+                return f"여성 탑승객은 총 {f_all}명이며, 그 중 {f_surv}명({f_rate:.1%})이 생존했습니다."
+            return f"남성 탑승객은 총 {m_all}명이며, 그 중 {m_surv}명({m_rate:.1%})이 생존했습니다."
 
-        if kw & {"남성", "남자", "남", "male"}:
-            female_total = len(train_df[train_df["gender"] == "female"]) + len(test_df[test_df["gender"] == "female"]) if "gender" in train_df.columns else 0
-            male_total = total - female_total
-            return f"남성 탑승객은 총 {male_total}명이었습니다. (정확도: {acc})"
+        # ── 4. 단일 등급 질문 ──────────────────────────────────────────────────
+        if "pclass" in train_df.columns:
+            for cls_num, cls_kw in [
+                (1, {"1등석", "1등", "일등석", "퍼스트"}),
+                (2, {"2등석", "2등", "이등석", "세컨드"}),
+                (3, {"3등석", "3등", "삼등석", "서드"}),
+            ]:
+                if kw & cls_kw:
+                    mask  = pd.to_numeric(train_df["pclass"], errors="coerce") == cls_num
+                    cnt   = int(mask.sum())
+                    s_cnt = int((mask & (s_col == 1)).sum())
+                    rate  = s_cnt / cnt if cnt else 0
+                    return f"{cls_num}등석 탑승객은 {cnt}명이며, 생존자는 {s_cnt}명({rate:.1%})입니다."
 
-        # ── 객실 등급 질문 ─────────────────────────────────────────────────
-        if kw & {"1등석", "1등", "일등석", "퍼스트"} and "pclass" in train_df.columns:
-            c1 = int((pd.to_numeric(train_df["pclass"], errors="coerce") == 1).sum())
-            return f"1등석 탑승객은 {c1}명이었습니다. (정확도: {acc})"
-        if kw & {"2등석", "2등", "이등석", "세컨드"} and "pclass" in train_df.columns:
-            c2 = int((pd.to_numeric(train_df["pclass"], errors="coerce") == 2).sum())
-            return f"2등석 탑승객은 {c2}명이었습니다. (정확도: {acc})"
-        if kw & {"3등석", "3등", "삼등석", "서드"} and "pclass" in train_df.columns:
-            c3 = int((pd.to_numeric(train_df["pclass"], errors="coerce") == 3).sum())
-            return f"3등석 탑승객은 {c3}명이었습니다. (정확도: {acc})"
+        # ── 5. 평균 나이 ───────────────────────────────────────────────────────
+        if kw & {"나이", "평균", "연령"} and "age" in train_df.columns:
+            avg = pd.to_numeric(train_df["age"], errors="coerce").mean()
+            return f"탑승객 평균 나이는 약 {avg:.1f}세입니다."
 
-        # ── 나이/평균 질문 ─────────────────────────────────────────────────
-        if kw & {"나이", "평균", "평균나이", "연령"} and "age" in train_df.columns:
-            avg_age = pd.to_numeric(train_df["age"], errors="coerce").mean()
-            return f"탑승객 평균 나이는 {avg_age:.1f}세입니다. (정확도: {acc})"
-
-        # ── intent 기반 기본 답변 ──────────────────────────────────────────
-        if intent == "count":
+        # ── 6. 생존율 · 사망률 ─────────────────────────────────────────────────
+        if any(w in question for w in ["생존율", "생존률", "사망률", "사망율", "생존율이", "사망률이"]):
             return (
-                f"타이타닉의 총 탑승객은 {total}명입니다. "
-                f"생존자 {survived}명, 사망자 {death}명이었습니다. (정확도: {acc})"
+                f"타이타닉 전체 생존율 {surv_rate:.1%}({survived}명/{total}명), "
+                f"사망률 {1 - surv_rate:.1%}({death}명/{total}명)."
             )
-        if intent == "predict":
-            return (
-                f"분석 결과 생존 확률은 {survival_prob:.1%}입니다. "
-                f"실제 생존자 {survived}명({survived/total:.1%}). "
-                f"적용 모델: {best_strategy}. (정확도: {acc})"
-            )
+
+        # ── 7. 생존자 수 ───────────────────────────────────────────────────────
+        if kw & {"생존자"} or "살아남" in question:
+            return f"생존자는 총 {survived}명({surv_rate:.1%})입니다."
+
+        # ── 8. 사망자 수 (원인·이유 질문과 분리) ──────────────────────────────
+        if (kw & {"사망자"} or "사망자" in question) and not any(w in question for w in ["원인", "이유", "왜"]):
+            return f"사망자는 총 {death}명({1 - surv_rate:.1%})입니다."
+
+        # ── 9. 탑승항 ──────────────────────────────────────────────────────────
+        if kw & {"출발", "항구", "탑승항", "승선항"} or any(w in question for w in ["출발항", "승선항", "어디서"]):
+            if "embarked" in train_df.columns:
+                port_map = {"S": "사우샘프턴(S)", "C": "쉘부르(C)", "Q": "퀸즈타운(Q)"}
+                counts   = train_df["embarked"].fillna("S").map(port_map).value_counts()
+                lines    = ["탑승항별 탑승객 수:"] + [f"• {p}: {n}명" for p, n in counts.items()]
+                return "\n".join(lines)
+
+        # ── 10. intent 기반 폴백 ───────────────────────────────────────────────
         if intent == "death":
             return (
-                f"타이타닉 침몰로 총 {death}명이 사망했습니다. "
-                f"전체 {total}명 중 사망률 {death/total:.1%}. (정확도: {acc})"
+                f"타이타닉(RMS Titanic)은 1912년 4월 14일 밤 북대서양에서 빙산과 충돌 후 침몰했습니다. "
+                f"승객·선원 총 {total}명 중 {death}명(사망률 {1 - surv_rate:.1%})이 사망했으며, "
+                f"{survived}명이 구명보트로 생존했습니다."
             )
-        if intent == "train":
-            return f"총 {total}명 데이터로 모델 학습 완료. 최적 전략: {best_strategy}, 정확도: {acc}."
-        if intent == "test":
-            return f"모델 검증 완료. 최적 전략: {best_strategy}, 정확도: {acc}."
-        if intent == "info":
+
+        if intent == "general":
             return (
-                f"타이타닉 탑승객 총 {total}명 중 생존자 {survived}명({survived/total:.1%}), "
-                f"사망자 {death}명({death/total:.1%}). 최적 모델: {best_strategy} (정확도: {acc})."
+                f"RMS 타이타닉은 1912년 4월 10일 영국 사우샘프턴 출항, 4월 14일 빙산 충돌 후 침몰한 영국 여객선입니다. "
+                f"총 탑승객 {total}명 — 생존자 {survived}명({surv_rate:.1%}), 사망자 {death}명({1 - surv_rate:.1%})."
             )
+
+        # count / 기타 → 종합 통계
         return (
-            f"타이타닉 데이터 기준 답변: 총 탑승객 {total}명, "
-            f"생존자 {survived}명({survived/total:.1%}), 사망자 {death}명({death/total:.1%}). "
-            f"생존 확률 예측 {survival_prob:.1%}. (최적 모델: {best_strategy}, 정확도: {acc})"
+            f"타이타닉 총 탑승객 {total}명 — "
+            f"생존자 {survived}명({surv_rate:.1%}), "
+            f"사망자 {death}명({1 - surv_rate:.1%})."
         )
 
     async def introduce_myself(self, schema: RoseModelSchema) -> RoseModelResponse:

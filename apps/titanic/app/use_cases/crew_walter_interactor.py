@@ -8,17 +8,17 @@ from titanic.app.ports.output.crew_walter_director_port import WalterDirectorPor
 class WalterInteractor(WalterUseCase):
 
     def __init__(self, repository: WalterDirectorPort) -> None:
-        self._repository = repository
+        self.repository = repository
     
     async def get_train_set(self) -> pd.DataFrame:
-        return self._repository.get_train_set()
+        return self.repository.get_train_set()
 
     async def get_test_set(self) -> pd.DataFrame:
-        return self._repository.get_test_set()
+        return self.repository.get_test_set()
         
 
     async def introduce_myself(self, schema: WalterSchema) -> WalterResponse:
-        return await self._repository.introduce_myself(WalterQuery(
+        return await self.repository.introduce_myself(WalterQuery(
             id=schema.id,
             name=schema.name,
         ))
@@ -29,4 +29,4 @@ class WalterInteractor(WalterUseCase):
         page: int,
         size: int,
     ) -> WalterPassengerPageDto:
-        return await self._repository.read_passengers(source_file, page, size)
+        return await self.repository.read_passengers(source_file, page, size)
