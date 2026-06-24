@@ -20,6 +20,7 @@ librosa==0.11.0
 moviepy==2.2.1
 kiwipiepy==0.23.1
 ollama==0.6.2
+mcp
 pytest==8.3.5
 pytest-asyncio==0.24.0
 --extra-index-url https://download.pytorch.org/whl/cu126

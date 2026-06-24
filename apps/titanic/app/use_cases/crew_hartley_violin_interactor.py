@@ -2,11 +2,7 @@
 
 import io
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 
 from titanic.adapter.inbound.api.schemas.crew_hartley_violin_schema import HartleyViolinSchema
 from titanic.app.dtos.crew_hartley_violin_dto import HartleyViolinQuery, HartleyViolinResponse
@@ -20,6 +16,11 @@ class HartleyViolinInteractor(HartleyViolinUseCase, HartleyUseCase):
         self.repository = repository
 
     def correlation_graph(self, train_df: pd.DataFrame) -> bytes:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+
         corr = train_df.select_dtypes(include="number").corr()
         fig, ax = plt.subplots(figsize=(8, 6))
         sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5, ax=ax)
