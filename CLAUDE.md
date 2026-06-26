@@ -32,6 +32,9 @@ woojeongai/
     friday13th/                # 인증 (signup/login)
     music/                     # 보컬·MR·악기·스피치·비디오
     titanic/                   # James(업로드) / Walter(조회) 레퍼런스
+    star_craft/                # 스타 토폴로지 허브·스포크 (비선형 온톨로지)
+      hub/                     # 중앙 허브 — 컨텍스트 라우팅·전역 인덱스
+      spokes/                  # 개별 스포크 도메인 (허브를 통해서만 상호작용)
   core/
     matrix/
       keymaker_api.py          # API 키 관리
@@ -298,6 +301,31 @@ James(업로드) / Walter(조회) 패턴 정본. 모든 신규 앱은 이 구조
 
 - `sing_evaluations.user_id` — ORM에는 있으나 Neon DB에 컬럼 없음 → POST 503
 - ERD v2: `user_vocal_recordings.catalog_song_id` 제거 방향
+
+### 6.4 Star Craft — 스타 토폴로지 (비선형 온톨로지)
+
+**구조:** `apps/star_craft/` — 허브(Hub) 1개 + 스포크(Spoke) N개
+
+| 역할 | 경로 | 책임 |
+|------|------|------|
+| **Hub** | `star_craft/hub/` | 중앙 교차점·컨텍스트 라우팅·전역 인덱스·상위 온톨로지 개념 |
+| **Spoke** | `star_craft/spokes/<도메인>/` | 독립 세부 도메인·데이터 노드·개별 인터페이스 어댑터 |
+
+**아키텍처 규칙 (하네스 강제)**
+
+- 스포크 → 허브 의존 **허용** (스포크는 Hub Port만 import 가능)
+- 허브 → 스포크 의존 **허용** (Hub가 스포크를 오케스트레이션)
+- **스포크 → 스포크 직접 참조 엄격 금지** (순환 의존 유발)
+- Hub는 클린 아키텍처 `app/ports/`를 그대로 사용; 스포크도 동일 레이어 규칙 적용
+- 의존 방향 검증: `scripts/validate-harness.py` (루트 레벨) + `.importlinter`
+
+**기존 클린 아키텍처와의 공존 원칙**
+
+- 선형 계층(도메인→UseCase→Adapter)은 각 스포크 내부에서 그대로 유지
+- Hub는 스포크들의 Port를 모아 라우팅하는 **Facade + Mediator** 역할
+- Hub와 스포크 간 데이터 교환은 반드시 DTO를 통해 이루어진다 (ORM Entity 직접 전달 금지)
+
+---
 
 ### 6.3 Friday13th — 인증
 

@@ -1,0 +1,88 @@
+[importlinter]
+# 하네스 엔지니어링: Python import-linter 설정
+# 선형 클린 아키텍처와 비선형 스타 토폴로지가 충돌하지 않도록 의존성 정적 분석
+root_packages =
+    apps.star_craft
+    apps.titanic
+    apps.music
+    apps.friday13th
+    core
+include_external_packages = True
+
+
+# ─────────────────────────────────────────
+# 계약 1: 스타 토폴로지 — 스포크 간 직접 참조 금지
+# 스포크는 반드시 Hub를 통해서만 상호작용한다
+# ─────────────────────────────────────────
+[importlinter:contract:star-topology-no-spoke-to-spoke]
+name = Star Topology: Spoke must not directly import other Spoke
+type = forbidden
+source_modules =
+    apps.star_craft.spokes
+forbidden_modules =
+    apps.star_craft.spokes
+# 자기 자신(같은 스포크 내부)은 예외
+ignore_imports =
+    apps.star_craft.spokes.*.* -> apps.star_craft.spokes.*.*
+
+[importlinter:contract:star-topology-spoke-allowed-hub-only]
+# 스포크가 다른 앱/모듈을 참조할 때는 Hub Port 또는 공통 core만 허용
+name = Star Topology: Spoke may only import hub ports and core
+type = layers
+layers =
+    apps.star_craft.hub
+    apps.star_craft.spokes
+containers =
+    apps.star_craft
+
+
+# ─────────────────────────────────────────
+# 계약 2: 클린 아키텍처 계층 의존성 규칙
+# 안쪽(도메인) → 바깥(어댑터) 방향 역전 금지
+# ─────────────────────────────────────────
+[importlinter:contract:clean-arch-layers]
+name = Clean Architecture: dependency points inward only
+type = layers
+layers =
+    adapter
+    app
+    domain
+containers =
+    apps.star_craft.hub
+    apps.star_craft.spokes.*
+    apps.titanic
+    apps.music
+    apps.friday13th
+
+[importlinter:contract:use-case-no-adapter-import]
+# Use Case / Interactor는 adapter.inbound 스키마를 import 금지
+name = Clean Architecture: use_cases must not import inbound adapter schemas
+type = forbidden
+source_modules =
+    apps.star_craft.hub.app.use_cases
+    apps.star_craft.spokes.*.app.use_cases
+    apps.titanic.app.use_cases
+    apps.music.*.app.use_cases
+forbidden_modules =
+    apps.star_craft.hub.adapter.inbound
+    apps.star_craft.spokes.*.adapter.inbound
+    apps.titanic.adapter.inbound
+    apps.music.*.adapter.inbound
+
+
+# ─────────────────────────────────────────
+# 계약 3: Hub는 다른 앱(titanic, music 등) 내부를 직접 참조 금지
+# Hub는 core와 자신의 스포크만 오케스트레이션
+# ─────────────────────────────────────────
+[importlinter:contract:hub-no-cross-app-import]
+name = Hub must not import other app internals directly
+type = forbidden
+source_modules =
+    apps.star_craft.hub
+forbidden_modules =
+    apps.titanic.adapter
+    apps.titanic.app
+    apps.music.*.adapter
+    apps.music.*.app
+    apps.friday13th.adapter
+    apps.friday13th.app

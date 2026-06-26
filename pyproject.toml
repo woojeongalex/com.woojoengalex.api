@@ -1,0 +1,78 @@
+# pyproject.toml — FastAPI 하네스 린터·포매터 설정
+# 카파시 하네스 엔지니어링: ruff(lint+format) + mypy(타입) 이중 강제
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    ".venv",
+    "alembic/versions",   # 마이그레이션 자동 생성 파일 제외
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle 스타일
+    "F",   # pyflakes (미사용 import·변수)
+    "I",   # isort (import 정렬)
+    "N",   # pep8-naming (네이밍 컨벤션)
+    "UP",  # pyupgrade (최신 Python 문법 강제)
+    "B",   # flake8-bugbear (잠재적 버그)
+    "C4",  # flake8-comprehensions (리스트 컴프리헨션 최적화)
+    "SIM", # flake8-simplify (불필요한 복잡도 제거)
+    "RUF", # ruff 전용 규칙
+]
+ignore = [
+    "E501",   # line-length는 ruff format이 처리
+    "B008",   # FastAPI Depends()를 함수 기본값으로 사용 허용
+    "RUF012", # ClassVar 어노테이션 — SQLModel 호환성
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 테스트 파일은 assert 허용
+"tests/**/*.py" = ["S101"]
+# __init__.py는 미사용 import 허용 (re-export 목적)
+"*/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+# 클린 아키텍처 계층 import 순서 강제:
+# 1. stdlib → 2. third-party → 3. first-party(domain) → 4. local(adapter)
+known-first-party = ["apps", "core"]
+force-sort-within-sections = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+
+# ── mypy: 타입 힌트 엄격 강제 ────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true                      # --strict: 모든 타입 힌트 강제
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true       # 타입 없는 함수 정의 금지
+disallow_any_generics = true       # List, Dict 등 raw generic 금지
+check_untyped_defs = true
+no_implicit_reexport = true
+
+# 외부 라이브러리 타입 스텁이 없는 경우 무시 (설치 부재 시)
+[[tool.mypy.overrides]]
+module = [
+    "librosa.*",
+    "moviepy.*",
+    "kiwisolver.*",
+    "google.generativeai.*",
+    "ollama.*",
+    "sqlmodel.*",       # sqlmodel은 mypy 지원 불완전
+]
+ignore_missing_imports = true
+
+
+# ── pytest 설정 ──────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"              # pytest-asyncio 자동 모드
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
