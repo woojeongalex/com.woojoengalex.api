@@ -8,7 +8,5 @@ def get_hendricks_ceo_repository() -> HendricksCeoPort:
     return HendricksCeoRepository()
 
 
-def get_hendricks_ceo_use_case(
-    repository: HendricksCeoPort = None,
-) -> HendricksCeoUseCase:
+def get_hendricks_ceo_use_case() -> HendricksCeoUseCase:
     return HendricksCeoInteractor(repository=get_hendricks_ceo_repository())
