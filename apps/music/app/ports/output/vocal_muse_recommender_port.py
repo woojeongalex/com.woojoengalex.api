@@ -1,4 +1,5 @@
 """[Layer: Ports] 보컬 추천 출력 Port — 조회·저장 계약."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -15,7 +16,9 @@ from music.app.dtos.suggest_dto import (
 
 class SuggestPort(ABC):
     @abstractmethod
-    async def introduce_myself(self, query: MuseIntroduceQuery) -> MuseIntroduceResponse:
+    async def introduce_myself(
+        self, query: MuseIntroduceQuery
+    ) -> MuseIntroduceResponse:
         pass
 
     @abstractmethod

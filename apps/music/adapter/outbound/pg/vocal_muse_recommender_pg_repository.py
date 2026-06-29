@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import logging
 
-from sqlalchemy import desc, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from music.adapter.outbound.orm.vocal_maestro_analyzer_model import AiVocalAnalysisEntity, SingEvaluationEntity
+from music.adapter.outbound.orm.vocal_maestro_analyzer_model import (
+    AiVocalAnalysisEntity,
+    SingEvaluationEntity,
+)
 from music.adapter.outbound.orm.vocal_mia_recorder_model import UserVocalRecordingEntity
-from music.adapter.outbound.orm.vocal_muse_recommender_model import VocalRecommendationEntity
+from music.adapter.outbound.orm.vocal_muse_recommender_model import (
+    VocalRecommendationEntity,
+)
 from music.app.dtos.suggest_dto import (
     AiVocalAnalysisDto,
     MuseIntroduceQuery,
@@ -17,6 +19,8 @@ from music.app.dtos.suggest_dto import (
     VocalRecommendationSaveCommand,
 )
 from music.app.ports.output.vocal_muse_recommender_port import SuggestPort
+from sqlalchemy import desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -25,14 +29,20 @@ class MuseRecommenderPgRepository(SuggestPort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def introduce_myself(self, query: MuseIntroduceQuery) -> MuseIntroduceResponse:
+    async def introduce_myself(
+        self, query: MuseIntroduceQuery
+    ) -> MuseIntroduceResponse:
         logger.info("[MUSIC][muse][5/repository] introduce_myself name=%s", query.name)
-        return MuseIntroduceResponse(id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴")
+        return MuseIntroduceResponse(
+            id=query.id * 10000, name=query.name + "가 레포지토리에 다녀옴"
+        )
 
     async def get_sing_evaluation_by_id(
         self, evaluation_id: int
     ) -> SingEvaluationDto | None:
-        stmt = select(SingEvaluationEntity).where(SingEvaluationEntity.id == evaluation_id)
+        stmt = select(SingEvaluationEntity).where(
+            SingEvaluationEntity.id == evaluation_id
+        )
         entity = (await self._session.execute(stmt)).scalar_one_or_none()
         if entity is None:
             return None
@@ -45,7 +55,8 @@ class MuseRecommenderPgRepository(SuggestPort):
             select(AiVocalAnalysisEntity)
             .join(
                 UserVocalRecordingEntity,
-                AiVocalAnalysisEntity.user_vocal_recording_id == UserVocalRecordingEntity.id,
+                AiVocalAnalysisEntity.user_vocal_recording_id
+                == UserVocalRecordingEntity.id,
             )
             .where(UserVocalRecordingEntity.sing_evaluation_id == sing_evaluation_id)
         )
@@ -55,7 +66,9 @@ class MuseRecommenderPgRepository(SuggestPort):
     async def get_ai_analysis_by_id(
         self, ai_analysis_id: int
     ) -> AiVocalAnalysisDto | None:
-        stmt = select(AiVocalAnalysisEntity).where(AiVocalAnalysisEntity.id == ai_analysis_id)
+        stmt = select(AiVocalAnalysisEntity).where(
+            AiVocalAnalysisEntity.id == ai_analysis_id
+        )
         entity = (await self._session.execute(stmt)).scalar_one_or_none()
         return _to_ai_dto(entity) if entity else None
 

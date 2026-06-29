@@ -1,14 +1,22 @@
 """[Layer: Ports] MR 검색 목록 출력 Port — Neon/Postgres 저장 계약."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from music.app.dtos.search_dto import BardIntroduceQuery, BardIntroduceResponse, SongMrHitDto, SongMrSearchSaveDto
+from music.app.dtos.search_dto import (
+    BardIntroduceQuery,
+    BardIntroduceResponse,
+    SongMrHitDto,
+    SongMrSearchSaveDto,
+)
 
 
 class ListPort(ABC):
     @abstractmethod
-    async def introduce_myself(self, query: BardIntroduceQuery) -> BardIntroduceResponse:
+    async def introduce_myself(
+        self, query: BardIntroduceQuery
+    ) -> BardIntroduceResponse:
         pass
 
     @abstractmethod

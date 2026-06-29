@@ -3,11 +3,14 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import numpy as np
 import pandas as pd
-
-from titanic.adapter.outbound.orm.passenger_rose_model_strategies import build_all_strategies
-from titanic.app.dtos.passenger_jack_trainer_dto import JackTrainerQuery, JackTrainerResponse
+from titanic.adapter.outbound.orm.passenger_rose_model_strategies import (
+    build_all_strategies,
+)
+from titanic.app.dtos.passenger_jack_trainer_dto import (
+    JackTrainerQuery,
+    JackTrainerResponse,
+)
 from titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
 from titanic.app.ports.output.passenger_jack_trainer_port import JackTrainerPort
 
@@ -21,8 +24,13 @@ _MODEL_MANIFEST: list[dict[str, Any]] = [
         "strategy_class": "XGBoostStrategy",
         "type": "gradient_boosting",
         "preprocessing": "standardization",
-        "hyperparameters": {"n_estimators": 100, "learning_rate": 0.1, "max_depth": 6,
-                            "reg_alpha": 0.1, "reg_lambda": 1.0},
+        "hyperparameters": {
+            "n_estimators": 100,
+            "learning_rate": 0.1,
+            "max_depth": 6,
+            "reg_alpha": 0.1,
+            "reg_lambda": 1.0,
+        },
         "note": "규제(Regularization)로 과적합 방지. 리더보드 최상위권 필수.",
     },
     {
@@ -31,7 +39,11 @@ _MODEL_MANIFEST: list[dict[str, Any]] = [
         "strategy_class": "RandomForestStrategy",
         "type": "bagging",
         "preprocessing": "none",
-        "hyperparameters": {"n_estimators": 200, "max_depth": 8, "min_samples_split": 4},
+        "hyperparameters": {
+            "n_estimators": 200,
+            "max_depth": 8,
+            "min_samples_split": 4,
+        },
         "note": "튜닝 없이도 안정적인 Baseline. 데이터 노이즈에 강함.",
     },
     {
@@ -40,7 +52,11 @@ _MODEL_MANIFEST: list[dict[str, Any]] = [
         "strategy_class": "LightGBMStrategy",
         "type": "gradient_boosting",
         "preprocessing": "standardization",
-        "hyperparameters": {"num_leaves": 31, "learning_rate": 0.05, "n_estimators": 200},
+        "hyperparameters": {
+            "num_leaves": 31,
+            "learning_rate": 0.05,
+            "n_estimators": 200,
+        },
         "note": "리프 중심 분할. 대용량에 특화, 피처 조합 실험에 유용.",
     },
     {
@@ -67,7 +83,11 @@ _MODEL_MANIFEST: list[dict[str, Any]] = [
         "strategy_class": "DecisionTreeStrategy",
         "type": "tree",
         "preprocessing": "none",
-        "hyperparameters": {"max_depth": 5, "min_samples_leaf": 10, "criterion": "gini"},
+        "hyperparameters": {
+            "max_depth": 5,
+            "min_samples_leaf": 10,
+            "criterion": "gini",
+        },
         "note": "분류 기준 시각화에 유리. 과적합 위험 → max_depth 제한 필수.",
     },
     {
@@ -85,7 +105,11 @@ _MODEL_MANIFEST: list[dict[str, Any]] = [
         "strategy_class": "KNNStrategy",
         "type": "instance_based",
         "preprocessing": "normalization",
-        "hyperparameters": {"n_neighbors": 7, "weights": "distance", "metric": "euclidean"},
+        "hyperparameters": {
+            "n_neighbors": 7,
+            "weights": "distance",
+            "metric": "euclidean",
+        },
         "note": "나이·요금·객실 기반 유사도. 정규화 필수.",
     },
     {
@@ -110,7 +134,7 @@ _MODEL_MANIFEST: list[dict[str, Any]] = [
 
 _PREPROCESSING_GUIDE: dict[str, str] = {
     "standardization": "이상치(Outlier) 존재 시 — 평균 0, 표준편차 1로 변환",
-    "normalization":   "이상치 없고 분포 균일 시 — 0~1 범위 Min-Max 압축",
+    "normalization": "이상치 없고 분포 균일 시 — 0~1 범위 Min-Max 압축",
 }
 
 _FEATURE_ENGINEERING: list[str] = [
@@ -122,7 +146,7 @@ _FEATURE_ENGINEERING: list[str] = [
 
 _ENSEMBLE_GUIDE: dict[str, str] = {
     "soft_voting": "XGBoost + RandomForest + LightGBM 예측 확률 평균",
-    "stacking":    "개별 모델 예측값을 메타 모델 입력으로 재학습",
+    "stacking": "개별 모델 예측값을 메타 모델 입력으로 재학습",
 }
 
 
@@ -140,19 +164,34 @@ class JackTrainerInteractor(JackTrainerUseCase):
         }
 
     async def train_model(self, train_set: pd.DataFrame) -> dict[str, Any]:
-        '''로즈가 제안한 모델들을 훈련시키는 메소드'''
+        """로즈가 제안한 모델들을 훈련시키는 메소드"""
         logger.info("[JackTrainerInteractor] 학습 파이프라인 시작")
 
         train = train_set.copy()
 
         # survived 레이블 분리
         if "survived" in train.columns:
-            y_label = pd.to_numeric(train.pop("survived"), errors="coerce").fillna(0).astype(int).tolist()
+            y_label = (
+                pd.to_numeric(train.pop("survived"), errors="coerce")
+                .fillna(0)
+                .astype(int)
+                .tolist()
+            )
         else:
             y_label = [0] * len(train)
 
         # 불필요 컬럼 드롭
-        drop_cols = ["name", "age", "fare", "ticket", "cabin", "passenger_id", "source_file", "id", "created_at"]
+        drop_cols = [
+            "name",
+            "age",
+            "fare",
+            "ticket",
+            "cabin",
+            "passenger_id",
+            "source_file",
+            "id",
+            "created_at",
+        ]
         train = train.drop(columns=[c for c in drop_cols if c in train.columns])
 
         # 남은 string 컬럼 강제 숫자 변환 (안전망)
@@ -181,7 +220,9 @@ class JackTrainerInteractor(JackTrainerUseCase):
         }
 
     async def introduce_myself(self, request) -> JackTrainerResponse:
-        return await self.repository.introduce_myself(JackTrainerQuery(
-            id=request.id,
-            name=request.name,
-        ))
+        return await self.repository.introduce_myself(
+            JackTrainerQuery(
+                id=request.id,
+                name=request.name,
+            )
+        )

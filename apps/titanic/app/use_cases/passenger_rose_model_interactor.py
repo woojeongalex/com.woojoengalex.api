@@ -7,17 +7,25 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
-from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
-from titanic.adapter.outbound.orm.passenger_rose_model_strategies import build_all_strategies
+from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import (
+    RoseModelSchema,
+)
+from titanic.adapter.outbound.orm.passenger_rose_model_strategies import (
+    build_all_strategies,
+)
 from titanic.app.dtos.passenger_rose_model_dto import RoseModelQuery, RoseModelResponse
-from titanic.app.ports.input.passenger_rose_model_use_case import PredictionStrategy, RoseModelUseCase
+from titanic.app.ports.input.passenger_rose_model_use_case import (
+    PredictionStrategy,
+    RoseModelUseCase,
+)
 from titanic.app.ports.output.passenger_rose_model_port import RoseModelPort
 
 logger = logging.getLogger("titanic_flow_log")
 
-_HIGH = frozenset({"여성", "아이", "어린이", "구조", "생존", "탈출", "구명", "1등석", "부유"})
-_LOW  = frozenset({"남성", "침몰", "사망", "익사", "죽음", "3등석", "빈곤"})
+_HIGH = frozenset(
+    {"여성", "아이", "어린이", "구조", "생존", "탈출", "구명", "1등석", "부유"}
+)
+_LOW = frozenset({"남성", "침몰", "사망", "익사", "죽음", "3등석", "빈곤"})
 
 
 def _signals(keywords: list[str]) -> tuple[int, int]:
@@ -61,8 +69,12 @@ class LightGBMStrategy:
     """리프 중심: 가장 구체적으로 매칭되는 키워드 우선."""
 
     _LEAF: dict[str, float] = {
-        "여성": 0.74, "아이": 0.71, "1등석": 0.63,
-        "남성": 0.21, "3등석": 0.24, "침몰": 0.18,
+        "여성": 0.74,
+        "아이": 0.71,
+        "1등석": 0.63,
+        "남성": 0.21,
+        "3등석": 0.24,
+        "침몰": 0.18,
     }
 
     def predict(self, keywords: list[str]) -> float:
@@ -75,9 +87,14 @@ class CatBoostStrategy:
     """범주형 최적화: 인코딩 없이 범주 매핑 직접 적용."""
 
     _CAT: dict[str, float] = {
-        "여성": 0.74, "남성": 0.19,
-        "1등석": 0.63, "2등석": 0.47, "3등석": 0.24,
-        "아이": 0.71, "성인": 0.38, "노인": 0.28,
+        "여성": 0.74,
+        "남성": 0.19,
+        "1등석": 0.63,
+        "2등석": 0.47,
+        "3등석": 0.24,
+        "아이": 0.71,
+        "성인": 0.38,
+        "노인": 0.28,
     }
 
     def predict(self, keywords: list[str]) -> float:
@@ -90,8 +107,14 @@ class LogisticRegressionStrategy:
     """선형 가중합 → 시그모이드."""
 
     _WEIGHTS: dict[str, float] = {
-        "여성": 2.1, "아이": 1.8, "구명": 1.5, "1등석": 1.2,
-        "남성": -1.9, "3등석": -1.3, "침몰": -2.0, "사망": -2.5,
+        "여성": 2.1,
+        "아이": 1.8,
+        "구명": 1.5,
+        "1등석": 1.2,
+        "남성": -1.9,
+        "3등석": -1.3,
+        "침몰": -2.0,
+        "사망": -2.5,
     }
 
     def predict(self, keywords: list[str]) -> float:
@@ -150,8 +173,12 @@ class NaiveBayesStrategy:
 
     _PRIOR = 0.384  # 타이타닉 실제 생존율
     _LIKELIHOOD: dict[str, float] = {
-        "여성": 3.8, "아이": 3.2, "1등석": 2.1,
-        "남성": 0.21, "3등석": 0.48, "침몰": 0.30,
+        "여성": 3.8,
+        "아이": 3.2,
+        "1등석": 2.1,
+        "남성": 0.21,
+        "3등석": 0.48,
+        "침몰": 0.30,
     }
 
     def predict(self, keywords: list[str]) -> float:
@@ -169,7 +196,7 @@ class KMeansPCAStrategy:
     _CLUSTER_PROB = {"고생존군": 0.78, "저생존군": 0.17, "중립군": 0.45}
     _RULES = [
         (frozenset({"여성", "아이", "1등석", "부유"}), "고생존군"),
-        (frozenset({"남성", "3등석", "빈곤"}),          "저생존군"),
+        (frozenset({"남성", "3등석", "빈곤"}), "저생존군"),
     ]
 
     def predict(self, keywords: list[str]) -> float:
@@ -181,17 +208,18 @@ class KMeansPCAStrategy:
 
 
 _STRATEGIES: dict[str, PredictionStrategy] = {
-    "XGBoost":           XGBoostStrategy(),
-    "RandomForest":      RandomForestStrategy(),
-    "LightGBM":          LightGBMStrategy(),
-    "CatBoost":          CatBoostStrategy(),
+    "XGBoost": XGBoostStrategy(),
+    "RandomForest": RandomForestStrategy(),
+    "LightGBM": LightGBMStrategy(),
+    "CatBoost": CatBoostStrategy(),
     "LogisticRegression": LogisticRegressionStrategy(),
-    "DecisionTree":      DecisionTreeStrategy(),
-    "SVM":               SVMStrategy(),
-    "KNN":               KNNStrategy(),
-    "NaiveBayes":        NaiveBayesStrategy(),
-    "KMeans_PCA":        KMeansPCAStrategy(),
+    "DecisionTree": DecisionTreeStrategy(),
+    "SVM": SVMStrategy(),
+    "KNN": KNNStrategy(),
+    "NaiveBayes": NaiveBayesStrategy(),
+    "KMeans_PCA": KMeansPCAStrategy(),
 }
+
 
 # DataFrame 행 → 한국어 키워드 변환 (Rose 전략 입력 형식)
 def _row_to_keywords(row: pd.Series) -> list[str]:
@@ -251,50 +279,103 @@ class RoseModelInteractor(RoseModelUseCase):
         return self._strategy.predict(keywords)
 
     async def train_model(self, train_set: pd.DataFrame) -> dict[str, Any]:
-        '''로즈의 10개 전략을 실제 훈련 데이터로 평가해 최적 전략을 선택하는 메소드'''
+        """로즈의 10개 전략을 실제 훈련 데이터로 평가해 최적 전략을 선택하는 메소드"""
         logger.info("[RoseModelInteractor] 전략 평가 파이프라인 시작")
 
         train = train_set.copy()
 
         # 1. Label 분리
-        y_label = pd.to_numeric(train["survived"], errors="coerce").fillna(0).astype(int).tolist()
+        y_label = (
+            pd.to_numeric(train["survived"], errors="coerce")
+            .fillna(0)
+            .astype(int)
+            .tolist()
+        )
         train = train.drop(columns=["survived"])
 
         # 2. 호칭 추출 및 Nominal 변환
         if "name" in train.columns:
             train["Title"] = train["name"].str.extract(r"([A-Za-z]+)\.", expand=False)
             train["Title"] = train["Title"].replace(
-                ["Capt", "Col", "Don", "Dr", "Major", "Rev", "Jonkheer", "Dona", "Mme"], "Rare"
+                ["Capt", "Col", "Don", "Dr", "Major", "Rev", "Jonkheer", "Dona", "Mme"],
+                "Rare",
             )
-            train["Title"] = train["Title"].replace(["Countess", "Lady", "Sir"], "Royal")
+            train["Title"] = train["Title"].replace(
+                ["Countess", "Lady", "Sir"], "Royal"
+            )
             train["Title"] = train["Title"].replace({"Mlle": "Mr", "Ms": "Miss"})
-            title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Royal": 5, "Rare": 6}
-            train["Title"] = pd.to_numeric(train["Title"].map(title_mapping), errors="coerce").fillna(0).astype(int)
+            title_mapping = {
+                "Mr": 1,
+                "Miss": 2,
+                "Mrs": 3,
+                "Master": 4,
+                "Royal": 5,
+                "Rare": 6,
+            }
+            train["Title"] = (
+                pd.to_numeric(train["Title"].map(title_mapping), errors="coerce")
+                .fillna(0)
+                .astype(int)
+            )
 
         # 3. 성별 Nominal 변환 (female=1, male=0)
-        train["gender"] = pd.to_numeric(train["gender"].map({"male": 0, "female": 1}), errors="coerce").fillna(0).astype(int)
+        train["gender"] = (
+            pd.to_numeric(
+                train["gender"].map({"male": 0, "female": 1}), errors="coerce"
+            )
+            .fillna(0)
+            .astype(int)
+        )
 
         # 4. 나이 구간 Ordinal 변환 및 결측치 처리
         if "age" in train.columns:
             bins = [-1, 0, 5, 12, 18, 24, 35, 60, np.inf]
-            age_labels = ["Unknown", "Baby", "Child", "Teenager", "Student", "Young Adult", "Adult", "Senior"]
+            age_labels = [
+                "Unknown",
+                "Baby",
+                "Child",
+                "Teenager",
+                "Student",
+                "Young Adult",
+                "Adult",
+                "Senior",
+            ]
             age_title_mapping = {
-                0: "Unknown", 1: "Baby", 2: "Child", 3: "Teenager",
-                4: "Student", 5: "Young Adult", 6: "Adult", 7: "Senior",
+                0: "Unknown",
+                1: "Baby",
+                2: "Child",
+                3: "Teenager",
+                4: "Student",
+                5: "Young Adult",
+                6: "Adult",
+                7: "Senior",
             }
             age_mapping = {v: k for k, v in age_title_mapping.items()}
             train["age"] = pd.to_numeric(train["age"], errors="coerce").fillna(-0.5)
-            train["AgeGroup"] = pd.cut(train["age"], bins, labels=age_labels).astype(str)
+            train["AgeGroup"] = pd.cut(train["age"], bins, labels=age_labels).astype(
+                str
+            )
             if "Title" in train.columns:
                 mask = train["AgeGroup"] == "Unknown"
-                train.loc[mask, "AgeGroup"] = train.loc[mask, "Title"].map(age_title_mapping)
-            train["AgeGroup"] = pd.to_numeric(train["AgeGroup"].map(age_mapping), errors="coerce").fillna(0).astype(int)
+                train.loc[mask, "AgeGroup"] = train.loc[mask, "Title"].map(
+                    age_title_mapping
+                )
+            train["AgeGroup"] = (
+                pd.to_numeric(train["AgeGroup"].map(age_mapping), errors="coerce")
+                .fillna(0)
+                .astype(int)
+            )
 
         # 5. 승선항 Nominal 변환
         if "embarked" in train.columns:
-            train["embarked"] = pd.to_numeric(
-                train["embarked"].fillna("S").map({"S": 1, "C": 2, "Q": 3}), errors="coerce"
-            ).fillna(1).astype(int)
+            train["embarked"] = (
+                pd.to_numeric(
+                    train["embarked"].fillna("S").map({"S": 1, "C": 2, "Q": 3}),
+                    errors="coerce",
+                )
+                .fillna(1)
+                .astype(int)
+            )
 
         # 6. 요금 Ordinal 변환
         if "fare" in train.columns:
@@ -302,12 +383,26 @@ class RoseModelInteractor(RoseModelUseCase):
             _fare_cut = pd.qcut(train["fare"], 4, duplicates="drop")
             _n = len(_fare_cut.cat.categories)
             train["FareBand"] = (
-                pd.qcut(train["fare"], 4, labels=list(range(1, _n + 1)), duplicates="drop")
-                .astype(float).fillna(1).astype(int)
+                pd.qcut(
+                    train["fare"], 4, labels=list(range(1, _n + 1)), duplicates="drop"
+                )
+                .astype(float)
+                .fillna(1)
+                .astype(int)
             )
 
         # 7. 불필요 컬럼 드롭
-        drop_cols = ["name", "age", "fare", "ticket", "cabin", "passenger_id", "source_file", "id", "created_at"]
+        drop_cols = [
+            "name",
+            "age",
+            "fare",
+            "ticket",
+            "cabin",
+            "passenger_id",
+            "source_file",
+            "id",
+            "created_at",
+        ]
         train = train.drop(columns=[c for c in drop_cols if c in train.columns])
 
         # 남은 string 컬럼 강제 숫자 변환 (안전망)
@@ -329,19 +424,25 @@ class RoseModelInteractor(RoseModelUseCase):
         for key, StrategyClass in build_all_strategies().items():
             strategy = StrategyClass()
             try:
-                strategy.fit(X_tr, y_tr)                  # 80% 학습
-                preds = strategy.predict(X_val)            # 20% 검증
-                accuracy = sum(p == a for p, a in zip(preds, y_val)) / len(y_val)
-                strategy.fit(X, y_label)                   # 예측용 전체 재학습
+                strategy.fit(X_tr, y_tr)  # 80% 학습
+                preds = strategy.predict(X_val)  # 20% 검증
+                accuracy = sum(
+                    p == a for p, a in zip(preds, y_val, strict=False)
+                ) / len(y_val)
+                strategy.fit(X, y_label)  # 예측용 전체 재학습
                 self._trained_strategies[key] = strategy
                 results.append({"name": strategy.name, "accuracy": round(accuracy, 4)})
-                logger.info(f"[RoseModelInteractor] {strategy.name} val_accuracy={accuracy:.2%}")
+                logger.info(
+                    f"[RoseModelInteractor] {strategy.name} val_accuracy={accuracy:.2%}"
+                )
                 if accuracy > best_acc:
                     best_acc, best_name = accuracy, strategy.name
             except Exception as e:
                 logger.warning(f"[RoseModelInteractor] {key} 평가 실패 | error={e}")
 
-        logger.info(f"[RoseModelInteractor] 최적 전략 선택 완료 | strategy={best_name} accuracy={best_acc:.2%}")
+        logger.info(
+            f"[RoseModelInteractor] 최적 전략 선택 완료 | strategy={best_name} accuracy={best_acc:.2%}"
+        )
 
         return {
             "train_samples": len(y_label),
@@ -352,7 +453,7 @@ class RoseModelInteractor(RoseModelUseCase):
             "trained_strategies": self._trained_strategies,
         }
 
-    def analyze_and_answer(  # noqa: C901
+    def analyze_and_answer(
         self,
         intent: str,
         question: str,
@@ -380,12 +481,16 @@ class RoseModelInteractor(RoseModelUseCase):
         ─────────────────────────────────────────────────────────────────────
         """
         # ── 기본 집계 (공통) ───────────────────────────────────────────────────
-        total  = len(train_df) + len(test_df)
-        s_col  = pd.to_numeric(train_df["survived"], errors="coerce").fillna(0) if "survived" in train_df.columns else pd.Series([0] * len(train_df))
-        survived   = int(s_col.sum())
-        death      = len(train_df) - survived
-        surv_rate  = survived / total if total else 0
-        kw         = set(keywords)
+        total = len(train_df) + len(test_df)
+        s_col = (
+            pd.to_numeric(train_df["survived"], errors="coerce").fillna(0)
+            if "survived" in train_df.columns
+            else pd.Series([0] * len(train_df))
+        )
+        survived = int(s_col.sum())
+        death = len(train_df) - survived
+        surv_rate = survived / total if total else 0
+        kw = set(keywords)
 
         # ── 1. 이름 조회 ───────────────────────────────────────────────────────
         if "이름" in question or kw & {"이름"}:
@@ -398,33 +503,50 @@ class RoseModelInteractor(RoseModelUseCase):
                 names = train_df[s_col == 1]["name"].dropna().tolist()
                 label, n = "생존자", len(names)
             sample = names[:5]
-            return f"{label} 총 {n}명 중 대표 이름 5명:\n" + "\n".join(f"• {nm}" for nm in sample)
+            return f"{label} 총 {n}명 중 대표 이름 5명:\n" + "\n".join(
+                f"• {nm}" for nm in sample
+            )
 
         # ── 2. 등급별 종합 분석 ────────────────────────────────────────────────
-        if "등급별" in question or (kw & {"등급"} and any(w in question for w in ["현황", "비교", "각각", "각", "분포", "수는"])):
+        if "등급별" in question or (
+            kw & {"등급"}
+            and any(
+                w in question for w in ["현황", "비교", "각각", "각", "분포", "수는"]
+            )
+        ):
             if "pclass" in train_df.columns:
                 lines = ["객실 등급별 탑승객 현황:"]
                 for cls in [1, 2, 3]:
-                    mask  = pd.to_numeric(train_df["pclass"], errors="coerce") == cls
-                    cnt   = int(mask.sum())
+                    mask = pd.to_numeric(train_df["pclass"], errors="coerce") == cls
+                    cnt = int(mask.sum())
                     s_cnt = int((mask & (s_col == 1)).sum())
-                    rate  = s_cnt / cnt if cnt else 0
-                    lines.append(f"• {cls}등석: 탑승 {cnt}명 / 생존 {s_cnt}명({rate:.1%}) / 사망 {cnt - s_cnt}명")
+                    rate = s_cnt / cnt if cnt else 0
+                    lines.append(
+                        f"• {cls}등석: 탑승 {cnt}명 / 생존 {s_cnt}명({rate:.1%}) / 사망 {cnt - s_cnt}명"
+                    )
                 return "\n".join(lines)
 
         # ── 3. 성별 현황 ───────────────────────────────────────────────────────
         has_female = bool(kw & {"여성", "여자", "여자분"} or "female" in question)
-        has_male   = bool(kw & {"남성", "남자"} or "male" in question)
+        has_male = bool(kw & {"남성", "남자"} or "male" in question)
 
         if (has_female or has_male) and "gender" in train_df.columns:
-            f_mask  = train_df["gender"] == "female"
-            m_mask  = train_df["gender"] == "male"
-            f_all   = int(f_mask.sum()) + (int((test_df["gender"] == "female").sum()) if "gender" in test_df.columns else 0)
-            m_all   = int(m_mask.sum()) + (int((test_df["gender"] == "male").sum())   if "gender" in test_df.columns else 0)
-            f_surv  = int((f_mask & (s_col == 1)).sum())
-            m_surv  = survived - f_surv
-            f_rate  = f_surv / f_all if f_all else 0
-            m_rate  = m_surv / m_all if m_all else 0
+            f_mask = train_df["gender"] == "female"
+            m_mask = train_df["gender"] == "male"
+            f_all = int(f_mask.sum()) + (
+                int((test_df["gender"] == "female").sum())
+                if "gender" in test_df.columns
+                else 0
+            )
+            m_all = int(m_mask.sum()) + (
+                int((test_df["gender"] == "male").sum())
+                if "gender" in test_df.columns
+                else 0
+            )
+            f_surv = int((f_mask & (s_col == 1)).sum())
+            m_surv = survived - f_surv
+            f_rate = f_surv / f_all if f_all else 0
+            m_rate = m_surv / m_all if m_all else 0
 
             if has_female and has_male:
                 return (
@@ -443,10 +565,10 @@ class RoseModelInteractor(RoseModelUseCase):
                 (3, {"3등석", "3등", "삼등석", "서드"}),
             ]:
                 if kw & cls_kw:
-                    mask  = pd.to_numeric(train_df["pclass"], errors="coerce") == cls_num
-                    cnt   = int(mask.sum())
+                    mask = pd.to_numeric(train_df["pclass"], errors="coerce") == cls_num
+                    cnt = int(mask.sum())
                     s_cnt = int((mask & (s_col == 1)).sum())
-                    rate  = s_cnt / cnt if cnt else 0
+                    rate = s_cnt / cnt if cnt else 0
                     return f"{cls_num}등석 탑승객은 {cnt}명이며, 생존자는 {s_cnt}명({rate:.1%})입니다."
 
         # ── 5. 평균 나이 ───────────────────────────────────────────────────────
@@ -455,7 +577,10 @@ class RoseModelInteractor(RoseModelUseCase):
             return f"탑승객 평균 나이는 약 {avg:.1f}세입니다."
 
         # ── 6. 생존율 · 사망률 ─────────────────────────────────────────────────
-        if any(w in question for w in ["생존율", "생존률", "사망률", "사망율", "생존율이", "사망률이"]):
+        if any(
+            w in question
+            for w in ["생존율", "생존률", "사망률", "사망율", "생존율이", "사망률이"]
+        ):
             return (
                 f"타이타닉 전체 생존율 {surv_rate:.1%}({survived}명/{total}명), "
                 f"사망률 {1 - surv_rate:.1%}({death}명/{total}명)."
@@ -466,15 +591,21 @@ class RoseModelInteractor(RoseModelUseCase):
             return f"생존자는 총 {survived}명({surv_rate:.1%})입니다."
 
         # ── 8. 사망자 수 (원인·이유 질문과 분리) ──────────────────────────────
-        if (kw & {"사망자"} or "사망자" in question) and not any(w in question for w in ["원인", "이유", "왜"]):
+        if (kw & {"사망자"} or "사망자" in question) and not any(
+            w in question for w in ["원인", "이유", "왜"]
+        ):
             return f"사망자는 총 {death}명({1 - surv_rate:.1%})입니다."
 
         # ── 9. 탑승항 ──────────────────────────────────────────────────────────
-        if kw & {"출발", "항구", "탑승항", "승선항"} or any(w in question for w in ["출발항", "승선항", "어디서"]):
+        if kw & {"출발", "항구", "탑승항", "승선항"} or any(
+            w in question for w in ["출발항", "승선항", "어디서"]
+        ):
             if "embarked" in train_df.columns:
                 port_map = {"S": "사우샘프턴(S)", "C": "쉘부르(C)", "Q": "퀸즈타운(Q)"}
-                counts   = train_df["embarked"].fillna("S").map(port_map).value_counts()
-                lines    = ["탑승항별 탑승객 수:"] + [f"• {p}: {n}명" for p, n in counts.items()]
+                counts = train_df["embarked"].fillna("S").map(port_map).value_counts()
+                lines = ["탑승항별 탑승객 수:"] + [
+                    f"• {p}: {n}명" for p, n in counts.items()
+                ]
                 return "\n".join(lines)
 
         # ── 10. intent 기반 폴백 ───────────────────────────────────────────────
@@ -499,7 +630,9 @@ class RoseModelInteractor(RoseModelUseCase):
         )
 
     async def introduce_myself(self, schema: RoseModelSchema) -> RoseModelResponse:
-        return await self.repository.introduce_myself(RoseModelQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+        return await self.repository.introduce_myself(
+            RoseModelQuery(
+                id=schema.id,
+                name=schema.name,
+            )
+        )

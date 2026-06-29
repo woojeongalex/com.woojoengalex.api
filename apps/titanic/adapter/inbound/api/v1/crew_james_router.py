@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, File, UploadFile
-
-from titanic.adapter.inbound.api.mappers.james_inbound_mapper import james_schemas_to_person_commands
+from titanic.adapter.inbound.api.mappers.james_inbound_mapper import (
+    james_schemas_to_person_commands,
+)
 from titanic.adapter.inbound.api.parsers.james_csv_parser import read_james_upload
-from titanic.adapter.inbound.api.schemas.crew_james_introduce_schema import JamesIntroduceSchema
+from titanic.adapter.inbound.api.schemas.crew_james_introduce_schema import (
+    JamesIntroduceSchema,
+)
 from titanic.adapter.inbound.api.schemas.crew_james_schema import JamesUploadResponse
 from titanic.app.dtos.crew_james_command import JamesIntroduceResponse
 from titanic.app.ports.input.crew_james_use_case import JamesUseCase

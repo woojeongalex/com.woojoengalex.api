@@ -10,10 +10,12 @@ class DunnCooInteractor(DunnCooUseCase):
         self.repository = repository
 
     async def introduce_myself(self, request) -> DunnCooResponse:
-        return await self.repository.introduce_myself(DunnCooQuery(
-            id=request.id,
-            name=request.name,
-        ))
+        return await self.repository.introduce_myself(
+            DunnCooQuery(
+                id=request.id,
+                name=request.name,
+            )
+        )
 
     async def manage_operations(self) -> dict:
         return {}

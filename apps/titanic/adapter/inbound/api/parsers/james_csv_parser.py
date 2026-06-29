@@ -6,7 +6,6 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
-
 from titanic.adapter.inbound.api.schemas.crew_james_schema import JamesSchema
 
 log = logging.getLogger("titanic")

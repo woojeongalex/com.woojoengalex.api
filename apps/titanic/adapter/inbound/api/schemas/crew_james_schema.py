@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field, model_validator
 
 _COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
@@ -29,18 +27,18 @@ def has_james_csv_column(col: str, headers: list[str]) -> bool:
 
 
 class JamesSchema(BaseModel):
-    passenger_id: Optional[str] = Field(None)
-    survived: Optional[str] = Field(None)
-    pclass: Optional[str] = Field(None)
-    name: Optional[str] = Field(None)
-    gender: Optional[str] = Field(None)
-    age: Optional[str] = Field(None)
-    sib_sp: Optional[str] = Field(None)
-    parch: Optional[str] = Field(None)
-    ticket: Optional[str] = Field(None)
-    fare: Optional[str] = Field(None)
-    cabin: Optional[str] = Field(None)
-    embarked: Optional[str] = Field(None)
+    passenger_id: str | None = Field(None)
+    survived: str | None = Field(None)
+    pclass: str | None = Field(None)
+    name: str | None = Field(None)
+    gender: str | None = Field(None)
+    age: str | None = Field(None)
+    sib_sp: str | None = Field(None)
+    parch: str | None = Field(None)
+    ticket: str | None = Field(None)
+    fare: str | None = Field(None)
+    cabin: str | None = Field(None)
+    embarked: str | None = Field(None)
 
     @model_validator(mode="before")
     @classmethod

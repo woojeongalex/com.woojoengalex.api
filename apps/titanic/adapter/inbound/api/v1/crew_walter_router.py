@@ -1,9 +1,10 @@
 import logging
 
 from fastapi import APIRouter, Depends, Query
-
 from titanic.adapter.inbound.api.schemas.crew_walter_schema import WalterSchema
-from titanic.adapter.inbound.api.schemas.titanic_schema import WalterPassengerPageResponse
+from titanic.adapter.inbound.api.schemas.titanic_schema import (
+    WalterPassengerPageResponse,
+)
 from titanic.app.dtos.crew_walter_query import WalterResponse
 from titanic.app.ports.input.crew_walter_use_case import WalterUseCase
 from titanic.dependencies.crew_walter_provider import get_walter_use_case

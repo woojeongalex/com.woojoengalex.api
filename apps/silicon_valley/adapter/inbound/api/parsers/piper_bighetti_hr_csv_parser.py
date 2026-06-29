@@ -6,8 +6,9 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
-
-from silicon_valley.adapter.inbound.api.schemas.piper_bighetti_hr_schema import BighettiHrSchema
+from silicon_valley.adapter.inbound.api.schemas.piper_bighetti_hr_schema import (
+    BighettiHrSchema,
+)
 
 log = logging.getLogger("silicon_valley")
 
@@ -31,7 +32,9 @@ def parse_bighetti_hr_csv(text: str) -> list[BighettiHrSchema]:
         raise
 
 
-async def read_bighetti_hr_upload(file: UploadFile) -> tuple[str, list[BighettiHrSchema]]:
+async def read_bighetti_hr_upload(
+    file: UploadFile,
+) -> tuple[str, list[BighettiHrSchema]]:
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="업로드 파일이 비어 있습니다.")

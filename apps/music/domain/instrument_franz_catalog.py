@@ -1,4 +1,5 @@
 """[Layer: Domain] Franz 악기 튜닝 카탈로그 (인메모리 · DB 미저장)."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

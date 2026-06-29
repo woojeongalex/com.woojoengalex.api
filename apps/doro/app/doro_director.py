@@ -1,15 +1,13 @@
-from fastapi import FastAPI
-
 from doro.app.doro_reader import DoroReader
+from fastapi import FastAPI
 
 app = FastAPI(title="DoroDirector")
 
 
 class DoroDirector:
     def __init__(self):
-        pass 
+        pass
 
     def get_data(self):
         w = DoroReader()
         return w.get_data()
-        

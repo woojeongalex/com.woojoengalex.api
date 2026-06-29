@@ -113,7 +113,9 @@ class OpenWeatherAdapter:
             return OpenWeatherAdapter._aggregate_forecast(api_key, city, days)
 
     @staticmethod
-    def fetch_seoul_weekly(api_key: str, days: int = 7) -> list[dict[str, int | str | None]]:
+    def fetch_seoul_weekly(
+        api_key: str, days: int = 7
+    ) -> list[dict[str, int | str | None]]:
         return OpenWeatherAdapter.fetch_weekly(api_key, WEATHER_CITIES["seoul"], days)
 
     @staticmethod
@@ -142,7 +144,9 @@ class OpenWeatherAdapter:
             weather = item["weather"][0]
             result.append(
                 {
-                    "date": datetime.fromtimestamp(item["dt"], tz=tz).date().isoformat(),
+                    "date": datetime.fromtimestamp(item["dt"], tz=tz)
+                    .date()
+                    .isoformat(),
                     "temp": round(item["temp"]["day"]),
                     "temp_min": round(item["temp"]["min"]),
                     "temp_max": round(item["temp"]["max"]),

@@ -6,8 +6,9 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
-
-from silicon_valley.adapter.inbound.api.schemas.piper_gilfoyle_system_schema import GilfoyleSystemSchema
+from silicon_valley.adapter.inbound.api.schemas.piper_gilfoyle_system_schema import (
+    GilfoyleSystemSchema,
+)
 
 log = logging.getLogger("silicon_valley")
 
@@ -31,7 +32,9 @@ def parse_gilfoyle_system_csv(text: str) -> list[GilfoyleSystemSchema]:
         raise
 
 
-async def read_gilfoyle_system_upload(file: UploadFile) -> tuple[str, list[GilfoyleSystemSchema]]:
+async def read_gilfoyle_system_upload(
+    file: UploadFile,
+) -> tuple[str, list[GilfoyleSystemSchema]]:
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="업로드 파일이 비어 있습니다.")

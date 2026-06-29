@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from titanic.domain.value_objects.passenger_vo import (
     Age,
@@ -16,8 +15,8 @@ from titanic.domain.value_objects.passenger_vo import (
 @dataclass
 class PassengerEntity:
     id: int
-    passenger_id: Optional[PassengerId]
-    name: Optional[PassengerName]
+    passenger_id: PassengerId | None
+    name: PassengerName | None
     gender: Gender
     age: Age
     family_relation: FamilyRelation
@@ -50,12 +49,16 @@ class PassengerEntity:
     def from_orm(cls, orm) -> PassengerEntity:
         return cls(
             id=orm.id,
-            passenger_id=PassengerId(str(orm.passenger_id)) if orm.passenger_id is not None else None,
+            passenger_id=PassengerId(str(orm.passenger_id))
+            if orm.passenger_id is not None
+            else None,
             name=PassengerName(orm.name) if orm.name is not None else None,
             gender=Gender.from_raw(orm.gender),
             age=Age.from_raw(str(orm.age) if orm.age is not None else None),
             family_relation=FamilyRelation.from_raw(orm.sib_sp, orm.parch),
-            survival_status=SurvivalStatus.from_raw(str(orm.survived) if orm.survived is not None else None),
+            survival_status=SurvivalStatus.from_raw(
+                str(orm.survived) if orm.survived is not None else None
+            ),
         )
 
 

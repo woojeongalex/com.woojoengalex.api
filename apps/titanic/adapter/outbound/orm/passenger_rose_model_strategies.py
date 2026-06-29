@@ -1,8 +1,10 @@
 """Rose Model Strategies — sklearn 기반 10개 ML 전략 구현."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -11,7 +13,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.cluster import KMeans
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,7 +24,9 @@ class RoseModelOrm(Base):
     __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    person_id: Mapped[str] = mapped_column(Integer, ForeignKey("titanic_passengers.id"), index=True)
+    person_id: Mapped[str] = mapped_column(
+        Integer, ForeignKey("titanic_passengers.id"), index=True
+    )
     pclass: Mapped[str] = mapped_column(String, nullable=True)
     ticket: Mapped[str] = mapped_column(String, nullable=True)
     fare: Mapped[str] = mapped_column(String, nullable=True)
@@ -31,7 +34,7 @@ class RoseModelOrm(Base):
     embarked: Mapped[str] = mapped_column(String, nullable=True)
 
     @classmethod
-    def from_command(cls, person_id: int, command) -> "RoseModelOrm":
+    def from_command(cls, person_id: int, command) -> RoseModelOrm:
         return cls(
             person_id=person_id,
             pclass=command.pclass,
@@ -43,6 +46,7 @@ class RoseModelOrm(Base):
 
 
 # ── 전략 추상 기반 ────────────────────────────────────────────────────────────
+
 
 class TitanicStrategyBase(ABC):
     @property
@@ -64,6 +68,7 @@ class TitanicStrategyBase(ABC):
 
 
 # ── 1. XGBoost ────────────────────────────────────────────────────────────────
+
 
 class XGBoostStrategy(TitanicStrategyBase):
     """1위: XGBoost — 그래디언트 부스팅 기반 고성능 모델 (강력한 규제로 과적합 방지)"""
@@ -91,6 +96,7 @@ class XGBoostStrategy(TitanicStrategyBase):
 
 # ── 2. Random Forest ──────────────────────────────────────────────────────────
 
+
 class RandomForestStrategy(TitanicStrategyBase):
     """2위: Random Forest — 다수의 결정 트리를 결합하는 배깅 방식 (데이터 노이즈에 강함)"""
 
@@ -116,6 +122,7 @@ class RandomForestStrategy(TitanicStrategyBase):
 
 
 # ── 3. LightGBM ───────────────────────────────────────────────────────────────
+
 
 class LightGBMStrategy(TitanicStrategyBase):
     """3위: LightGBM — 리프 중심(Leaf-wise) 트리 분할 방식 (대용량 처리 특화, 고속)"""
@@ -143,6 +150,7 @@ class LightGBMStrategy(TitanicStrategyBase):
 
 # ── 4. CatBoost ───────────────────────────────────────────────────────────────
 
+
 class CatBoostStrategy(TitanicStrategyBase):
     """4위: CatBoost — 범주형 데이터 처리에 최적화 (Sex, Embarked 별도 인코딩 불필요)"""
 
@@ -168,6 +176,7 @@ class CatBoostStrategy(TitanicStrategyBase):
 
 
 # ── 5. Logistic Regression ────────────────────────────────────────────────────
+
 
 class LogisticRegressionStrategy(TitanicStrategyBase):
     """5위: Logistic Regression — 선형 기반 이진 분류 Baseline (피처 영향력 해석 용이, 표준화 필수)"""
@@ -196,6 +205,7 @@ class LogisticRegressionStrategy(TitanicStrategyBase):
 
 # ── 6. Decision Tree ──────────────────────────────────────────────────────────
 
+
 class DecisionTreeStrategy(TitanicStrategyBase):
     """6위: Decision Tree — 직관적인 규칙 기반 모델 (시각화 가능, 과적합 주의)"""
 
@@ -221,6 +231,7 @@ class DecisionTreeStrategy(TitanicStrategyBase):
 
 
 # ── 7. SVM ────────────────────────────────────────────────────────────────────
+
 
 class SVMStrategy(TitanicStrategyBase):
     """7위: SVM — 마진 최대화 결정 경계 탐색 (비선형 관계 파악, 표준화 필수)"""
@@ -249,6 +260,7 @@ class SVMStrategy(TitanicStrategyBase):
 
 # ── 8. KNN ────────────────────────────────────────────────────────────────────
 
+
 class KNNStrategy(TitanicStrategyBase):
     """8위: KNN — K-최근접 이웃 분류 (승객 간 유사도 기반, 정규화 권장)"""
 
@@ -276,6 +288,7 @@ class KNNStrategy(TitanicStrategyBase):
 
 # ── 9. Naive Bayes ────────────────────────────────────────────────────────────
 
+
 class NaiveBayesStrategy(TitanicStrategyBase):
     """9위: Naive Bayes — 베이즈 정리 조건부 확률 기반 (빠른 계산, 희소 데이터 강점)"""
 
@@ -302,6 +315,7 @@ class NaiveBayesStrategy(TitanicStrategyBase):
 
 # ── 10. PCA + K-Means ─────────────────────────────────────────────────────────
 
+
 class PCAKMeansStrategy(TitanicStrategyBase):
     """10위: PCA + K-Means — 비지도 학습 보조 도구 (차원 축소 후 군집화, 파생 변수 생성)"""
 
@@ -321,6 +335,7 @@ class PCAKMeansStrategy(TitanicStrategyBase):
 
     def fit(self, X: list[list[float]], y: list[int]) -> None:
         import numpy as np
+
         X_reduced = self._pca.fit_transform(self._scaler.fit_transform(X))
         self._kmeans.fit(X_reduced)
         y_arr = np.array(y)
@@ -331,7 +346,10 @@ class PCAKMeansStrategy(TitanicStrategyBase):
 
     def predict(self, X: list[list[float]]) -> list[int]:
         X_reduced = self._pca.transform(self._scaler.transform(X))
-        return [self._cluster_to_label.get(int(c), 0) for c in self._kmeans.predict(X_reduced)]
+        return [
+            self._cluster_to_label.get(int(c), 0)
+            for c in self._kmeans.predict(X_reduced)
+        ]
 
     def predict_proba(self, X: list[list[float]]) -> list[float]:
         return [float(p) for p in self.predict(X)]
@@ -339,16 +357,17 @@ class PCAKMeansStrategy(TitanicStrategyBase):
 
 # ── 팩토리 ────────────────────────────────────────────────────────────────────
 
+
 def build_all_strategies() -> dict[str, type[TitanicStrategyBase]]:
     return {
-        "xgboost":            XGBoostStrategy,
-        "random_forest":      RandomForestStrategy,
-        "lightgbm":           LightGBMStrategy,
-        "catboost":           CatBoostStrategy,
+        "xgboost": XGBoostStrategy,
+        "random_forest": RandomForestStrategy,
+        "lightgbm": LightGBMStrategy,
+        "catboost": CatBoostStrategy,
         "logistic_regression": LogisticRegressionStrategy,
-        "decision_tree":      DecisionTreeStrategy,
-        "svm":                SVMStrategy,
-        "knn":                KNNStrategy,
-        "naive_bayes":        NaiveBayesStrategy,
-        "pca_kmeans":         PCAKMeansStrategy,
+        "decision_tree": DecisionTreeStrategy,
+        "svm": SVMStrategy,
+        "knn": KNNStrategy,
+        "naive_bayes": NaiveBayesStrategy,
+        "pca_kmeans": PCAKMeansStrategy,
     }

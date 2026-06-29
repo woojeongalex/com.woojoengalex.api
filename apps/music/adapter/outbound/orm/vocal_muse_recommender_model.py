@@ -1,10 +1,10 @@
 """보컬 평가 기반 장르·곡 추천 — `vocal_recommendations`."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ConfigDict
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, func
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, func
 from sqlmodel import Field, SQLModel
 
 
@@ -15,7 +15,7 @@ class VocalRecommendationEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
 
     sing_evaluation_id: int = Field(
         sa_column=Column(
@@ -52,7 +52,7 @@ class VocalRecommendationEntity(SQLModel, table=True):
         description='예: ["밤편지", "Defying Gravity"]',
     )
 
-    created_at: Optional[datetime] = Field(
+    created_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),

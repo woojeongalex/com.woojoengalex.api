@@ -7,7 +7,9 @@ class SignupInteractor(SignupUseCase):
     def __init__(self, repository: SignupRepositoryPort) -> None:
         self._repository = repository
 
-    async def signup(self, account: UserAccount, password_confirm: str | None = None) -> None:
+    async def signup(
+        self, account: UserAccount, password_confirm: str | None = None
+    ) -> None:
         if password_confirm is not None and account.password != password_confirm:
             raise ValueError("비밀번호가 일치하지 않습니다.")
         if await self._repository.exists_by_username(account.username):

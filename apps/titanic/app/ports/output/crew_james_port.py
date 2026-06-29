@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 
-from titanic.app.dtos.crew_james_command import BookingCommand, JamesIntroduceResponse, JamesQuery, PersonCommand
+from titanic.app.dtos.crew_james_command import (
+    BookingCommand,
+    JamesIntroduceResponse,
+    JamesQuery,
+    PersonCommand,
+)
 
 
 class JamesPort(ABC):

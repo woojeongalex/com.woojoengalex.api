@@ -2,6 +2,8 @@
 
 from core.matrix.database_manager import (
     create_all_tables as init_db,
+)
+from core.matrix.database_manager import (
     dispose_engine,
     get_db,
 )

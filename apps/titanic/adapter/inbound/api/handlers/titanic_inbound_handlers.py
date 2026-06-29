@@ -3,7 +3,10 @@
 from titanic.adapter.inbound.api.mappers.james_inbound_mapper import (
     james_schema_to_person_command,
 )
-from titanic.adapter.inbound.api.schemas.crew_james_schema import JamesSchema, JamesUploadResponse
+from titanic.adapter.inbound.api.schemas.crew_james_schema import (
+    JamesSchema,
+    JamesUploadResponse,
+)
 from titanic.app.ports.input.crew_james_use_case import JamesUseCase
 from titanic.app.titanic_flow_log import titanic_flow_log
 

@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Protocol
 
 import pandas as pd
-
-from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import RoseModelSchema
+from titanic.adapter.inbound.api.schemas.passenger_rose_model_schema import (
+    RoseModelSchema,
+)
 from titanic.app.dtos.passenger_rose_model_dto import RoseModelResponse
 
 
@@ -14,14 +15,13 @@ class PredictionStrategy(Protocol):
 
 
 class RoseModelUseCase(ABC):
-
     @abstractmethod
     async def predict(self, keywords: list[str]) -> float:
         pass
 
     @abstractmethod
     async def train_model(self, train_set: pd.DataFrame) -> dict[str, Any]:
-        '''훈련 데이터로 10개 전략을 평가하고 최적 전략을 선택하는 메소드'''
+        """훈련 데이터로 10개 전략을 평가하고 최적 전략을 선택하는 메소드"""
         pass
 
     @abstractmethod

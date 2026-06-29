@@ -5,7 +5,9 @@ from friday13th.domain.entities.friday13th import UserAccount
 
 class SignupUseCase(ABC):
     @abstractmethod
-    async def signup(self, account: UserAccount, password_confirm: str | None = None) -> None:
+    async def signup(
+        self, account: UserAccount, password_confirm: str | None = None
+    ) -> None:
         pass
 
     @abstractmethod

@@ -17,17 +17,17 @@ from music.app.ports.output import (
 )
 
 __all__ = [
-    "SearchUseCase",
+    "EvaluationPort",
     "EvaluationUseCase",
-    "SuggestUseCase",
     "InstrumentCatalogUseCase",
     "InstrumentEvaluationUseCase",
-    "SpeechEvaluationUseCase",
-    "SpeechTopicUseCase",
-    "VideoAnalysisUseCase",
-    "ListPort",
-    "EvaluationPort",
-    "SuggestPort",
     "InstrumentPort",
+    "ListPort",
+    "SearchUseCase",
+    "SpeechEvaluationUseCase",
     "SpeechPort",
+    "SpeechTopicUseCase",
+    "SuggestPort",
+    "SuggestUseCase",
+    "VideoAnalysisUseCase",
 ]

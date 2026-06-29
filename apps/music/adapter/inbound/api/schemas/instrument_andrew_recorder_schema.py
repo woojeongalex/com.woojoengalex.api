@@ -32,7 +32,10 @@ class InstrumentEvaluationCreateRequest(BaseModel):
                 "tuningAccuracy": 88,
                 "pitchDeviationCents": -5,
                 "summary": "E 현 튜닝이 약간 낮습니다.",
-                "stringReadings": [{"string": "E", "cents": -5}, {"string": "A", "cents": 0}],
+                "stringReadings": [
+                    {"string": "E", "cents": -5},
+                    {"string": "A", "cents": 0},
+                ],
                 "fileName": "guitar_session.mp3",
                 "durationSec": 120,
             }

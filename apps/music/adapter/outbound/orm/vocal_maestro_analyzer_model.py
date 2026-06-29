@@ -1,10 +1,9 @@
 """보컬 평가 세션 허브 + AI 분석 — `sing_evaluations`, `ai_vocal_analyses`."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import ConfigDict
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
 from sqlmodel import Field, SQLModel
 
 
@@ -15,8 +14,8 @@ class SingEvaluationEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: Optional[int] = Field(
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer,
@@ -26,7 +25,7 @@ class SingEvaluationEntity(SQLModel, table=True):
         ),
         description="세션 소유자 (평가 대상 아님)",
     )
-    created_at: Optional[datetime] = Field(
+    created_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),
@@ -43,7 +42,7 @@ class AiVocalAnalysisEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     user_vocal_recording_id: int = Field(
         sa_column=Column(
             Integer,
@@ -61,7 +60,7 @@ class AiVocalAnalysisEntity(SQLModel, table=True):
     rhythm_score: int
     vocal_grade: str = Field(max_length=32)
     summary: str = Field(max_length=2048)
-    analyzed_at: Optional[datetime] = Field(
+    analyzed_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),

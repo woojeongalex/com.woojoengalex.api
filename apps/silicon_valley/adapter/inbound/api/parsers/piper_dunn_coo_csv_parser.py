@@ -6,8 +6,9 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
-
-from silicon_valley.adapter.inbound.api.schemas.piper_dunn_coo_schema import DunnCooSchema
+from silicon_valley.adapter.inbound.api.schemas.piper_dunn_coo_schema import (
+    DunnCooSchema,
+)
 
 log = logging.getLogger("silicon_valley")
 

@@ -1,5 +1,4 @@
 import pytest
-
 from titanic.domain.value_objects.passenger_vo import (
     Age,
     FamilyRelation,

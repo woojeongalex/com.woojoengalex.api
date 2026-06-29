@@ -1,10 +1,10 @@
 # ruff: noqa: E402
 import asyncio
-import logging
-import sys
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+import logging
 from pathlib import Path
+import sys
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -20,20 +20,23 @@ from logging_setup import configure_logging
 
 configure_logging()
 
+from adapters.db_health_adapter import DbHealthAdapter
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from adapters.db_health_adapter import DbHealthAdapter
+
 try:
     from database import dispose_engine, get_db, init_db
 except ModuleNotFoundError:
     from apps.database import dispose_engine, get_db, init_db
-from core.matrix.keymaker_api import get_keymaker
-from music.adapter.inbound.api import music_router
 from friday13th.adapter.inbound.api.v1 import login_router, signup_router
-from titanic.adapter.inbound.api import titanic_router
+from music.adapter.inbound.api import music_router
 from silicon_valley.adapter.inbound.api import silicon_valley_router
+from the_wire.adapter.inbound.api.v1.email_router import the_wire_router
+from titanic.adapter.inbound.api import titanic_router
+
+from core.matrix.keymaker_api import get_keymaker
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +66,9 @@ async def lifespan(app: FastAPI):
         await init_db()
         logger.info("Neon DB 테이블 초기화 완료")
     except Exception as exc:
-        logger.exception("Neon DB init_db 실패 — auth API가 동작하지 않을 수 있습니다: %s", exc)
+        logger.exception(
+            "Neon DB init_db 실패 — auth API가 동작하지 않을 수 있습니다: %s", exc
+        )
     try:
         yield
     finally:
@@ -88,6 +93,7 @@ app.include_router(login_router)
 app.include_router(titanic_router)
 app.include_router(silicon_valley_router)
 app.include_router(music_router)
+app.include_router(the_wire_router)
 
 
 @app.get("/health")

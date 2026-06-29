@@ -1,10 +1,9 @@
 """스피치 코칭 세션 허브 + AI 피드백 — `speech_evaluations`, `speech_feedback_analyses`."""
 
 from datetime import datetime
-from typing import Any, Optional
 
 from pydantic import ConfigDict
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, func
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, func
 from sqlmodel import Field, SQLModel
 
 
@@ -13,8 +12,8 @@ class SpeechEvaluationEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: Optional[int] = Field(
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer,
@@ -23,7 +22,7 @@ class SpeechEvaluationEntity(SQLModel, table=True):
             index=True,
         ),
     )
-    created_at: Optional[datetime] = Field(
+    created_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),
@@ -38,7 +37,7 @@ class SpeechFeedbackAnalysisEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     speech_recording_id: int = Field(
         sa_column=Column(
             Integer,
@@ -57,7 +56,7 @@ class SpeechFeedbackAnalysisEntity(SQLModel, table=True):
         default_factory=list,
         sa_column=Column(JSON, nullable=False),
     )
-    analyzed_at: Optional[datetime] = Field(
+    analyzed_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),

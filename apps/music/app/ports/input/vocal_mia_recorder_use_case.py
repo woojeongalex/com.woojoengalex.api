@@ -1,9 +1,13 @@
 """[Layer: Ports] 보컬 평가 입력 Port — 저장 (inbound → usecase)."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import MiaIntroduceSchema, MiaIntroduceResponse
+from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import (
+    MiaIntroduceResponse,
+    MiaIntroduceSchema,
+)
 from music.app.dtos.evaluation_dto import (
     VocalEvaluationCreateCommand,
     VocalEvaluationResultDto,
@@ -12,7 +16,9 @@ from music.app.dtos.evaluation_dto import (
 
 class EvaluationUseCase(ABC):
     @abstractmethod
-    async def introduce_myself(self, schema: MiaIntroduceSchema) -> MiaIntroduceResponse:
+    async def introduce_myself(
+        self, schema: MiaIntroduceSchema
+    ) -> MiaIntroduceResponse:
         pass
 
     @abstractmethod

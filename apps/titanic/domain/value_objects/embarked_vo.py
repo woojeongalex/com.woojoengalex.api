@@ -1,7 +1,7 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class EmbarkedPort(str, Enum):
@@ -12,10 +12,10 @@ class EmbarkedPort(str, Enum):
 
 @dataclass(frozen=True)
 class Embarked:
-    value: Optional[EmbarkedPort]
+    value: EmbarkedPort | None
 
     @classmethod
-    def from_raw(cls, raw: Optional[str]) -> "Embarked":
+    def from_raw(cls, raw: str | None) -> Embarked:
         if not raw or not raw.strip():
             return cls(value=None)
         try:

@@ -1,7 +1,5 @@
 """`users` 테이블 ORM · bcrypt 유틸."""
 
-from typing import Optional
-
 import bcrypt
 from sqlmodel import Field, SQLModel
 
@@ -17,7 +15,7 @@ def verify_password(plain: str, password_hash: str) -> bool:
 class UserEntity(SQLModel, table=True):
     __tablename__ = "users"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     username: str = Field(max_length=64, index=True)
     nickname: str = Field(max_length=64, index=True)
     email: str = Field(max_length=255)

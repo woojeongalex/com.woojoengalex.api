@@ -1,27 +1,27 @@
-from titanic.domain.value_objects.pclass_vo import PClass, PClassType
+from titanic.domain.value_objects.booking_info_vo import BookingInfo
 from titanic.domain.value_objects.embarked_vo import Embarked, EmbarkedPort
 from titanic.domain.value_objects.family_relation_vo import FamilyRelation
-from titanic.domain.value_objects.booking_info_vo import BookingInfo
 from titanic.domain.value_objects.passenger_vo import (
-    PassengerId,
-    PassengerName,
+    Age,
     Gender,
     GenderType,
-    Age,
+    PassengerId,
+    PassengerName,
     SurvivalStatus,
 )
+from titanic.domain.value_objects.pclass_vo import PClass, PClassType
 
 __all__ = [
-    "PClass",
-    "PClassType",
+    "Age",
+    "BookingInfo",
     "Embarked",
     "EmbarkedPort",
     "FamilyRelation",
-    "BookingInfo",
-    "PassengerId",
-    "PassengerName",
     "Gender",
     "GenderType",
-    "Age",
+    "PClass",
+    "PClassType",
+    "PassengerId",
+    "PassengerName",
     "SurvivalStatus",
 ]

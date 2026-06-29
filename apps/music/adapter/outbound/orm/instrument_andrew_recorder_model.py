@@ -1,10 +1,9 @@
 """악기 연주 입력 — `instrument_recordings`."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import ConfigDict
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
 from sqlmodel import Field, SQLModel
 
 
@@ -13,8 +12,8 @@ class InstrumentRecordingEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: Optional[int] = Field(
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer,
@@ -35,7 +34,7 @@ class InstrumentRecordingEntity(SQLModel, table=True):
     instrument_id: str = Field(max_length=32, description="guitar | piano")
     file_name: str = Field(max_length=512, default="")
     duration_sec: int = Field(ge=0, default=0)
-    recorded_at: Optional[datetime] = Field(
+    recorded_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),

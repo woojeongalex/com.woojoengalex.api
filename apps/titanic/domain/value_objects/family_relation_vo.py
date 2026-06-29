@@ -1,6 +1,6 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -15,8 +15,8 @@ class FamilyRelation:
             raise ValueError(f"parch 유효하지 않은 값: '{self.parch}'")
 
     @classmethod
-    def from_raw(cls, sib_sp_raw: Optional[str], parch_raw: Optional[str]) -> "FamilyRelation":
-        def _parse(val: Optional[str], field: str) -> int:
+    def from_raw(cls, sib_sp_raw: str | None, parch_raw: str | None) -> FamilyRelation:
+        def _parse(val: str | None, field: str) -> int:
             if not val or not str(val).strip():
                 return 0
             try:
@@ -24,7 +24,9 @@ class FamilyRelation:
             except (ValueError, TypeError):
                 raise ValueError(f"{field} 유효하지 않은 값: '{val}'")
 
-        return cls(sib_sp=_parse(sib_sp_raw, "sib_sp"), parch=_parse(parch_raw, "parch"))
+        return cls(
+            sib_sp=_parse(sib_sp_raw, "sib_sp"), parch=_parse(parch_raw, "parch")
+        )
 
     @property
     def total_family_size(self) -> int:

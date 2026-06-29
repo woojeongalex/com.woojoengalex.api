@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import logging
 import os
-import tempfile
-import uuid
 from pathlib import Path
+import tempfile
 from typing import Any
+import uuid
 
-from music.adapter.inbound.api.schemas.speech_lumiere_video_schema import LumiereIntroduceSchema, LumiereIntroduceResponse
-from music.app.dtos.video_analysis_dto import LumiereIntroduceQuery, VideoVocalAnalysisResultDto
+from music.adapter.inbound.api.schemas.speech_lumiere_video_schema import (
+    LumiereIntroduceResponse,
+    LumiereIntroduceSchema,
+)
+from music.app.dtos.video_analysis_dto import (
+    VideoVocalAnalysisResultDto,
+)
 from music.app.ports.input.speech_lumiere_video_use_case import VideoAnalysisUseCase
 
 logger = logging.getLogger(__name__)
@@ -18,6 +23,7 @@ _VIDEO_EXTENSIONS = {".mp4", ".mov", ".webm", ".mkv", ".avi", ".m4v"}
 
 
 # ── video_audio_preprocess ────────────────────────────────────────────────────
+
 
 def _is_supported_video_filename(name: str) -> bool:
     return Path(name).suffix.lower() in _VIDEO_EXTENSIONS
@@ -46,12 +52,15 @@ def _extract_audio_wav_from_video(
         clip.close()
 
     if not os.path.isfile(wav_out_path) or os.path.getsize(wav_out_path) == 0:
-        raise RuntimeError("오디오 추출 결과 WAV 파일이 비어 있거나 생성되지 않았습니다.")
+        raise RuntimeError(
+            "오디오 추출 결과 WAV 파일이 비어 있거나 생성되지 않았습니다."
+        )
 
     logger.info("[lumiere][preprocess] WAV 추출 완료 sr=%s out=%s", sr, wav_out_path)
 
 
 # ── librosa_vocal_analysis ────────────────────────────────────────────────────
+
 
 def _analyze_pitch_bpm_duration(wav_path: str, sr: int = 22050) -> dict[str, Any]:
     import librosa
@@ -92,10 +101,15 @@ def _analyze_pitch_bpm_duration(wav_path: str, sr: int = 22050) -> dict[str, Any
         bpm,
         mean_hz,
     )
-    return {"pitch_data": pitch_data, "bpm": round(bpm, 2), "duration": round(duration, 3)}
+    return {
+        "pitch_data": pitch_data,
+        "bpm": round(bpm, 2),
+        "duration": round(duration, 3),
+    }
 
 
 # ── emotion_analysis ──────────────────────────────────────────────────────────
+
 
 def _neutral_stub() -> dict[str, float]:
     return {"sadness": 0.05, "passion": 0.12, "neutral": 0.83}
@@ -105,7 +119,9 @@ def _analyze_emotion(audio_path: str) -> dict[str, float]:
     if not os.path.isfile(audio_path):
         logger.warning("[lumiere][emotion] 파일 없음: %s", audio_path)
         return _neutral_stub()
-    logger.info("[lumiere][emotion] 플레이스홀더 분석 (외부 API 미연동): %s", audio_path)
+    logger.info(
+        "[lumiere][emotion] 플레이스홀더 분석 (외부 API 미연동): %s", audio_path
+    )
     return _neutral_stub()
 
 
@@ -121,8 +137,11 @@ def _emotions_for_json(em: dict[str, float]) -> dict[str, float]:
 
 # ── interactor ────────────────────────────────────────────────────────────────
 
+
 class LumiereVideoInteractor(VideoAnalysisUseCase):
-    async def introduce_myself(self, schema: LumiereIntroduceSchema) -> LumiereIntroduceResponse:
+    async def introduce_myself(
+        self, schema: LumiereIntroduceSchema
+    ) -> LumiereIntroduceResponse:
         return LumiereIntroduceResponse(
             id=schema.id * 10000,
             name=schema.name + "가 레포지토리에 다녀옴",
@@ -131,7 +150,7 @@ class LumiereVideoInteractor(VideoAnalysisUseCase):
     def analyze(
         self, data: bytes, original_filename: str
     ) -> VideoVocalAnalysisResultDto:
-        '''Lumière의 영상 보컬 분석'''
+        """Lumière의 영상 보컬 분석"""
         if not data:
             raise ValueError("업로드 파일이 비어 있습니다.")
         name = original_filename or "video.bin"

@@ -1,4 +1,5 @@
 """[Layer: Use Cases] Franz/Andrew 악기 평가 DTO."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

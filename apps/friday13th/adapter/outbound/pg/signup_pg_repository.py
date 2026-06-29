@@ -1,12 +1,11 @@
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from friday13th.app.ports.output.signup_repository_port import SignupRepositoryPort
-from friday13th.domain.entities.friday13th import UserAccount
 from friday13th.adapter.outbound.orm.user_model import (
     UserEntity,
     hash_password,
 )
+from friday13th.app.ports.output.signup_repository_port import SignupRepositoryPort
+from friday13th.domain.entities.friday13th import UserAccount
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class SignupPgRepository(SignupRepositoryPort):
@@ -20,12 +19,16 @@ class SignupPgRepository(SignupRepositoryPort):
 
     async def exists_by_username(self, username: str) -> bool:
         db = self._require_db()
-        stmt = select(UserEntity.id).where(func.lower(UserEntity.username) == username.strip().lower())
+        stmt = select(UserEntity.id).where(
+            func.lower(UserEntity.username) == username.strip().lower()
+        )
         return (await db.execute(stmt)).scalar_one_or_none() is not None
 
     async def exists_by_nickname(self, nickname: str) -> bool:
         db = self._require_db()
-        stmt = select(UserEntity.id).where(func.lower(UserEntity.nickname) == nickname.strip().lower())
+        stmt = select(UserEntity.id).where(
+            func.lower(UserEntity.nickname) == nickname.strip().lower()
+        )
         return (await db.execute(stmt)).scalar_one_or_none() is not None
 
     async def save_user(self, account: UserAccount) -> None:

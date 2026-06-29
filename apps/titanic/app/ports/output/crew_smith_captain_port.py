@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
-from titanic.app.dtos.crew_smith_captain_dto import SmithCaptainQuery, SmithCaptainResponse
+from titanic.app.dtos.crew_smith_captain_dto import (
+    SmithCaptainQuery,
+    SmithCaptainResponse,
+)
 
 
 class SmithCaptainPort(ABC):

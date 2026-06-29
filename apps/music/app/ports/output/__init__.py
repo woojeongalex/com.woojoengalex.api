@@ -5,9 +5,9 @@ from music.app.ports.output.vocal_mia_maestro_port import EvaluationPort
 from music.app.ports.output.vocal_muse_recommender_port import SuggestPort
 
 __all__ = [
-    "ListPort",
     "EvaluationPort",
-    "SuggestPort",
     "InstrumentPort",
+    "ListPort",
     "SpeechPort",
+    "SuggestPort",
 ]

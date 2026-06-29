@@ -1,7 +1,12 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from silicon_valley.app.dtos.piper_hendricks_ceo_dto import HendricksCeoQuery, HendricksCeoResponse
-from silicon_valley.app.ports.input.piper_hendricks_ceo_use_case import HendricksCeoUseCase
+from silicon_valley.app.dtos.piper_hendricks_ceo_dto import (
+    HendricksCeoQuery,
+    HendricksCeoResponse,
+)
+from silicon_valley.app.ports.input.piper_hendricks_ceo_use_case import (
+    HendricksCeoUseCase,
+)
 from silicon_valley.app.ports.output.piper_hendricks_ceo_port import HendricksCeoPort
 
 
@@ -10,10 +15,12 @@ class HendricksCeoInteractor(HendricksCeoUseCase):
         self.repository = repository
 
     async def introduce_myself(self, request) -> HendricksCeoResponse:
-        return await self.repository.introduce_myself(HendricksCeoQuery(
-            id=request.id,
-            name=request.name,
-        ))
+        return await self.repository.introduce_myself(
+            HendricksCeoQuery(
+                id=request.id,
+                name=request.name,
+            )
+        )
 
     async def get_company_status(self) -> dict:
         return {}

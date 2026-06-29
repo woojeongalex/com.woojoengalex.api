@@ -1,4 +1,5 @@
 """[Layer: Domain Value Objects] Andrew recorder VO (스텁)."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

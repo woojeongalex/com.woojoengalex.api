@@ -1,8 +1,9 @@
 """Neon 테이블·INSERT 연동 점검: python scripts/check_neon_music.py"""
+
 import asyncio
 import os
-import sys
 from pathlib import Path
+import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from dotenv import load_dotenv
@@ -29,28 +30,32 @@ async def main() -> int:
         print("FAIL: DATABASE_URL 없음 (backend/.env)")
         return 1
 
-    from sqlalchemy import text
-
     import friday13th.adapter.outbound.orm.user_model  # noqa: F401
-    import music.adapter.outbound.orm.instrument_evaluation_model  # noqa: F401
-    import music.adapter.outbound.orm.instrument_recording_model  # noqa: F401
-    import music.adapter.outbound.orm.instrument_tuning_analysis_model  # noqa: F401
-    import music.adapter.outbound.orm.speech_evaluation_model  # noqa: F401
-    import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
-    import music.adapter.outbound.orm.speech_feedback_analysis_model  # noqa: F401
-    from database import dispose_engine, get_session_factory, init_db
-    from music.adapter.inbound.api.schemas.instrument_schemas import (
-        InstrumentEvaluationCreateRequest,
-    )
-    from music.adapter.inbound.api.schemas.speech_schemas import SpeechEvaluationCreateRequest
     from music.adapter.inbound.api.mappers.music_inbound_mapper import (
         from_instrument_create,
         from_speech_create,
     )
-    from music.adapter.outbound.pg.instrument_pg_repository import InstrumentPgRepository
+    from music.adapter.inbound.api.schemas.instrument_schemas import (
+        InstrumentEvaluationCreateRequest,
+    )
+    from music.adapter.inbound.api.schemas.speech_schemas import (
+        SpeechEvaluationCreateRequest,
+    )
+    import music.adapter.outbound.orm.instrument_evaluation_model
+    import music.adapter.outbound.orm.instrument_recording_model
+    import music.adapter.outbound.orm.instrument_tuning_analysis_model
+    import music.adapter.outbound.orm.speech_evaluation_model
+    import music.adapter.outbound.orm.speech_feedback_analysis_model
+    import music.adapter.outbound.orm.speech_recording_model  # noqa: F401
+    from music.adapter.outbound.pg.instrument_pg_repository import (
+        InstrumentPgRepository,
+    )
     from music.adapter.outbound.pg.speech_pg_repository import SpeechPgRepository
     from music.app.use_cases.instrument_interactor import InstrumentInteractor
     from music.app.use_cases.speech_interactor import SpeechInteractor
+    from sqlalchemy import text
+
+    from database import dispose_engine, get_session_factory, init_db
 
     await init_db()
     factory = get_session_factory()
@@ -77,9 +82,7 @@ async def main() -> int:
             return 1
 
         inst_id = (
-            await InstrumentInteractor(
-                InstrumentPgRepository(session=session)
-            ).upload(
+            await InstrumentInteractor(InstrumentPgRepository(session=session)).upload(
                 from_instrument_create(
                     InstrumentEvaluationCreateRequest(
                         instrumentId="guitar",
@@ -94,9 +97,7 @@ async def main() -> int:
             )
         ).id
         speech_id = (
-            await SpeechInteractor(
-                SpeechPgRepository(session=session)
-            ).upload(
+            await SpeechInteractor(SpeechPgRepository(session=session)).upload(
                 from_speech_create(
                     SpeechEvaluationCreateRequest(
                         topicId="daily",

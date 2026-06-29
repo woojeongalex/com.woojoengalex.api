@@ -1,7 +1,7 @@
 """인증 inbound — DB·SQLAlchemy 예외는 라우터 밖에서 처리."""
 
-import logging
 from collections.abc import Awaitable, Callable
+import logging
 from typing import TypeVar
 
 from fastapi import HTTPException

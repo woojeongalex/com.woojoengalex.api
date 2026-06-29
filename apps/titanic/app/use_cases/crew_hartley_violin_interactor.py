@@ -3,9 +3,13 @@
 import io
 
 import pandas as pd
-
-from titanic.adapter.inbound.api.schemas.crew_hartley_violin_schema import HartleyViolinSchema
-from titanic.app.dtos.crew_hartley_violin_dto import HartleyViolinQuery, HartleyViolinResponse
+from titanic.adapter.inbound.api.schemas.crew_hartley_violin_schema import (
+    HartleyViolinSchema,
+)
+from titanic.app.dtos.crew_hartley_violin_dto import (
+    HartleyViolinQuery,
+    HartleyViolinResponse,
+)
 from titanic.app.ports.input.crew_hartley_use_case import HartleyUseCase
 from titanic.app.ports.input.crew_hartley_violin_use_case import HartleyViolinUseCase
 from titanic.app.ports.output.crew_hartley_violin_port import HartleyViolinPort
@@ -17,6 +21,7 @@ class HartleyViolinInteractor(HartleyViolinUseCase, HartleyUseCase):
 
     def correlation_graph(self, train_df: pd.DataFrame) -> bytes:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         import seaborn as sns
@@ -32,8 +37,12 @@ class HartleyViolinInteractor(HartleyViolinUseCase, HartleyUseCase):
         buf.seek(0)
         return buf.read()
 
-    async def introduce_myself(self, schema: HartleyViolinSchema) -> HartleyViolinResponse:
-        return await self.repository.introduce_myself(HartleyViolinQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
+    async def introduce_myself(
+        self, schema: HartleyViolinSchema
+    ) -> HartleyViolinResponse:
+        return await self.repository.introduce_myself(
+            HartleyViolinQuery(
+                id=schema.id,
+                name=schema.name,
+            )
+        )

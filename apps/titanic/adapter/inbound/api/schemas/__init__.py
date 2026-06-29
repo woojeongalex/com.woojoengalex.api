@@ -17,13 +17,13 @@ from titanic.adapter.inbound.api.schemas.titanic_schema import (
 )
 
 __all__ = [
-    "ColumnSpec",
     "EXTRA_CSV_COLUMNS",
     "ML_FEATURE_COLUMNS",
     "ML_TARGET_COLUMN",
     "TITANIC_COLUMN_SPECS",
-    "TitanicColumnInfo",
+    "ColumnSpec",
     "PassengerCsvRow",
+    "TitanicColumnInfo",
     "TitanicCountResponse",
     "TitanicDatasetSchemaResponse",
     "TitanicDeadCountResponse",

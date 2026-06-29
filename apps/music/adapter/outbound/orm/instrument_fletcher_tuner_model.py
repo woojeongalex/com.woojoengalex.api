@@ -1,10 +1,10 @@
 """악기 튜닝 평가 세션 허브 + AI 분석 — `instrument_evaluations`, `instrument_tuning_analyses`."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ConfigDict
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, func
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, func
 from sqlmodel import Field, SQLModel
 
 
@@ -13,8 +13,8 @@ class InstrumentEvaluationEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: Optional[int] = Field(
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer,
@@ -23,7 +23,7 @@ class InstrumentEvaluationEntity(SQLModel, table=True):
             index=True,
         ),
     )
-    created_at: Optional[datetime] = Field(
+    created_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),
@@ -38,7 +38,7 @@ class InstrumentTuningAnalysisEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     instrument_recording_id: int = Field(
         sa_column=Column(
             Integer,
@@ -57,7 +57,7 @@ class InstrumentTuningAnalysisEntity(SQLModel, table=True):
         sa_column=Column(JSON, nullable=False),
         description="현·건반별 편차 요약 JSON",
     )
-    analyzed_at: Optional[datetime] = Field(
+    analyzed_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),

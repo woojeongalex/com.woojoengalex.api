@@ -22,19 +22,19 @@ from music.app.dtos.suggest_dto import (
 from music.app.dtos.video_analysis_dto import VideoVocalAnalysisResultDto
 
 __all__ = [
-    "SongMrHitDto",
-    "SongMrSearchResultDto",
-    "VocalEvaluationCreateCommand",
-    "VocalEvaluationResultDto",
-    "VocalRecommendationCreateCommand",
-    "VocalRecommendationResultDto",
     "InstrumentCatalogHitDto",
     "InstrumentCatalogResultDto",
     "InstrumentEvaluationCreateCommand",
     "InstrumentEvaluationResultDto",
-    "SpeechTopicHitDto",
-    "SpeechTopicsResultDto",
+    "SongMrHitDto",
+    "SongMrSearchResultDto",
     "SpeechEvaluationCreateCommand",
     "SpeechEvaluationResultDto",
+    "SpeechTopicHitDto",
+    "SpeechTopicsResultDto",
     "VideoVocalAnalysisResultDto",
+    "VocalEvaluationCreateCommand",
+    "VocalEvaluationResultDto",
+    "VocalRecommendationCreateCommand",
+    "VocalRecommendationResultDto",
 ]

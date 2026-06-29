@@ -1,9 +1,16 @@
-from silicon_valley.app.dtos.piper_gilfoyle_system_dto import GilfoyleSystemQuery, GilfoyleSystemResponse
-from silicon_valley.app.ports.output.piper_gilfoyle_system_port import GilfoyleSystemPort
+from silicon_valley.app.dtos.piper_gilfoyle_system_dto import (
+    GilfoyleSystemQuery,
+    GilfoyleSystemResponse,
+)
+from silicon_valley.app.ports.output.piper_gilfoyle_system_port import (
+    GilfoyleSystemPort,
+)
 
 
 class GilfoyleSystemRepository(GilfoyleSystemPort):
-    async def introduce_myself(self, query: GilfoyleSystemQuery) -> GilfoyleSystemResponse:
+    async def introduce_myself(
+        self, query: GilfoyleSystemQuery
+    ) -> GilfoyleSystemResponse:
         return GilfoyleSystemResponse(
             id=query.id,
             name=query.name,

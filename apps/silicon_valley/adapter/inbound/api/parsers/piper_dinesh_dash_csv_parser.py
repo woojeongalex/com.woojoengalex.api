@@ -6,8 +6,9 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
-
-from silicon_valley.adapter.inbound.api.schemas.piper_dinesh_dash_schema import DineshDashSchema
+from silicon_valley.adapter.inbound.api.schemas.piper_dinesh_dash_schema import (
+    DineshDashSchema,
+)
 
 log = logging.getLogger("silicon_valley")
 
@@ -31,7 +32,9 @@ def parse_dinesh_dash_csv(text: str) -> list[DineshDashSchema]:
         raise
 
 
-async def read_dinesh_dash_upload(file: UploadFile) -> tuple[str, list[DineshDashSchema]]:
+async def read_dinesh_dash_upload(
+    file: UploadFile,
+) -> tuple[str, list[DineshDashSchema]]:
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="업로드 파일이 비어 있습니다.")

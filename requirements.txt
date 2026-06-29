@@ -1,3 +1,4 @@
+# Python 3.13.9 | torch 2.6.0+cu126
 fastapi==0.136.1
 uvicorn==0.47.0
 pandas==3.0.3
@@ -11,6 +12,8 @@ python-dotenv==1.2.2
 bcrypt==4.2.1
 google-generativeai==0.8.6
 requests==2.32.5
+httpx==0.28.1
+aiosmtplib==5.1.2
 python-multipart==0.0.29
 numpy==2.4.6
 matplotlib==3.10.3
@@ -20,6 +23,13 @@ librosa==0.11.0
 moviepy==2.2.1
 kiwipiepy==0.23.1
 ollama==0.6.2
+langchain==0.3.25
+langchain-core==0.3.59
+langchain-community==0.3.25
+langchain-ollama==0.2.3
+langsmith==0.2.11
+langgraph==0.2.73
+langgraph-checkpoint==2.0.26
 mcp
 pytest==8.3.5
 pytest-asyncio==0.24.0

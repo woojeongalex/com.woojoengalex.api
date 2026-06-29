@@ -4,9 +4,14 @@
 - Neon 저장: `PersonCommand` → `person_orm`, `BookingCommand` → `booking_orm`
 """
 
-__all__ = ["PERSON_COMMAND_FIELDS", "BookingCommand", "PersonCommand", "JamesQuery", "JamesIntroduceResponse"]
+__all__ = [
+    "PERSON_COMMAND_FIELDS",
+    "BookingCommand",
+    "JamesIntroduceResponse",
+    "JamesQuery",
+    "PersonCommand",
+]
 from dataclasses import dataclass, field
-from typing import Optional
 
 from titanic.app.dtos.passenger_row import PassengerRowDto
 
@@ -31,18 +36,18 @@ PERSON_COMMAND_FIELDS: tuple[str, ...] = (
 class PersonCommand:
     """CSV 1행 = Person + Booking + Port(country 제외) 역정규화."""
 
-    passenger_id: Optional[str] = field(default=None)
-    survived: Optional[str] = field(default=None)
-    pclass: Optional[str] = field(default=None)
-    name: Optional[str] = field(default=None)
-    gender: Optional[str] = field(default=None)
-    age: Optional[str] = field(default=None)
-    sib_sp: Optional[str] = field(default=None)
-    parch: Optional[str] = field(default=None)
-    ticket: Optional[str] = field(default=None)
-    fare: Optional[str] = field(default=None)
-    cabin: Optional[str] = field(default=None)
-    embarked: Optional[str] = field(default=None)
+    passenger_id: str | None = field(default=None)
+    survived: str | None = field(default=None)
+    pclass: str | None = field(default=None)
+    name: str | None = field(default=None)
+    gender: str | None = field(default=None)
+    age: str | None = field(default=None)
+    sib_sp: str | None = field(default=None)
+    parch: str | None = field(default=None)
+    ticket: str | None = field(default=None)
+    fare: str | None = field(default=None)
+    cabin: str | None = field(default=None)
+    embarked: str | None = field(default=None)
 
     def to_passenger_row(self) -> PassengerRowDto:
         return PassengerRowDto(
@@ -65,11 +70,11 @@ class PersonCommand:
 class BookingCommand:
     """Booking + Port(embarked만) — `Titanic-Dataset.csv`에 있는 컬럼만."""
 
-    pclass: Optional[str] = field(default=None)
-    ticket: Optional[str] = field(default=None)
-    fare: Optional[str] = field(default=None)
-    cabin: Optional[str] = field(default=None)
-    embarked: Optional[str] = field(default=None)
+    pclass: str | None = field(default=None)
+    ticket: str | None = field(default=None)
+    fare: str | None = field(default=None)
+    cabin: str | None = field(default=None)
+    embarked: str | None = field(default=None)
 
 
 @dataclass(frozen=True)

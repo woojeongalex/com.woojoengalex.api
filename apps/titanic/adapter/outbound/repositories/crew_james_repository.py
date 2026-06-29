@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import logging
 
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from titanic.adapter.outbound.orm.booking_orm import BookingOrm
 from titanic.adapter.outbound.orm.passenger_orm import PersonOrm
-from titanic.app.dtos.crew_james_command import BookingCommand, JamesIntroduceResponse, JamesQuery, PersonCommand
+from titanic.app.dtos.crew_james_command import (
+    BookingCommand,
+    JamesIntroduceResponse,
+    JamesQuery,
+    PersonCommand,
+)
 from titanic.app.ports.output.crew_james_port import JamesPort
 
 logger = logging.getLogger(__name__)
@@ -32,14 +36,12 @@ class JamesRepository(JamesPort):
         file_name: str,
     ) -> int:
         existing_passenger_ids: set[str] = set(
-            (
-                await self.session.execute(select(PersonOrm.passenger_id))
-            ).scalars().all()
+            (await self.session.execute(select(PersonOrm.passenger_id))).scalars().all()
         )
 
         new_pairs = [
             (pc, bc)
-            for pc, bc in zip(person_commands, booking_commands)
+            for pc, bc in zip(person_commands, booking_commands, strict=False)
             if pc.passenger_id not in existing_passenger_ids
         ]
         if not new_pairs:
@@ -70,7 +72,7 @@ class JamesRepository(JamesPort):
                 cabin=bc.cabin,
                 embarked=bc.embarked,
             )
-            for person_orm, (_, bc) in zip(person_orms, new_pairs)
+            for person_orm, (_, bc) in zip(person_orms, new_pairs, strict=False)
         ]
         self.session.add_all(booking_orms)
         await self.session.commit()

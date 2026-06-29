@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+
 # [변경 1] 함수형 declarative_base 대신 클래스형 DeclarativeBase 임포트
 from sqlalchemy.orm import DeclarativeBase
 
@@ -27,13 +28,13 @@ def init_engine() -> None:
     global engine, async_session_factory
     if not DATABASE_URL:
         return
-        
+
     # 이미 초기화되었다면 중복 생성을 방지 (레이스 컨디션 완화)
     if engine is not None:
         return
 
     engine = create_async_engine(DATABASE_URL, pool_pre_ping=True)
-    
+
     # [변경 2] async_sessionmaker는 class_=AsyncSession을 기본으로 내장하므로 생략 가능
     # [변경 3] 2.0에서 완전히 제거(Deprecated & Removed)된 autocommit=False 옵션 삭제
     async_session_factory = async_sessionmaker(
@@ -46,7 +47,7 @@ def init_engine() -> None:
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     if async_session_factory is None:
         init_engine()
-        
+
     if async_session_factory is None:
         raise RuntimeError("데이터베이스 엔진이 초기화되지 않았습니다.")
 
@@ -57,6 +58,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def create_all_tables() -> None:
     import logging
+
     from sqlalchemy import text
 
     log = logging.getLogger("backend_main")
@@ -66,6 +68,7 @@ async def create_all_tables() -> None:
 
     if engine is not None:
         from sqlmodel import SQLModel
+
         from core.matrix.theone_base import Base as TheOneBase
 
         async with engine.begin() as conn:
@@ -75,7 +78,9 @@ async def create_all_tables() -> None:
 
         async with async_session_factory() as session:
             result = await session.execute(
-                text("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")
+                text(
+                    "SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename"
+                )
             )
             tables = [r[0] for r in result.fetchall()]
             log.info("Neon DB 테이블 목록 (%d개): %s", len(tables), ", ".join(tables))

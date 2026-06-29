@@ -7,7 +7,9 @@ from titanic.adapter.inbound.api.schemas.titanic_schema import (
 from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto
 
 
-def walter_page_dto_to_response(page: WalterPassengerPageDto) -> WalterPassengerPageResponse:
+def walter_page_dto_to_response(
+    page: WalterPassengerPageDto,
+) -> WalterPassengerPageResponse:
     return WalterPassengerPageResponse(
         source_file=page.source_file,
         page=page.page,

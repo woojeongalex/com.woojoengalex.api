@@ -1,10 +1,17 @@
 from __future__ import annotations
 
-import logging
 from dataclasses import replace
+import logging
 
-from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import MiaIntroduceSchema, MiaIntroduceResponse
-from music.app.dtos.evaluation_dto import MiaIntroduceQuery, VocalEvaluationCreateCommand, VocalEvaluationResultDto
+from music.adapter.inbound.api.schemas.vocal_mia_recorder_schema import (
+    MiaIntroduceResponse,
+    MiaIntroduceSchema,
+)
+from music.app.dtos.evaluation_dto import (
+    MiaIntroduceQuery,
+    VocalEvaluationCreateCommand,
+    VocalEvaluationResultDto,
+)
 from music.app.ports.input.vocal_mia_recorder_use_case import EvaluationUseCase
 from music.app.ports.output.vocal_bard_searcher_port import ListPort
 from music.app.ports.output.vocal_mia_maestro_port import EvaluationPort
@@ -21,8 +28,12 @@ class MiaRecorderInteractor(EvaluationUseCase):
         self.repository = repository
         self.list_repository = list_repository
 
-    async def introduce_myself(self, schema: MiaIntroduceSchema) -> MiaIntroduceResponse:
-        return await self.repository.introduce_myself(MiaIntroduceQuery(id=schema.id, name=schema.name))
+    async def introduce_myself(
+        self, schema: MiaIntroduceSchema
+    ) -> MiaIntroduceResponse:
+        return await self.repository.introduce_myself(
+            MiaIntroduceQuery(id=schema.id, name=schema.name)
+        )
 
     async def _resolve_catalog_and_mr(
         self,
@@ -48,7 +59,7 @@ class MiaRecorderInteractor(EvaluationUseCase):
     async def upload(
         self, command: VocalEvaluationCreateCommand
     ) -> VocalEvaluationResultDto:
-        '''Mia의 보컬 평가 제출 (3NF 저장)'''
+        """Mia의 보컬 평가 제출 (3NF 저장)"""
         resolved_catalog, resolved_mr_id = await self._resolve_catalog_and_mr(
             command.catalog_song_id,
             command.mr_search_list_id,

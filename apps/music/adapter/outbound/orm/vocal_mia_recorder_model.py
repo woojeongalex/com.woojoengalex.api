@@ -1,7 +1,6 @@
 """사용자 보컬 입력(마이크·영상·음원) — `user_vocal_recordings`."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import ConfigDict
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func
@@ -15,8 +14,8 @@ class UserVocalRecordingEntity(SQLModel, table=True):
 
     model_config = ConfigDict(populate_by_name=True)
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: Optional[int] = Field(
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer,
@@ -26,12 +25,12 @@ class UserVocalRecordingEntity(SQLModel, table=True):
         ),
         description="녹음·업로드한 회원. 로그인 연동 시 세션 user_id와 동일해야 함",
     )
-    catalog_song_id: Optional[str] = Field(
+    catalog_song_id: str | None = Field(
         default=None,
         sa_column=Column(String(64), nullable=True, index=True),
         description="녹음 시점 선택 곡. mr_search_list_id 있으면 MR 행 기준으로 서버 정합",
     )
-    mr_search_list_id: Optional[int] = Field(
+    mr_search_list_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer,
@@ -53,17 +52,17 @@ class UserVocalRecordingEntity(SQLModel, table=True):
     input_source: str = Field(max_length=16, description="mic | video")
     file_name: str = Field(max_length=512, description="원본 파일명 또는 마이크 라벨")
     duration_sec: int = Field(ge=0, default=0)
-    content_type: Optional[str] = Field(
+    content_type: str | None = Field(
         default=None,
         max_length=128,
         description="MIME (예: video/mp4). 미전달 시 null",
     )
-    storage_uri: Optional[str] = Field(
+    storage_uri: str | None = Field(
         default=None,
         max_length=1024,
         description="서버·오브젝트 스토리지 경로. 업로드 저장 연동 전 null",
     )
-    recorded_at: Optional[datetime] = Field(
+    recorded_at: datetime | None = Field(
         default=None,
         sa_column=Column(
             DateTime(timezone=True),

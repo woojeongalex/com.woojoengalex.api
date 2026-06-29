@@ -1,4 +1,5 @@
 """[Layer: Domain] Bard 보컬 MR 카탈로그 (인메모리 · DB 미저장)."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

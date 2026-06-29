@@ -1,22 +1,29 @@
 """[Layer: Use Cases] Smith captain (SmithCaptainUseCase 구현)."""
+
 import base64
 import logging
 import re
 
 import pandas as pd
-
-from titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import ChatSchema, SmithCaptainSchema
-from titanic.app.dtos.crew_smith_captain_dto import SmithCaptainQuery, SmithCaptainResponse
+from titanic.adapter.inbound.api.schemas.crew_smith_captain_schema import (
+    ChatSchema,
+    SmithCaptainSchema,
+)
+from titanic.app.dtos.crew_smith_captain_dto import (
+    SmithCaptainQuery,
+    SmithCaptainResponse,
+)
+from titanic.app.ports.input.crew_andrews_architect_use_case import (
+    AndrewsArchitectUseCase,
+)
+from titanic.app.ports.input.crew_hartley_use_case import HartleyUseCase
+from titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
 from titanic.app.ports.input.crew_smith_captain_use_case import SmithCaptainUseCase
+from titanic.app.ports.input.crew_walter_use_case import WalterUseCase
 from titanic.app.ports.input.passenger_cal_tester_use_case import CalTestUseCase
-from titanic.app.ports.output.crew_smith_captain_port import SmithCaptainPort
-from titanic.app.ports.input.crew_andrews_architect_use_case import AndrewsArchitectUseCase
 from titanic.app.ports.input.passenger_jack_trainer_use_case import JackTrainerUseCase
 from titanic.app.ports.input.passenger_rose_model_use_case import RoseModelUseCase
-from titanic.app.ports.input.crew_walter_use_case import WalterUseCase
-from titanic.app.ports.input.crew_lowe_boat_use_case import LoweBoatUseCase
-from titanic.app.ports.input.crew_hartley_use_case import HartleyUseCase
-
+from titanic.app.ports.output.crew_smith_captain_port import SmithCaptainPort
 
 logger = logging.getLogger("titanic_flow_log")
 
@@ -24,19 +31,21 @@ logger = logging.getLogger("titanic_flow_log")
 _ML_INTENTS: frozenset[str] = frozenset({"personal", "importance"})
 
 _FEATURE_KO: dict[str, str] = {
-    "gender":     "성별",
-    "pclass":     "객실 등급",
-    "FareBand":   "요금 구간",
-    "IsAlone":    "혼자 탑승 여부",
-    "embarked":   "탑승 항구",
-    "parch":      "부모/자녀 수",
-    "AgeGroup":   "연령대",
-    "sib_sp":     "형제/배우자 수",
+    "gender": "성별",
+    "pclass": "객실 등급",
+    "FareBand": "요금 구간",
+    "IsAlone": "혼자 탑승 여부",
+    "embarked": "탑승 항구",
+    "parch": "부모/자녀 수",
+    "AgeGroup": "연령대",
+    "sib_sp": "형제/배우자 수",
     "FamilySize": "가족 규모",
 }
 
 
-def _importance_answer(train_df: pd.DataFrame, best_strategy: str, best_accuracy: float) -> str:
+def _importance_answer(
+    train_df: pd.DataFrame, best_strategy: str, best_accuracy: float
+) -> str:
     numeric = train_df.select_dtypes(include="number")
     if "survived" not in numeric.columns:
         return "생존 데이터가 부족해 피처 중요도를 계산할 수 없습니다."
@@ -52,7 +61,9 @@ def _importance_answer(train_df: pd.DataFrame, best_strategy: str, best_accuracy
         lines.append(f"{i}. {ko}({feat}): {val:+.2f}  [{direction} 상관관계]")
 
     top = ranked.index[0]
-    lines.append(f"\n→ 생존율에 가장 중요한 요소는 '{_FEATURE_KO.get(top, top)}'입니다.")
+    lines.append(
+        f"\n→ 생존율에 가장 중요한 요소는 '{_FEATURE_KO.get(top, top)}'입니다."
+    )
     lines.append(f"적용 모델: {best_strategy}  정확도: {best_accuracy:.2%}")
     return "\n".join(lines)
 
@@ -81,50 +92,62 @@ def _personal_answer(
 
     # ── 나이 → AgeGroup 변환 (lowe FE 기준) ────────────────────────────────────
     def _age_to_group(a: int | None) -> int:
-        if a is None:   return 0
-        if a <= 0:      return 1   # Baby
-        if a <= 5:      return 1
-        if a <= 12:     return 2   # Child
-        if a <= 18:     return 3   # Teenager
-        if a <= 24:     return 4   # Student
-        if a <= 35:     return 5   # Young Adult
-        if a <= 60:     return 6   # Adult
-        return 7                   # Senior
+        if a is None:
+            return 0
+        if a <= 0:
+            return 1  # Baby
+        if a <= 5:
+            return 1
+        if a <= 12:
+            return 2  # Child
+        if a <= 18:
+            return 3  # Teenager
+        if a <= 24:
+            return 4  # Student
+        if a <= 35:
+            return 5  # Young Adult
+        if a <= 60:
+            return 6  # Adult
+        return 7  # Senior
 
     # ── 기본 파생 피처 (혼자 탑승 가정) ─────────────────────────────────────────
     family_size = 1
-    is_alone    = 1
-    fare_band   = max(1, 5 - pclass)   # 1등석→4, 2등석→3, 3등석→2
+    is_alone = 1
+    fare_band = max(1, 5 - pclass)  # 1등석→4, 2등석→3, 3등석→2
 
     row_dict = {
-        "pclass":     pclass,
-        "gender":     gender_encoded,
-        "sib_sp":     0,
-        "parch":      0,
-        "embarked":   1,            # Southampton 기본
+        "pclass": pclass,
+        "gender": gender_encoded,
+        "sib_sp": 0,
+        "parch": 0,
+        "embarked": 1,  # Southampton 기본
         "FamilySize": family_size,
-        "IsAlone":    is_alone,
-        "AgeGroup":   _age_to_group(age),
-        "FareBand":   fare_band,
+        "IsAlone": is_alone,
+        "AgeGroup": _age_to_group(age),
+        "FareBand": fare_band,
     }
 
     feature_cols = [c for c in train_df.columns if c != "survived"]
     row = [row_dict.get(c, 0) for c in feature_cols]
 
     # ── 최적 훈련 전략으로 예측 ────────────────────────────────────────────────
-    trained     = rose_result.get("trained_strategies", {})
-    best_name   = rose_result.get("selected_strategy", "")
+    trained = rose_result.get("trained_strategies", {})
+    best_name = rose_result.get("selected_strategy", "")
     prob: float = 0.5
     if best_name in trained:
         try:
             preds = trained[best_name].predict([row])
-            prob  = float(preds[0])
+            prob = float(preds[0])
         except Exception:
             pass
 
     gender_str = "여성" if is_female else "남성"
-    age_str    = f"{age}세 " if age else ""
-    verdict    = "생존했을 가능성이 높습니다 ✅" if prob >= 0.5 else "생존하지 못했을 가능성이 높습니다 ❌"
+    age_str = f"{age}세 " if age else ""
+    verdict = (
+        "생존했을 가능성이 높습니다 ✅"
+        if prob >= 0.5
+        else "생존하지 못했을 가능성이 높습니다 ❌"
+    )
 
     return (
         f"[개인 생존 예측]\n"
@@ -161,12 +184,12 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
 
         # 1. Andrews: 질문 의도 분류
         question: dict = self.andrews.analyze_message_intent(schema.messages)
-        intent:   str  = question["intent"]
+        intent: str = question["intent"]
         keywords: list = question["keywords"]
 
         # 2. Walter: 원본 데이터 로드 (survived 포함)
         raw_train_df: pd.DataFrame = await self.walter.get_train_set()
-        raw_test_df:  pd.DataFrame = await self.walter.get_test_set()
+        raw_test_df: pd.DataFrame = await self.walter.get_test_set()
 
         # ── [유형 B] ML 파이프라인 (personal · importance 인텐트에만) ──────────
         if intent in _ML_INTENTS:
@@ -177,8 +200,8 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
             train_df_with_survived["survived"] = y_label
 
             # Rose: sklearn 10개 모델 학습 + 검증 세트 정확도
-            rose_result:   dict  = await self.rose.train_model(raw_train_df)
-            best_strategy: str   = rose_result.get("selected_strategy", "없음")
+            rose_result: dict = await self.rose.train_model(raw_train_df)
+            best_strategy: str = rose_result.get("selected_strategy", "없음")
             best_accuracy: float = rose_result.get("selected_accuracy", 0.0)
 
             # Jack: 모델 훈련 매니페스트
@@ -186,13 +209,17 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
             model_manifest: dict = await self.jack.get_model_train()
 
             # Cal: 점수 기반 최적 모델 선택
-            test_result:   dict = await self.cal.test_models(model_manifest)
-            top_cal_model: str  = test_result.get("top_model") or best_strategy
+            test_result: dict = await self.cal.test_models(model_manifest)
+            top_cal_model: str = test_result.get("top_model") or best_strategy
 
             if intent == "importance":
-                answer = _importance_answer(train_df_with_survived, top_cal_model, best_accuracy)
+                answer = _importance_answer(
+                    train_df_with_survived, top_cal_model, best_accuracy
+                )
             else:  # personal
-                answer = _personal_answer(schema.messages, rose_result, train_df_fe, best_accuracy)
+                answer = _personal_answer(
+                    schema.messages, rose_result, train_df_fe, best_accuracy
+                )
 
             graph: str | None = base64.b64encode(
                 self.hartley.correlation_graph(train_df_with_survived)
@@ -226,9 +253,12 @@ class SmithCaptainInteractor(SmithCaptainUseCase):
             graph=None,
         )
 
-    async def introduce_myself(self, schema: SmithCaptainSchema) -> SmithCaptainResponse:
-        return await self.repository.introduce_myself(SmithCaptainQuery(
-            id=schema.id,
-            name=schema.name,
-        ))
-
+    async def introduce_myself(
+        self, schema: SmithCaptainSchema
+    ) -> SmithCaptainResponse:
+        return await self.repository.introduce_myself(
+            SmithCaptainQuery(
+                id=schema.id,
+                name=schema.name,
+            )
+        )

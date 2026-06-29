@@ -18,14 +18,18 @@ def orm_to_entity(orm: PersonOrm) -> PassengerEntity:
         gender=Gender.from_raw(orm.gender),
         age=Age.from_raw(str(orm.age) if orm.age is not None else None),
         family_relation=FamilyRelation.from_raw(orm.sib_sp, orm.parch),
-        survival_status=SurvivalStatus.from_raw(str(orm.survived) if orm.survived is not None else None),
+        survival_status=SurvivalStatus.from_raw(
+            str(orm.survived) if orm.survived is not None else None
+        ),
     )
 
 
 def entity_to_orm(entity: PassengerEntity, source_file: str = "") -> PersonOrm:
     survived_val = (
-        "1" if entity.survival_status.survived is True
-        else "0" if entity.survival_status.survived is False
+        "1"
+        if entity.survival_status.survived is True
+        else "0"
+        if entity.survival_status.survived is False
         else ""
     )
     return PersonOrm(

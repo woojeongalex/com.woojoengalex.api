@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import logging
 from collections.abc import Callable
 from dataclasses import dataclass
+import logging
 
-from music.domain.vocal_bard_searcher_catalog import VOCAL_CATALOG
-from music.adapter.inbound.api.schemas.vocal_muse_recommender_schema import MuseIntroduceSchema, MuseIntroduceResponse
+from music.adapter.inbound.api.schemas.vocal_muse_recommender_schema import (
+    MuseIntroduceResponse,
+    MuseIntroduceSchema,
+)
 from music.app.dtos.suggest_dto import (
     AiVocalAnalysisDto,
     MuseIntroduceQuery,
@@ -15,6 +17,7 @@ from music.app.dtos.suggest_dto import (
 )
 from music.app.ports.input.vocal_muse_recommender_use_case import SuggestUseCase
 from music.app.ports.output.vocal_muse_recommender_port import SuggestPort
+from music.domain.vocal_bard_searcher_catalog import VOCAL_CATALOG
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,9 @@ def _resolve_catalog_songs() -> dict[str, str]:
     titles = [i.title for i in VOCAL_CATALOG]
     return {
         "night_letter": next((t for t in titles if "밤편지" in t), titles[1]),
-        "defying": next((t for t in titles if "Defying" in t or "Gravity" in t), "Defying Gravity"),
+        "defying": next(
+            (t for t in titles if "Defying" in t or "Gravity" in t), "Defying Gravity"
+        ),
         "spring": next((t for t in titles if "봄" in t), titles[0]),
     }
 
@@ -90,14 +95,20 @@ class MuseRecommenderInteractor(SuggestUseCase):
     def __init__(self, repository: SuggestPort) -> None:
         self.repository = repository
 
-    async def introduce_myself(self, schema: MuseIntroduceSchema) -> MuseIntroduceResponse:
-        return await self.repository.introduce_myself(MuseIntroduceQuery(id=schema.id, name=schema.name))
+    async def introduce_myself(
+        self, schema: MuseIntroduceSchema
+    ) -> MuseIntroduceResponse:
+        return await self.repository.introduce_myself(
+            MuseIntroduceQuery(id=schema.id, name=schema.name)
+        )
 
     async def upload(
         self, command: VocalRecommendationCreateCommand
     ) -> VocalRecommendationResultDto:
-        '''Muse의 보컬 추천 생성·저장'''
-        row = await self.repository.get_sing_evaluation_by_id(command.sing_evaluation_id)
+        """Muse의 보컬 추천 생성·저장"""
+        row = await self.repository.get_sing_evaluation_by_id(
+            command.sing_evaluation_id
+        )
         if row is None:
             raise ValueError("해당 보컬 평가가 없습니다.")
 
@@ -125,5 +136,5 @@ class MuseRecommenderInteractor(SuggestUseCase):
     async def read(
         self, sing_evaluation_id: int
     ) -> VocalRecommendationResultDto | None:
-        '''Muse의 최신 추천 조회'''
+        """Muse의 최신 추천 조회"""
         return await self.repository.get_latest_by_evaluation_id(sing_evaluation_id)

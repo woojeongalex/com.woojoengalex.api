@@ -1,7 +1,7 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 from titanic.domain.value_objects.family_relation_vo import FamilyRelation
 
@@ -49,7 +49,7 @@ class Gender:
     value: GenderType
 
     @classmethod
-    def from_raw(cls, raw: Optional[str]) -> "Gender":
+    def from_raw(cls, raw: str | None) -> Gender:
         if not raw or not raw.strip():
             return cls(value=GenderType.UNKNOWN)
         normalized = raw.strip().lower()
@@ -68,7 +68,7 @@ class Gender:
 
 @dataclass(frozen=True)
 class Age:
-    value: Optional[float]
+    value: float | None
 
     def __post_init__(self) -> None:
         if self.value is not None:
@@ -76,7 +76,7 @@ class Age:
                 raise ValueError(f"Age 유효하지 않은 값: '{self.value}'")
 
     @classmethod
-    def from_raw(cls, raw: Optional[str]) -> "Age":
+    def from_raw(cls, raw: str | None) -> Age:
         if not raw or not raw.strip():
             return cls(value=None)
         try:
@@ -98,10 +98,10 @@ class Age:
 
 @dataclass(frozen=True)
 class SurvivalStatus:
-    survived: Optional[bool]
+    survived: bool | None
 
     @classmethod
-    def from_raw(cls, raw: Optional[str]) -> "SurvivalStatus":
+    def from_raw(cls, raw: str | None) -> SurvivalStatus:
         if not raw or not raw.strip():
             return cls(survived=None)
         try:
@@ -118,12 +118,12 @@ class SurvivalStatus:
 
 
 __all__ = [
-    "GenderType",
-    "SurvivedType",
-    "PassengerId",
-    "PassengerName",
-    "Gender",
     "Age",
     "FamilyRelation",
+    "Gender",
+    "GenderType",
+    "PassengerId",
+    "PassengerName",
     "SurvivalStatus",
+    "SurvivedType",
 ]

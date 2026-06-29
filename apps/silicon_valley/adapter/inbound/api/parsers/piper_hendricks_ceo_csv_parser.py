@@ -1,4 +1,4 @@
-﻿"""HendricksCeo upload CSV → 내부 타입 (무상태 파싱)."""
+"""HendricksCeo upload CSV → 내부 타입 (무상태 파싱)."""
 
 import csv
 import io
@@ -6,8 +6,9 @@ import logging
 
 from fastapi import HTTPException, UploadFile
 from pydantic import ValidationError
-
-from silicon_valley.adapter.inbound.api.schemas.piper_hendricks_ceo_schema import HendricksCeoSchema
+from silicon_valley.adapter.inbound.api.schemas.piper_hendricks_ceo_schema import (
+    HendricksCeoSchema,
+)
 
 log = logging.getLogger("silicon_valley")
 
@@ -31,7 +32,9 @@ def parse_hendricks_ceo_csv(text: str) -> list[HendricksCeoSchema]:
         raise
 
 
-async def read_hendricks_ceo_upload(file: UploadFile) -> tuple[str, list[HendricksCeoSchema]]:
+async def read_hendricks_ceo_upload(
+    file: UploadFile,
+) -> tuple[str, list[HendricksCeoSchema]]:
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="업로드 파일이 비어 있습니다.")

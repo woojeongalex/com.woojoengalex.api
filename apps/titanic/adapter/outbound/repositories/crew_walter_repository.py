@@ -6,13 +6,16 @@ from typing import Any
 import pandas as pd
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-import core.matrix.database_manager as _db_manager
-
 from titanic.adapter.outbound.orm.booking_orm import BookingOrm
 from titanic.adapter.outbound.orm.passenger_orm import PersonOrm
-from titanic.app.dtos.crew_walter_query import WalterPassengerPageDto, WalterQuery, WalterResponse
+from titanic.app.dtos.crew_walter_query import (
+    WalterPassengerPageDto,
+    WalterQuery,
+    WalterResponse,
+)
 from titanic.app.ports.output.crew_walter_director_port import WalterDirectorPort
+
+import core.matrix.database_manager as _db_manager
 
 logger = logging.getLogger(__name__)
 
@@ -88,14 +91,14 @@ class WalterRepository(WalterDirectorPort):
 
         rows = (
             await self.session.execute(
-                base_query.order_by(PersonOrm.id)
-                .offset((page - 1) * size)
-                .limit(size)
+                base_query.order_by(PersonOrm.id).offset((page - 1) * size).limit(size)
             )
         ).all()
 
         total_pages = (total + size - 1) // size if size else 1
-        logger.info(f"[WalterRepository] read_passengers | source_file={source_file} page={page} total={total}")
+        logger.info(
+            f"[WalterRepository] read_passengers | source_file={source_file} page={page} total={total}"
+        )
 
         return WalterPassengerPageDto(
             source_file=source_file,

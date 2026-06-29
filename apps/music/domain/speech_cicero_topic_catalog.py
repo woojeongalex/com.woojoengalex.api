@@ -1,4 +1,5 @@
 """[Layer: Domain] Cicero 스피치 코칭 주제 (인메모리 · DB 미저장)."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

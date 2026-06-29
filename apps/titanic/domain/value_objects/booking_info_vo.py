@@ -1,15 +1,15 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import Optional
 
-from titanic.domain.value_objects.pclass_vo import PClass, PClassType
+from dataclasses import dataclass
+
 from titanic.domain.value_objects.embarked_vo import Embarked, EmbarkedPort
+from titanic.domain.value_objects.pclass_vo import PClass, PClassType
 
 
 @dataclass(frozen=True)
 class BookingInfo:
     pclass: PClass
-    fare: Optional[float]
+    fare: float | None
     embarked: Embarked
 
     def __post_init__(self) -> None:
@@ -19,11 +19,11 @@ class BookingInfo:
     @classmethod
     def from_raw(
         cls,
-        pclass_raw: Optional[str],
-        fare_raw: Optional[str],
-        embarked_raw: Optional[str],
-    ) -> "BookingInfo":
-        fare: Optional[float] = None
+        pclass_raw: str | None,
+        fare_raw: str | None,
+        embarked_raw: str | None,
+    ) -> BookingInfo:
+        fare: float | None = None
         if fare_raw and fare_raw.strip():
             try:
                 fare = float(fare_raw.strip())
@@ -45,5 +45,5 @@ class BookingInfo:
         return self.fare is None
 
     @property
-    def embarked_port(self) -> Optional[EmbarkedPort]:
+    def embarked_port(self) -> EmbarkedPort | None:
         return self.embarked.value

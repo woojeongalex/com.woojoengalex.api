@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from friday13th.adapter.inbound.api.deps.auth_deps import get_signup_use_case
-from friday13th.adapter.inbound.api.handlers.auth_inbound_handlers import run_with_db_guard
+from friday13th.adapter.inbound.api.handlers.auth_inbound_handlers import (
+    run_with_db_guard,
+)
 from friday13th.adapter.inbound.api.schemas.friday13th_request import SignupRequest
 from friday13th.adapter.inbound.api.schemas.friday13th_response import (
     SignupResponse,

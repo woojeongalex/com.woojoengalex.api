@@ -1,4 +1,5 @@
 """[Layer: Use Cases] Muse 보컬 추천 DTO."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
