@@ -33,7 +33,9 @@ except ModuleNotFoundError:
 from friday13th.adapter.inbound.api.v1 import login_router, signup_router
 from music.adapter.inbound.api import music_router
 from silicon_valley.adapter.inbound.api import silicon_valley_router
+from the_wire.adapter.inbound.api.v1.contact_router import contact_router
 from the_wire.adapter.inbound.api.v1.email_router import the_wire_router
+from the_wire.adapter.outbound.orm.contact_model import Base as WireBase
 from titanic.adapter.inbound.api import titanic_router
 
 from core.matrix.keymaker_api import get_keymaker
@@ -70,6 +72,13 @@ async def lifespan(app: FastAPI):
             "Neon DB init_db 실패 — auth API가 동작하지 않을 수 있습니다: %s", exc
         )
     try:
+        from database import engine  # type: ignore[import]
+        async with engine.begin() as conn:
+            await conn.run_sync(WireBase.metadata.create_all)
+        logger.info("wire_contacts 테이블 초기화 완료")
+    except Exception as exc:
+        logger.exception("wire_contacts 테이블 초기화 실패: %s", exc)
+    try:
         yield
     finally:
         await dispose_engine()
@@ -94,6 +103,7 @@ app.include_router(titanic_router)
 app.include_router(silicon_valley_router)
 app.include_router(music_router)
 app.include_router(the_wire_router)
+app.include_router(contact_router)
 
 
 @app.get("/health")

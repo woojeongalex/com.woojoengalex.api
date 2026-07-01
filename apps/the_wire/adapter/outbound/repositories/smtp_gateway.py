@@ -1,13 +1,14 @@
-import os
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
 
 import aiosmtplib
-import core.config  # noqa: F401  — .env 로드 보장
-
 from the_wire.app.dtos.email_dto import EmailCommand, EmailResult
 from the_wire.app.ports.output.n8n_gateway_port import N8nGatewayPort
+
+import core.config  # noqa: F401  — .env 로드 보장
+
 
 class SmtpGateway(N8nGatewayPort):
     async def send(self, command: EmailCommand, body: str) -> EmailResult:
