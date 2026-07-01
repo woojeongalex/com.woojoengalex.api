@@ -13,3 +13,8 @@ class ContactResponse(BaseModel):
 
 class ContactListResponse(BaseModel):
     contacts: list[ContactResponse]
+
+
+class ContactUploadResult(BaseModel):
+    saved: int
+    skipped: int

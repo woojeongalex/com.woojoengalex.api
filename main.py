@@ -72,10 +72,11 @@ async def lifespan(app: FastAPI):
             "Neon DB init_db 실패 — auth API가 동작하지 않을 수 있습니다: %s", exc
         )
     try:
-        from database import engine  # type: ignore[import]
-        async with engine.begin() as conn:
-            await conn.run_sync(WireBase.metadata.create_all)
-        logger.info("wire_contacts 테이블 초기화 완료")
+        from core.matrix.database_manager import engine as _engine
+        if _engine is not None:
+            async with _engine.begin() as conn:
+                await conn.run_sync(WireBase.metadata.create_all, checkfirst=True)
+            logger.info("wire_contacts 테이블 초기화 완료")
     except Exception as exc:
         logger.exception("wire_contacts 테이블 초기화 실패: %s", exc)
     try:

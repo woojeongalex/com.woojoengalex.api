@@ -37,3 +37,10 @@ class ContactPgRepository(ContactRepositoryPort):
         return [
             ContactResult(name=row.name, email=row.email) for row in result.scalars()
         ]
+
+    async def list_all(self) -> list[ContactResult]:
+        stmt = select(ContactModel).order_by(ContactModel.name)
+        result = await self._session.execute(stmt)
+        return [
+            ContactResult(name=row.name, email=row.email) for row in result.scalars()
+        ]

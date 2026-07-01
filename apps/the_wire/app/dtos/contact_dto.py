@@ -16,3 +16,9 @@ class SearchContactQuery:
 class ContactResult:
     name: str
     email: str
+
+
+@dataclass(frozen=True)
+class UploadContactsResult:
+    saved: int
+    skipped: int
