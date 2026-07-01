@@ -35,7 +35,10 @@ from music.adapter.inbound.api import music_router
 from silicon_valley.adapter.inbound.api import silicon_valley_router
 from the_wire.adapter.inbound.api.v1.contact_router import contact_router
 from the_wire.adapter.inbound.api.v1.email_router import the_wire_router
+from the_wire.adapter.inbound.api.v1.inbox_router import inbox_router
+from the_wire.adapter.inbound.api.v1.introduce_router import introduce_router
 from the_wire.adapter.outbound.orm.contact_model import Base as WireBase
+from the_wire.adapter.outbound.orm.inbox_model import Base as InboxBase
 from titanic.adapter.inbound.api import titanic_router
 
 from core.matrix.keymaker_api import get_keymaker
@@ -73,10 +76,12 @@ async def lifespan(app: FastAPI):
         )
     try:
         from core.matrix.database_manager import engine as _engine
+
         if _engine is not None:
             async with _engine.begin() as conn:
                 await conn.run_sync(WireBase.metadata.create_all, checkfirst=True)
-            logger.info("wire_contacts 테이블 초기화 완료")
+                await conn.run_sync(InboxBase.metadata.create_all, checkfirst=True)
+            logger.info("wire_contacts / wire_inbox 테이블 초기화 완료")
     except Exception as exc:
         logger.exception("wire_contacts 테이블 초기화 실패: %s", exc)
     try:
@@ -105,6 +110,8 @@ app.include_router(silicon_valley_router)
 app.include_router(music_router)
 app.include_router(the_wire_router)
 app.include_router(contact_router)
+app.include_router(introduce_router)
+app.include_router(inbox_router)
 
 
 @app.get("/health")
