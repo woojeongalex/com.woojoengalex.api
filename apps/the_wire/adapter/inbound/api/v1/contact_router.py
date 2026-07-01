@@ -12,7 +12,7 @@ from the_wire.adapter.inbound.api.schemas.contact_schemas import (
     ContactUploadResult,
 )
 from the_wire.app.ports.input.contact_use_case import ContactUseCase
-from the_wire.dependencies.the_wire_director import get_contact_use_case
+from the_wire.dependencies.contact_provider import get_contact_use_case
 
 contact_router = APIRouter(prefix="/api/the-wire", tags=["the-wire-contacts"])
 
