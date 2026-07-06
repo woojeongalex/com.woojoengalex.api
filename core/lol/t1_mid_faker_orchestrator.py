@@ -9,7 +9,7 @@ MODEL = "exaone3.5:7.8b"
 class FakerOrchestrator:
     def __init__(self, model: str = MODEL) -> None:
         self.model = model
-        self.client = ollama.Client()
+        self.client = ollama.Client(host="http://host.docker.internal:11434")
 
     def invoke(self, prompt: str) -> str:
         response: ChatResponse = self.client.chat(

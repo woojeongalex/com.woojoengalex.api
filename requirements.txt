@@ -38,4 +38,6 @@ torch==2.6.0
 torchvision==0.21.0
 torchaudio==2.6.0
 transformers==4.48.3
+opencv-python-headless==4.11.0.86
+ultralytics==8.3.51
 pgvector==0.4.2

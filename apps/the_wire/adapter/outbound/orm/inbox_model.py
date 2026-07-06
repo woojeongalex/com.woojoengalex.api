@@ -1,5 +1,7 @@
 from datetime import datetime
+from typing import Any
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -19,3 +21,4 @@ class InboxModel(Base):
         DateTime, default=datetime.utcnow, index=True
     )
     is_read: Mapped[bool] = mapped_column(default=False)
+    embedding: Mapped[Any | None] = mapped_column(Vector(3072), nullable=True)

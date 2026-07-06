@@ -33,13 +33,17 @@ except ModuleNotFoundError:
 from friday13th.adapter.inbound.api.v1 import login_router, signup_router
 from music.adapter.inbound.api import music_router
 from silicon_valley.adapter.inbound.api import silicon_valley_router
-from the_wire.adapter.inbound.api.v1.contact_router import contact_router
 from the_wire.adapter.inbound.api.v1.email_router import the_wire_router
-from the_wire.adapter.inbound.api.v1.inbox_router import inbox_router
-from the_wire.adapter.inbound.api.v1.introduce_router import introduce_router
+from the_wire.adapter.inbound.api.v1.judge_router import judge_router
+from the_wire.adapter.inbound.api.v1.receiver_router import receiver_router
+from the_wire.adapter.inbound.api.v1.watcher_router import watcher_router
 from the_wire.adapter.outbound.orm.contact_model import Base as WireBase
+from the_wire.adapter.outbound.orm.email_model import Base as EmailBase
 from the_wire.adapter.outbound.orm.inbox_model import Base as InboxBase
+from the_wire.adapter.outbound.orm.watch_model import Base as WatchBase
 from titanic.adapter.inbound.api import titanic_router
+from vision.adapter.inbound.api.v1.vision_router import vision_router
+from vision.adapter.outbound.orm.vision_model import Base as VisionBase
 
 from core.matrix.keymaker_api import get_keymaker
 
@@ -81,7 +85,12 @@ async def lifespan(app: FastAPI):
             async with _engine.begin() as conn:
                 await conn.run_sync(WireBase.metadata.create_all, checkfirst=True)
                 await conn.run_sync(InboxBase.metadata.create_all, checkfirst=True)
-            logger.info("wire_contacts / wire_inbox 테이블 초기화 완료")
+                await conn.run_sync(EmailBase.metadata.create_all, checkfirst=True)
+                await conn.run_sync(WatchBase.metadata.create_all, checkfirst=True)
+                await conn.run_sync(VisionBase.metadata.create_all, checkfirst=True)
+            logger.info(
+                "wire_contacts / wire_inbox / wire_sent_emails / wire_watch / vision_results 테이블 초기화 완료"
+            )
     except Exception as exc:
         logger.exception("wire_contacts 테이블 초기화 실패: %s", exc)
     try:
@@ -109,9 +118,10 @@ app.include_router(titanic_router)
 app.include_router(silicon_valley_router)
 app.include_router(music_router)
 app.include_router(the_wire_router)
-app.include_router(contact_router)
-app.include_router(introduce_router)
-app.include_router(inbox_router)
+app.include_router(judge_router)
+app.include_router(watcher_router)
+app.include_router(receiver_router)
+app.include_router(vision_router)
 
 
 @app.get("/health")

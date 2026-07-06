@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 
+import numpy as np
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from the_wire.adapter.outbound.orm.inbox_model import InboxModel
@@ -25,13 +26,16 @@ class InboxPgRepository(InboxRepositoryPort):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def save(self, command: ReceiveMailCommand) -> InboxResult:
+    async def save(
+        self, command: ReceiveMailCommand, embedding: np.ndarray | None = None
+    ) -> InboxResult:
         logger.info("[InboxPgRepository] save | sender=%s", command.sender)
         mail = InboxModel(
             sender=command.sender,
             subject=command.subject,
             body=command.body,
             received_at=datetime.utcnow(),
+            embedding=embedding,
         )
         self.session.add(mail)
         await self.session.commit()
